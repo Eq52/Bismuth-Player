@@ -1,8 +1,12 @@
 🎬 Bismuth Player
 
----
-
 > 本项目98%为AI创作，就连这个README.md文件也是AI做的
+
+⚠️ 注意
+
+该仓库的版本没有对大屏幕设备做过多优化，可前往 [BP-New](https://github.com/Eq52/BP-New/) 查看优化版。
+
+---
 
 ✨ 功能特性
 
@@ -173,7 +177,3 @@ EXPOSE 80
 - [苹果CMS](https://github.com/magicblack) - 影视内容管理系统
 
 ---
-
-⚠️ 注意
-
-该仓库的版本没有对大屏幕设备做过多优化，可前往 [BP-New](https://github.com/Eq52/BP-New/) 查看优化版。

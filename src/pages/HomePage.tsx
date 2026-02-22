@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings, Plus, Film, Search } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
 import { getVideoList, getCategories, getCurrentSource, getSources } from '@/services/api';
@@ -8,9 +8,10 @@ interface HomePageProps {
   onVideoClick: (video: VideoItem) => void;
   onSettingsClick: () => void;
   onAddSourceClick: () => void;
+  onSearchClick: () => void;
 }
 
-export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: HomePageProps) {
+export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSearchClick }: HomePageProps) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [currentCategory, setCurrentCategory] = useState('all');
@@ -19,6 +20,10 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
   const [hasMore, setHasMore] = useState(true);
   const [currentSource, setCurrentSourceState] = useState<VideoSource | null>(null);
   const [hasSources, setHasSources] = useState(false);
+  
+  // 使用 ref 来避免闭包问题
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
 
   // 加载分类和检查影视源
   useEffect(() => {
@@ -32,20 +37,19 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
   }, []);
 
   // 加载影视列表
-  const loadVideos = useCallback(async (reset = false) => {
-    if (loading) return;
+  const loadVideos = useCallback(async (targetPage: number, reset: boolean = false) => {
+    if (loadingRef.current) return;
     setLoading(true);
     
     try {
-      const currentPage = reset ? 1 : page;
-      const response = await getVideoList(currentPage, 18, currentCategory);
+      const response = await getVideoList(targetPage, 18, currentCategory);
       
       if (reset) {
         setVideos(response.list);
         setPage(2);
       } else {
         setVideos(prev => [...prev, ...response.list]);
-        setPage(prev => prev + 1);
+        setPage(targetPage + 1);
       }
       
       setHasMore(response.list.length === 18);
@@ -54,22 +58,23 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
     } finally {
       setLoading(false);
     }
-  }, [currentCategory, page, loading]);
+  }, [currentCategory]);
 
-  // 初始加载和分类切换
+  // 切换分类时重置并加载
   useEffect(() => {
     if (hasSources) {
-      loadVideos(true);
+      setPage(1);
+      loadVideos(1, true);
     }
   }, [currentCategory, hasSources]);
 
   // 滚动加载更多
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollTop + clientHeight >= scrollHeight - 100 && hasMore && !loading) {
-      loadVideos();
+    if (scrollTop + clientHeight >= scrollHeight - 100 && hasMore && !loadingRef.current) {
+      loadVideos(page, false);
     }
-  }, [hasMore, loading, loadVideos]);
+  }, [hasMore, page, loadVideos]);
 
   // 空状态 - 无影视源
   if (!hasSources) {
@@ -83,7 +88,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
             </div>
             <div>
               <h1 className="text-white text-lg font-bold tracking-tight">Bismuth Player</h1>
-              <p className="text-gray-500 text-xs">精美影视播放壳子</p>
+              <p className="text-gray-500 text-xs">如"秘"般美丽</p>
             </div>
           </div>
           <button 
@@ -139,7 +144,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
       {/* 搜索框 */}
       <div className="px-5 py-2">
         <div 
-          onClick={onAddSourceClick}
+          onClick={onSearchClick}
           className="bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all"
         >
           <Search className="w-5 h-5 mr-3" />
@@ -152,7 +157,11 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick }: Ho
         {categories.map((cat) => (
           <button
             key={cat.id}
-            onClick={() => setCurrentCategory(cat.id)}
+            onClick={() => {
+              if (cat.id !== currentCategory) {
+                setCurrentCategory(cat.id);
+              }
+            }}
             className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
               currentCategory === cat.id
                 ? 'bg-white text-black font-medium'

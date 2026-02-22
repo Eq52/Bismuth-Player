@@ -64,7 +64,7 @@ export function getPlayerSettings(): PlayerSettings {
 // 默认播放器设置
 function getDefaultPlayerSettings(): PlayerSettings {
   return {
-    playerUrl: 'https://player.bilibili.com/player.html?bvid=',
+    playerUrl: 'https://ericq521.web.app/ckplayer/?v=',
     autoResume: true
   };
 }

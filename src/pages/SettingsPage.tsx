@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getSources, addSource, removeSource, getCurrentSource, setCurrentSource, testSource } from '@/services/api';
 import { getPlayerSettings, savePlayerSettings, getCacheSettings, saveCacheSettings, getCacheSize, clearCache, getCorsProxy, setCorsProxy } from '@/services/storage';
+import { getCacheStats, clearApiCache } from '@/services/cache';
 import type { VideoSource, PlayerSettings, CacheSettings } from '@/types';
 
 interface SettingsPageProps {
@@ -18,6 +19,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const [playerSettings, setPlayerSettings] = useState<PlayerSettings>({ playerUrl: '', autoResume: true });
   const [cacheSettings, setCacheSettings] = useState<CacheSettings>({ enabled: true });
   const [cacheSize, setCacheSize] = useState('0 B');
+  const [apiCacheStats, setApiCacheStats] = useState({ count: 0, size: '0 B' });
   const [corsProxy, setCorsProxyState] = useState('');
   const [newSource, setNewSource] = useState({ id: '', name: '', url: '' });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -33,8 +35,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     setCacheSettings(getCacheSettings());
     setCorsProxyState(getCorsProxy());
     
-    // 加载缓存大小
+    // 加载缓存大小和API缓存统计
     getCacheSize().then(setCacheSize);
+    setApiCacheStats(getCacheStats());
   }, []);
 
   // 保存播放器设置
@@ -51,10 +54,15 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
   // 清除缓存
   const handleClearCache = async () => {
-    if (confirm('确定要清除缓存吗？')) {
+    if (confirm('确定要清除所有缓存吗？')) {
+      // 清除API缓存
+      clearApiCache();
+      // 清除PWA缓存
       await clearCache();
+      // 更新统计
       const newSize = await getCacheSize();
       setCacheSize(newSize);
+      setApiCacheStats(getCacheStats());
       alert('缓存已清除');
     }
   };
@@ -358,8 +366,15 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             
             <div className="flex items-center justify-between pt-3 border-t border-white/5">
               <div>
-                <p className="text-white text-sm">缓存大小</p>
+                <p className="text-white text-sm">PWA缓存</p>
                 <p className="text-gray-500 text-xs">{cacheSize}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+              <div>
+                <p className="text-white text-sm">API缓存</p>
+                <p className="text-gray-500 text-xs">{apiCacheStats.count} 项 · {apiCacheStats.size}</p>
               </div>
               <Button 
                 onClick={handleClearCache} 
@@ -384,7 +399,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">版本</span>
-              <span className="text-white text-sm">1.0.0</span>
+              <span className="text-white text-sm">2.1</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">类型</span>

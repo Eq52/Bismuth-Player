@@ -1,4 +1,5 @@
 import type { VideoItem, ApiResponse, VideoSource } from '@/types';
+import { getCache, setCache } from './cache';
 
 // CORS代理列表 - 按优先级排序
 const CORS_PROXIES = [
@@ -8,6 +9,14 @@ const CORS_PROXIES = [
 
 // 默认无影视源 - 用户需自行添加
 export const DEFAULT_SOURCES: VideoSource[] = [];
+
+// 缓存有效期配置（分钟）
+const CACHE_TTL = {
+  videoList: 10,      // 列表缓存10分钟
+  videoDetail: 60,    // 详情缓存1小时
+  categories: 30,     // 分类缓存30分钟
+  search: 5,          // 搜索缓存5分钟
+};
 
 // 获取当前使用的代理（带轮换机制）
 function getProxyUrl(): string {
@@ -113,7 +122,20 @@ export function removeSource(sourceId: string): void {
   saveSources(sources);
 }
 
-// 获取影视列表
+// 生成缓存键
+function generateCacheKey(type: string, params: Record<string, unknown>): string {
+  const source = getCurrentSource();
+  const sourceId = source?.id || 'none';
+  // 确保所有值都是字符串，避免 undefined 导致的问题
+  const paramStr = Object.entries(params)
+    .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${String(v)}`)
+    .join('&');
+  return `${type}_${sourceId}_${paramStr || 'default'}`;
+}
+
+// 获取影视列表（带缓存）
 export async function getVideoList(
   page: number = 1,
   limit: number = 18,
@@ -125,24 +147,60 @@ export async function getVideoList(
     return { code: 0, msg: '请先添加影视源', list: [] };
   }
   
+  // 搜索请求不使用缓存，每次都获取最新结果
+  if (wd && wd.trim() !== '') {
+    let url = `${source.url}?ac=list&wd=${encodeURIComponent(wd)}&limit=${limit}`;
+    if (page > 1) {
+      url += `&pg=${page}`;
+    }
+    
+    const response = await fetchWithRetry(buildUrl(url));
+    const data: ApiResponse = await response.json();
+    return data;
+  }
+  
+  // 普通列表请求使用缓存
+  const cacheKey = generateCacheKey('videoList', { page, limit, type: type || 'all' });
+  
+  // 尝试从缓存获取
+  const cached = getCache<ApiResponse>(cacheKey);
+  if (cached) {
+    console.log('[Cache] 命中列表缓存:', cacheKey);
+    return cached;
+  }
+  
   let url = `${source.url}?ac=list&pg=${page}&limit=${limit}`;
   
   if (type && type !== 'all') {
     url += `&t=${type}`;
   }
-  if (wd) {
-    url = `${source.url}?ac=list&wd=${encodeURIComponent(wd)}&limit=${limit}`;
-  }
 
   const response = await fetchWithRetry(buildUrl(url));
-  const data = await response.json();
+  const data: ApiResponse = await response.json();
+  
+  // 缓存结果
+  if (data.code === 1 || data.code === 200) {
+    setCache(cacheKey, data, CACHE_TTL.videoList);
+    console.log('[Cache] 缓存列表:', cacheKey, `TTL: ${CACHE_TTL.videoList}分钟`);
+  }
+  
   return data;
 }
 
-// 获取影视详情
+// 获取影视详情（带缓存）
 export async function getVideoDetail(id: number): Promise<VideoItem | null> {
   const source = getCurrentSource();
   if (!source) return null;
+  
+  // 生成缓存键
+  const cacheKey = generateCacheKey('videoDetail', { id });
+  
+  // 尝试从缓存获取
+  const cached = getCache<VideoItem>(cacheKey);
+  if (cached) {
+    console.log('[Cache] 命中详情缓存:', cacheKey);
+    return cached;
+  }
   
   const url = `${source.url}?ac=detail&ids=${id}`;
   
@@ -150,21 +208,35 @@ export async function getVideoDetail(id: number): Promise<VideoItem | null> {
   const data: ApiResponse = await response.json();
   
   if (data.list && data.list.length > 0) {
-    return data.list[0];
+    const video = data.list[0];
+    // 缓存结果
+    setCache(cacheKey, video, CACHE_TTL.videoDetail);
+    console.log('[Cache] 缓存详情:', cacheKey, `TTL: ${CACHE_TTL.videoDetail}分钟`);
+    return video;
   }
   return null;
 }
 
-// 搜索影视
+// 搜索影视（不使用缓存，确保搜索结果实时）
 export async function searchVideos(wd: string, page: number = 1, limit: number = 18): Promise<ApiResponse> {
   return getVideoList(page, limit, undefined, wd);
 }
 
-// 获取分类列表
+// 获取分类列表（带缓存）
 export async function getCategories(): Promise<{ id: string; name: string }[]> {
   const source = getCurrentSource();
   if (!source) {
     return [{ id: 'all', name: '全部' }];
+  }
+  
+  // 生成缓存键
+  const cacheKey = generateCacheKey('categories', {});
+  
+  // 尝试从缓存获取
+  const cached = getCache<{ id: string; name: string }[]>(cacheKey);
+  if (cached) {
+    console.log('[Cache] 命中分类缓存');
+    return cached;
   }
   
   const url = `${source.url}?ac=list`;
@@ -173,24 +245,38 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
     const response = await fetchWithRetry(buildUrl(url));
     const data = await response.json();
     
+    let categories: { id: string; name: string }[];
+    
     if (data.class && Array.isArray(data.class)) {
-      return [
+      categories = [
         { id: 'all', name: '全部' },
         ...data.class.map((c: any) => ({ id: String(c.type_id), name: c.type_name }))
       ];
+    } else {
+      // 默认分类
+      categories = [
+        { id: 'all', name: '全部' },
+        { id: '2', name: '电视剧' },
+        { id: '1', name: '电影' },
+        { id: '3', name: '综艺' },
+        { id: '4', name: '动漫' }
+      ];
     }
+    
+    // 缓存结果
+    setCache(cacheKey, categories, CACHE_TTL.categories);
+    console.log('[Cache] 缓存分类:', `TTL: ${CACHE_TTL.categories}分钟`);
+    return categories;
   } catch (error) {
     console.error('获取分类失败:', error);
+    return [
+      { id: 'all', name: '全部' },
+      { id: '2', name: '电视剧' },
+      { id: '1', name: '电影' },
+      { id: '3', name: '综艺' },
+      { id: '4', name: '动漫' }
+    ];
   }
-  
-  // 默认分类
-  return [
-    { id: 'all', name: '全部' },
-    { id: '2', name: '电视剧' },
-    { id: '1', name: '电影' },
-    { id: '3', name: '综艺' },
-    { id: '4', name: '动漫' }
-  ];
 }
 
 // 解析播放地址

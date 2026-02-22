@@ -57,6 +57,11 @@ function App() {
     setCurrentPage('settings');
   };
 
+  // 跳转到搜索页
+  const handleSearchClick = () => {
+    setCurrentPage('search');
+  };
+
   // 渲染当前视图
   const renderView = () => {
     if (!isReady) {
@@ -116,6 +121,7 @@ function App() {
                 onVideoClick={handleVideoClick}
                 onSettingsClick={() => setCurrentPage('settings')}
                 onAddSourceClick={handleAddSourceClick}
+                onSearchClick={handleSearchClick}
               />
             );
         }

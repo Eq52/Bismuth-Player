@@ -1,0 +1,407 @@
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Plus, Trash2, Save, Monitor, Database, Info, Check, AlertCircle, TestTube } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getSources, addSource, removeSource, getCurrentSource, setCurrentSource, testSource } from '@/services/api';
+import { getPlayerSettings, savePlayerSettings, getCacheSettings, saveCacheSettings, getCacheSize, clearCache, getCorsProxy, setCorsProxy } from '@/services/storage';
+import type { VideoSource, PlayerSettings, CacheSettings } from '@/types';
+
+interface SettingsPageProps {
+  onBack?: () => void;
+}
+
+export function SettingsPage({ onBack }: SettingsPageProps) {
+  const [sources, setSources] = useState<VideoSource[]>([]);
+  const [currentSourceId, setCurrentSourceId] = useState('');
+  const [playerSettings, setPlayerSettings] = useState<PlayerSettings>({ playerUrl: '', autoResume: true });
+  const [cacheSettings, setCacheSettings] = useState<CacheSettings>({ enabled: true });
+  const [cacheSize, setCacheSize] = useState('0 B');
+  const [corsProxy, setCorsProxyState] = useState('');
+  const [newSource, setNewSource] = useState({ id: '', name: '', url: '' });
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [testingSource, setTestingSource] = useState(false);
+  const [testResult, setTestResult] = useState<boolean | null>(null);
+
+  // 加载设置
+  useEffect(() => {
+    setSources(getSources());
+    const current = getCurrentSource();
+    setCurrentSourceId(current?.id || '');
+    setPlayerSettings(getPlayerSettings());
+    setCacheSettings(getCacheSettings());
+    setCorsProxyState(getCorsProxy());
+    
+    // 加载缓存大小
+    getCacheSize().then(setCacheSize);
+  }, []);
+
+  // 保存播放器设置
+  const handleSavePlayerSettings = () => {
+    savePlayerSettings(playerSettings);
+    alert('播放器设置已保存');
+  };
+
+  // 切换缓存
+  const handleToggleCache = (enabled: boolean) => {
+    setCacheSettings({ enabled });
+    saveCacheSettings({ enabled });
+  };
+
+  // 清除缓存
+  const handleClearCache = async () => {
+    if (confirm('确定要清除缓存吗？')) {
+      await clearCache();
+      const newSize = await getCacheSize();
+      setCacheSize(newSize);
+      alert('缓存已清除');
+    }
+  };
+
+  // 测试影视源
+  const handleTestSource = async () => {
+    if (!newSource.url) return;
+    setTestingSource(true);
+    setTestResult(null);
+    try {
+      const result = await testSource(newSource.url);
+      setTestResult(result);
+    } catch {
+      setTestResult(false);
+    } finally {
+      setTestingSource(false);
+    }
+  };
+
+  // 添加影视源
+  const handleAddSource = () => {
+    if (!newSource.id || !newSource.name || !newSource.url) {
+      alert('请填写完整信息');
+      return;
+    }
+    try {
+      addSource(newSource);
+      setSources(getSources());
+      setNewSource({ id: '', name: '', url: '' });
+      setTestResult(null);
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '添加失败');
+    }
+  };
+
+  // 删除影视源
+  const handleRemoveSource = (sourceId: string) => {
+    if (confirm('确定要删除这个影视源吗？')) {
+      removeSource(sourceId);
+      setSources(getSources());
+      if (currentSourceId === sourceId) {
+        const remaining = getSources();
+        if (remaining.length > 0) {
+          setCurrentSourceId(remaining[0].id);
+          setCurrentSource(remaining[0].id);
+        } else {
+          setCurrentSourceId('');
+        }
+      }
+    }
+  };
+
+  // 切换影视源
+  const handleSourceChange = (sourceId: string) => {
+    setCurrentSourceId(sourceId);
+    setCurrentSource(sourceId);
+  };
+
+  // 保存CORS代理
+  const handleSaveProxy = () => {
+    setCorsProxy(corsProxy);
+    alert('代理设置已保存');
+  };
+
+  return (
+    <div className="h-full flex flex-col bg-[#0a0a0a]">
+      {/* 头部 */}
+      <header className="px-5 py-4 flex items-center bg-[#0a0a0a] border-b border-white/5">
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
+        <h1 className="text-white text-lg font-bold">设置</h1>
+      </header>
+
+      {/* 设置内容 */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
+        {/* 影视源 */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center text-gray-400">
+              <Monitor size={18} className="mr-2" />
+              <span className="text-sm font-medium">影视源</span>
+            </div>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm rounded-lg hover:opacity-90 transition-opacity">
+                  <Plus size={16} className="mr-1" />
+                  添加
+                </button>
+              </DialogTrigger>
+              <DialogContent className="bg-[#141414] border-white/10 text-white max-w-sm">
+                <DialogHeader>
+                  <DialogTitle className="text-white">添加影视源</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1.5">ID（唯一标识）</label>
+                    <Input
+                      value={newSource.id}
+                      onChange={(e) => setNewSource({ ...newSource, id: e.target.value })}
+                      placeholder="如: mysource"
+                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1.5">名称</label>
+                    <Input
+                      value={newSource.name}
+                      onChange={(e) => setNewSource({ ...newSource, name: e.target.value })}
+                      placeholder="如: 我的源"
+                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1.5">API地址</label>
+                    <Input
+                      value={newSource.url}
+                      onChange={(e) => {
+                        setNewSource({ ...newSource, url: e.target.value });
+                        setTestResult(null);
+                      }}
+                      placeholder="https://..."
+                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                    />
+                  </div>
+                  
+                  {/* 测试按钮 */}
+                  {newSource.url && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleTestSource}
+                        disabled={testingSource}
+                        className="flex items-center px-3 py-2 bg-white/5 text-gray-300 text-sm rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+                      >
+                        <TestTube size={14} className="mr-1.5" />
+                        {testingSource ? '测试中...' : '测试连接'}
+                      </button>
+                      {testResult !== null && (
+                        <span className={`flex items-center text-sm ${testResult ? 'text-green-400' : 'text-red-400'}`}>
+                          {testResult ? <Check size={14} className="mr-1" /> : <AlertCircle size={14} className="mr-1" />}
+                          {testResult ? '可用' : '不可用'}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  <Button 
+                    onClick={handleAddSource} 
+                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90"
+                  >
+                    添加
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {sources.length === 0 ? (
+            <div className="bg-[#141414] border border-white/5 rounded-xl p-8 text-center">
+              <Monitor className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+              <p className="text-gray-500 text-sm">暂无影视源</p>
+              <p className="text-gray-600 text-xs mt-1">点击上方添加按钮添加</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {sources.map((source) => (
+                <div
+                  key={source.id}
+                  onClick={() => handleSourceChange(source.id)}
+                  className={`flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all ${
+                    currentSourceId === source.id 
+                      ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-purple-500/30' 
+                      : 'bg-[#141414] border border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <div className="flex items-center min-w-0">
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 flex items-center justify-center ${
+                      currentSourceId === source.id ? 'border-purple-500' : 'border-gray-600'
+                    }`}>
+                      {currentSourceId === source.id && <div className="w-2 h-2 rounded-full bg-purple-500" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white text-sm font-medium truncate">{source.name}</p>
+                      <p className="text-gray-500 text-xs truncate">{source.url}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveSource(source.id);
+                    }}
+                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0 ml-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 播放器 */}
+        <section className="mb-8">
+          <div className="flex items-center text-gray-400 mb-4">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm font-medium">播放器</span>
+          </div>
+          
+          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
+            <div>
+              <label className="text-xs text-gray-500 block mb-2">播放器地址</label>
+              <div className="flex gap-2">
+                <Input
+                  value={playerSettings.playerUrl}
+                  onChange={(e) => setPlayerSettings({ ...playerSettings, playerUrl: e.target.value })}
+                  placeholder="https://..."
+                  className="flex-1 bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                />
+                <Button 
+                  onClick={handleSavePlayerSettings} 
+                  size="sm"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90"
+                >
+                  <Save size={16} />
+                </Button>
+              </div>
+              <p className="text-gray-600 text-xs mt-1.5">
+                当前: {playerSettings.playerUrl || '未设置'}
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+              <div>
+                <p className="text-white text-sm">自动续播</p>
+                <p className="text-gray-500 text-xs">从上次观看位置继续播放</p>
+              </div>
+              <Switch
+                checked={playerSettings.autoResume}
+                onCheckedChange={(checked) => setPlayerSettings({ ...playerSettings, autoResume: checked })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CORS代理 */}
+        <section className="mb-8">
+          <div className="flex items-center text-gray-400 mb-4">
+            <Database size={18} className="mr-2" />
+            <span className="text-sm font-medium">CORS代理</span>
+          </div>
+          
+          <div className="bg-[#141414] border border-white/5 rounded-xl p-4">
+            <div className="flex gap-2">
+              <Input
+                value={corsProxy}
+                onChange={(e) => setCorsProxyState(e.target.value)}
+                placeholder="https://api.codetabs.com/v1/proxy?quest="
+                className="flex-1 bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+              />
+              <Button 
+                onClick={handleSaveProxy} 
+                size="sm"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90"
+              >
+                <Save size={16} />
+              </Button>
+            </div>
+            <p className="text-gray-600 text-xs mt-2">
+              用于解决跨域问题，支持自动轮换
+            </p>
+          </div>
+        </section>
+
+        {/* 缓存 */}
+        <section className="mb-8">
+          <div className="flex items-center text-gray-400 mb-4">
+            <Database size={18} className="mr-2" />
+            <span className="text-sm font-medium">缓存</span>
+          </div>
+          
+          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm">启用缓存</p>
+                <p className="text-gray-500 text-xs">减少网络请求，加快加载速度</p>
+              </div>
+              <Switch
+                checked={cacheSettings.enabled}
+                onCheckedChange={handleToggleCache}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+              <div>
+                <p className="text-white text-sm">缓存大小</p>
+                <p className="text-gray-500 text-xs">{cacheSize}</p>
+              </div>
+              <Button 
+                onClick={handleClearCache} 
+                variant="outline" 
+                size="sm"
+                className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+              >
+                <Trash2 size={14} className="mr-1.5" />
+                清除
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* 关于 */}
+        <section className="mb-8">
+          <div className="flex items-center text-gray-400 mb-4">
+            <Info size={18} className="mr-2" />
+            <span className="text-sm font-medium">关于</span>
+          </div>
+          
+          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-500 text-sm">版本</span>
+              <span className="text-white text-sm">1.0.0</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500 text-sm">类型</span>
+              <span className="text-white text-sm">PWA应用</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500 text-sm">功能</span>
+              <span className="text-white text-sm">影视播放壳子</span>
+            </div>
+          </div>
+          
+          <p className="text-gray-600 text-xs text-center mt-6 leading-relaxed">
+            Bismuth Player 仅为播放工具<br />
+            内容来源于用户配置的第三方源
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}

@@ -5,6 +5,11 @@
 ⚠️ 注意
 
 该仓库的版本没有对大屏幕设备做过多优化，可前往 [BP-New](https://github.com/Eq52/BP-New/) 查看优化版。
+BP-New
+
+[Bismuth Player](https://github.com/Eq52/Bismuth-Player) 的大屏优化版。
+
+[安卓本地使用](https://github.com/Eq52/Bismuth-Player/releases/tag/v3)
 
 ---
 

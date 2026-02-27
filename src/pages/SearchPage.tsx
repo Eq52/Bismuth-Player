@@ -71,14 +71,14 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部搜索栏 */}
-      <header className="px-5 py-4 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
         <button 
           onClick={onBack}
-          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
         >
           <ArrowLeft size={20} />
         </button>
-        <div className="flex-1 relative">
+        <div className="flex-1 relative max-w-xl">
           <input
             type="text"
             value={keyword}
@@ -107,7 +107,7 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
       </header>
 
       {/* 搜索结果或搜索历史 */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8">
         {!hasSearched ? (
           // 搜索历史
           <div>
@@ -169,7 +169,7 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
                 <p className="text-gray-500 text-sm mb-4">
                   找到 <span className="text-white font-medium">{videos.length}</span> 个结果
                 </p>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 md:gap-4">
                   {videos.map((video) => (
                     <VideoCard
                       key={video.vod_id}

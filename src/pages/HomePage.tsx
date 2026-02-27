@@ -81,13 +81,13 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
     return (
       <div className="h-full flex flex-col bg-[#0a0a0a]">
         {/* 头部 */}
-        <header className="px-5 py-4 flex items-center justify-between bg-[#0a0a0a]">
+        <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a]">
           <div className="flex items-center">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
               <Film className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-white text-lg font-bold tracking-tight">Bismuth Player</h1>
+              <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">Bismuth Player</h1>
               <p className="text-gray-500 text-xs">如"秘"般美丽</p>
             </div>
           </div>
@@ -123,13 +123,13 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 flex items-center justify-between bg-[#0a0a0a]">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a]">
         <div className="flex items-center">
-          <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
+          <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
             <Film className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-white text-lg font-bold tracking-tight">Bismuth Player</h1>
+            <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">Bismuth Player</h1>
             <p className="text-gray-500 text-xs">{currentSource?.name || '未选择源'}</p>
           </div>
         </div>
@@ -142,10 +142,10 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
       </header>
 
       {/* 搜索框 */}
-      <div className="px-5 py-2">
+      <div className="px-5 py-2 md:px-8">
         <div 
           onClick={onSearchClick}
-          className="bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all"
+          className="bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all max-w-md"
         >
           <Search className="w-5 h-5 mr-3" />
           <span className="text-sm">搜索影片...</span>
@@ -153,7 +153,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
       </div>
 
       {/* 分类标签 */}
-      <div className="flex overflow-x-auto px-5 py-3 gap-2 scrollbar-hide">
+      <div className="flex overflow-x-auto px-5 py-3 md:px-8 gap-2 scrollbar-hide">
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -175,7 +175,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
 
       {/* 影视网格 */}
       <div 
-        className="flex-1 overflow-y-auto px-5 py-2"
+        className="flex-1 overflow-y-auto px-5 py-2 md:px-8"
         onScroll={handleScroll}
       >
         {videos.length === 0 && !loading ? (
@@ -185,7 +185,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
             <p className="text-sm mt-1">请检查影视源设置</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 md:gap-4 lg:gap-5">
             {videos.map((video) => (
               <VideoCard 
                 key={video.vod_id} 

@@ -149,7 +149,7 @@ export async function getVideoList(
   
   // 搜索请求不使用缓存，每次都获取最新结果
   if (wd && wd.trim() !== '') {
-    let url = `${source.url}?ac=list&wd=${encodeURIComponent(wd)}&limit=${limit}`;
+    let url = `${source.url}?ac=videolist&wd=${encodeURIComponent(wd)}&limit=${limit}`;
     if (page > 1) {
       url += `&pg=${page}`;
     }
@@ -169,7 +169,7 @@ export async function getVideoList(
     return cached;
   }
   
-  let url = `${source.url}?ac=list&pg=${page}&limit=${limit}`;
+  let url = `${source.url}?ac=videolist&pg=${page}&limit=${limit}`;
   
   if (type && type !== 'all') {
     url += `&t=${type}`;
@@ -239,7 +239,7 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
     return cached;
   }
   
-  const url = `${source.url}?ac=list`;
+  const url = `${source.url}?ac=videolist`;
   
   try {
     const response = await fetchWithRetry(buildUrl(url));
@@ -302,7 +302,7 @@ export function parsePlayUrls(vod_play_url?: string, _vod_play_from?: string): {
 // 测试影视源是否可用
 export async function testSource(url: string): Promise<boolean> {
   try {
-    const testUrl = `${url}?ac=list&limit=1`;
+    const testUrl = `${url}?ac=videolist&limit=1`;
     const response = await fetchWithRetry(buildUrl(testUrl));
     const data = await response.json();
     return data.code === 1 || data.code === 200;

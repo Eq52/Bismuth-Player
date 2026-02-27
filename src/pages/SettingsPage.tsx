@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Trash2, Save, Monitor, Database, Info, Check, AlertCircle, TestTube } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Monitor, Database, Info, Check, AlertCircle, TestTube, Github, Shield } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { getSources, addSource, removeSource, getCurrentSource, setCurrentSource, testSource } from '@/services/api';
-import { getPlayerSettings, savePlayerSettings, getCacheSettings, saveCacheSettings, getCacheSize, clearCache, getCorsProxy, setCorsProxy } from '@/services/storage';
+import { getPlayerSettings, savePlayerSettings, getCacheSettings, saveCacheSettings, getCorsProxy, setCorsProxy } from '@/services/storage';
 import { getCacheStats, clearApiCache } from '@/services/cache';
 import type { VideoSource, PlayerSettings, CacheSettings } from '@/types';
 
@@ -18,7 +18,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const [currentSourceId, setCurrentSourceId] = useState('');
   const [playerSettings, setPlayerSettings] = useState<PlayerSettings>({ playerUrl: '', autoResume: true });
   const [cacheSettings, setCacheSettings] = useState<CacheSettings>({ enabled: true });
-  const [cacheSize, setCacheSize] = useState('0 B');
   const [apiCacheStats, setApiCacheStats] = useState({ count: 0, size: '0 B' });
   const [corsProxy, setCorsProxyState] = useState('');
   const [newSource, setNewSource] = useState({ id: '', name: '', url: '' });
@@ -35,8 +34,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     setCacheSettings(getCacheSettings());
     setCorsProxyState(getCorsProxy());
     
-    // 加载缓存大小和API缓存统计
-    getCacheSize().then(setCacheSize);
+    // 加载API缓存统计
     setApiCacheStats(getCacheStats());
   }, []);
 
@@ -53,15 +51,11 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   };
 
   // 清除缓存
-  const handleClearCache = async () => {
+  const handleClearCache = () => {
     if (confirm('确定要清除所有缓存吗？')) {
       // 清除API缓存
       clearApiCache();
-      // 清除PWA缓存
-      await clearCache();
       // 更新统计
-      const newSize = await getCacheSize();
-      setCacheSize(newSize);
       setApiCacheStats(getCacheStats());
       alert('缓存已清除');
     }
@@ -131,20 +125,21 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
         {onBack && (
           <button 
             onClick={onBack}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3 md:hidden"
           >
             <ArrowLeft size={20} />
           </button>
         )}
-        <h1 className="text-white text-lg font-bold">设置</h1>
+        <h1 className="text-white text-lg md:text-xl font-bold">设置</h1>
       </header>
 
       {/* 设置内容 */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
+        <div className="max-w-3xl mx-auto">
         {/* 影视源 */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -162,8 +157,19 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-sm">
                 <DialogHeader>
                   <DialogTitle className="text-white">添加影视源</DialogTitle>
+                  <DialogDescription className="text-gray-400 text-sm">
+                    输入影视源信息以添加新的内容源
+                  </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-2">
+                  {/* 合法提示 */}
+                  <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                    <Shield className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-yellow-200/80 text-xs leading-relaxed">
+                      请确保所添加的影视来源<strong className="text-yellow-200">合法合规</strong>，用户需自行承担因使用非法来源产生的法律责任。
+                    </p>
+                  </div>
+                  
                   <div>
                     <label className="text-xs text-gray-500 block mb-1.5">ID（唯一标识）</label>
                     <Input
@@ -366,13 +372,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             
             <div className="flex items-center justify-between pt-3 border-t border-white/5">
               <div>
-                <p className="text-white text-sm">PWA缓存</p>
-                <p className="text-gray-500 text-xs">{cacheSize}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-              <div>
                 <p className="text-white text-sm">API缓存</p>
                 <p className="text-gray-500 text-xs">{apiCacheStats.count} 项 · {apiCacheStats.size}</p>
               </div>
@@ -399,11 +398,11 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">版本</span>
-              <span className="text-white text-sm">2.1</span>
+              <span className="text-white text-sm">V7</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">类型</span>
-              <span className="text-white text-sm">PWA应用</span>
+              <span className="text-white text-sm">Web应用</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">功能</span>
@@ -415,7 +414,19 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             Bismuth Player 仅为播放工具<br />
             内容来源于用户配置的第三方源
           </p>
+          
+          {/* GitHub 链接 */}
+          <a 
+            href="https://github.com/Eq52/Bismuth-Player" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 mt-4 text-gray-500 hover:text-white transition-colors"
+          >
+            <Github size={18} />
+            <span className="text-sm">GitHub</span>
+          </a>
         </section>
+        </div>
       </div>
     </div>
   );

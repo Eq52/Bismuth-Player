@@ -1,184 +1,228 @@
-🎬 Bismuth Player
+# Bismuth Player V7
 
-> 本项目98%为AI创作，就连这个README.md文件也是AI做的
+<div align="center">
+  <img src="https://img.shields.io/badge/version-V7-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
+</div>
 
-⚠️ 注意
-
-该仓库的版本没有对大屏幕设备做过多优化，可前往 [BP-New](https://github.com/Eq52/BP-New/) 查看优化版。
-BP-New
-
-[Bismuth Player](https://github.com/Eq52/Bismuth-Player) 的大屏优化版。
-
-[安卓本地使用](https://github.com/Eq52/Bismuth-Player/releases/tag/v3)
+<div align="center">
+  <h3>如"秘"般美丽的影视播放壳子</h3>
+  <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p>
+</div>
 
 ---
 
-✨ 功能特性
+## ✨ 特性
 
-- 📱 PWA 支持 - 可安装为桌面或移动应用，提供原生应用体验
-- 🎞️ 多源管理 - 支持添加和管理多个苹果CMS影视源
-- 🔍 智能搜索 - 快速搜索全网影视资源
-- 📚 分类浏览 - 按类型、地区、年份等多维度筛选
-- ⏯️ 播放历史 - 自动记录播放进度，随时续看
-- 💾 进度记忆 - 自动保存每部影片的播放位置
-- 🎨 精美UI - 基于 shadcn/ui 的现代化深色主题设计
-- ⚡ 极速加载 - 智能缓存策略，优化图片和API数据缓存
-- 📐 响应式布局 - 完美适配手机、平板和桌面设备
+### 🎨 精美界面
+- **深色主题** - 护眼的暗黑配色方案
+- **渐变设计** - 紫色到粉色的优雅渐变
+- **宋体字体** - 中文显示更加清晰美观
+- **响应式布局** - 完美适配手机和桌面端
 
-🖼️ 界面预览
+### 🎬 核心功能
+- **自定义影视源** - 支持添加多个苹果CMS API源
+- **分类浏览** - 按分类筛选影片
+- **搜索功能** - 快速搜索你想要的内容
+- **播放历史** - 自动记录观看进度
+- **选集播放** - 清晰的剧集选择界面
 
-首页	搜索	详情	播放	
-分类推荐	智能搜索	影片信息	流畅播放	
+### 🚀 性能优化
+- **API缓存** - 智能缓存API响应，减少网络请求
+- **图片懒加载** - 按需加载图片，节省流量
+- **骨架屏加载** - 优雅的加载状态展示
+- **页面切换动画** - 流畅的过渡效果
 
-🚀 快速开始
+### 💫 动画效果
+- **启动屏幕** - 优雅的应用启动动画
+- **页面切换** - 滑动进入/退出的页面转场
+- **图片加载** - 渐显动画加载图片
+- **交互反馈** - 按钮悬停和点击动效
 
-环境要求
+---
 
+## 🛠️ 技术栈
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| React | 19.2 | 前端框架 |
+| TypeScript | 5.9 | 类型安全 |
+| Vite | 7.2 | 构建工具 |
+| Tailwind CSS | 3.4 | 样式框架 |
+| shadcn/ui | - | UI组件库 |
+| Lucide React | 0.562 | 图标库 |
+
+---
+
+## 📦 快速开始
+
+### 环境要求
 - Node.js >= 18
-- npm >= 9
+- npm 或 bun
 
-安装
-
+### 安装依赖
 ```bash
-# 克隆项目
-git clone https://github.com/Eq52/Bismuth-Player.git
-cd Bismuth-Player
-
-# 安装依赖
 npm install
-
-# 启动开发服务器
-npm run dev
+# 或
+bun install
 ```
 
-构建
-
+### 开发模式
 ```bash
-# 生产构建
-npm run build
-
-# 预览生产构建
-npm run preview
+npm run dev
+# 或
+bun run dev
 ```
 
-📖 使用指南
+### 构建生产版本
+```bash
+npm run build
+# 或
+bun run build
+```
 
-添加影视源
+### 预览构建结果
+```bash
+npm run preview
+# 或
+bun run preview
+```
 
-1. 打开应用，点击底部导航栏的 设置
-2. 在"影视源管理"区域点击 添加源
-3. 输入源名称和苹果CMS API 地址
-4. 点击保存，即可开始使用
+---
 
-> 💡 提示: 可以在网上搜索"苹果CMS资源站"获取可用的API地址
+## ⚙️ 配置说明
 
-搜索影片
+### 添加影视源
+1. 进入「设置」页面
+2. 点击「添加」按钮
+3. 填写影视源信息：
+   - **ID**: 唯一标识符（如：mysource）
+   - **名称**: 显示名称（如：我的源）
+   - **API地址**: 苹果CMS API地址
 
-1. 点击底部导航栏的 搜索
-2. 输入影片名称或关键词
-3. 点击搜索结果即可查看详情
+### 播放器配置
+在设置页面可以配置自定义播放器地址，支持任何支持URL参数的播放器。
 
-播放控制
+### CORS代理
+如果遇到跨域问题，可以在设置中配置CORS代理地址。
 
-- 点击集数开始播放
-- 播放进度会自动保存
-- 下次观看时会自动恢复到上次位置
+### 缓存管理
+- 启用/禁用API缓存
+- 查看缓存统计
+- 清除缓存
 
-🛠️ 技术栈
+---
 
-类别	技术	
-框架	React 19 + TypeScript	
-构建工具	Vite 6	
-样式	Tailwind CSS 4	
-UI组件	shadcn/ui + Radix UI	
-PWA	vite-plugin-pwa + Workbox	
-图标	Lucide React	
-表单	React Hook Form + Zod	
-状态管理	React Hooks	
+## 📱 界面预览
 
-📁 项目结构
+### 移动端
+- 底部导航栏
+- 紧凑的卡片布局
+- 手势友好的交互
+
+### 桌面端
+- 左侧固定侧边栏
+- 宽屏网格布局
+- 悬停预览效果
+
+---
+
+## 🔧 API支持
+
+支持标准苹果CMS API格式：
+- 列表接口: `?ac=videolist&pg=1`
+- 详情接口: `?ac=videolist&ids=123`
+- 搜索接口: `?ac=videolist&wd=关键词`
+
+---
+
+## 📁 项目结构
 
 ```
 Bismuth-Player/
-├── Demo/                   # 预构建演示版本
-├── public/                 # 静态资源
 ├── src/
-│   ├── components/         # 可复用组件
-│   │   └── ui/            # shadcn/ui 组件
-│   ├── hooks/              # 自定义 Hooks
-│   ├── lib/                # 工具函数
-│   ├── pages/              # 页面组件
-│   │   ├── HomePage.tsx   # 首页
-│   │   ├── SearchPage.tsx # 搜索页
-│   │   ├── HistoryPage.tsx# 历史记录
-│   │   ├── SettingsPage.tsx# 设置页
-│   │   ├── DetailPage.tsx # 详情页
-│   │   └── PlayerPage.tsx # 播放页
-│   ├── services/           # API 服务
-│   ├── types/              # TypeScript 类型
-│   ├── App.tsx             # 应用入口
-│   └── main.tsx            # 渲染入口
-├── index.html              # HTML 模板
-├── manifest.webmanifest    # PWA 配置
-├── vite.config.ts          # Vite 配置
-├── tailwind.config.js      # Tailwind 配置
-└── package.json            # 依赖管理
+│   ├── components/       # 可复用组件
+│   │   ├── ui/          # shadcn/ui 组件
+│   │   ├── BottomNav.tsx
+│   │   └── VideoCard.tsx
+│   ├── pages/           # 页面组件
+│   │   ├── HomePage.tsx
+│   │   ├── SearchPage.tsx
+│   │   ├── DetailPage.tsx
+│   │   ├── PlayerPage.tsx
+│   │   ├── HistoryPage.tsx
+│   │   └── SettingsPage.tsx
+│   ├── services/        # 服务层
+│   │   ├── api.ts       # API请求
+│   │   ├── cache.ts     # 缓存服务
+│   │   └── storage.ts   # 本地存储
+│   ├── types/           # TypeScript类型
+│   ├── App.tsx          # 主应用组件
+│   ├── App.css          # 全局样式
+│   └── main.tsx         # 入口文件
+├── public/              # 静态资源
+├── package.json
+├── vite.config.ts
+└── README.md
 ```
-
-⚙️ 配置说明
-
-PWA 配置
-
-应用已配置为 PWA，支持：
-- 离线访问
-- 自动更新
-- 图片缓存 (30天)
-- API 数据缓存 (1天)
-
-缓存策略
-
-资源类型	策略	有效期	
-图片	CacheFirst	30天	
-API 数据	NetworkFirst	1天	
-
-🌐 部署
-
-静态托管
-
-构建后的 `dist` 目录可以部署到任何静态托管服务：
-
-- [Vercel](https://vercel.com)
-- [Netlify](https://netlify.com)
-- [GitHub Pages](https://pages.github.com)
-- [Firebase Hosting](https://firebase.google.com/docs/hosting)
-
-Docker 部署
-
-```dockerfile
-FROM nginx:alpine
-COPY dist /usr/share/nginx/html
-EXPOSE 80
-```
-
-🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
-
-📄 许可证
-
-本项目基于 [MIT](LICENSE) 许可证开源。
-
-🙏 致谢
-
-- [shadcn/ui](https://ui.shadcn.com/) - 精美的 UI 组件库
-- [Radix UI](https://www.radix-ui.com/) - 无障碍组件原语
-- [Vite](https://vitejs.dev/) - 极速构建工具
-- [苹果CMS](https://github.com/magicblack) - 影视内容管理系统
 
 ---
+
+## 🎯 版本更新
+
+### V7 (当前版本)
+- ✨ 新增启动屏幕动画
+- ✨ 新增页面切换动画
+- ✨ 新增图片加载动画
+- ✨ 新增优雅的SVG占位图
+- ✨ 新增骨架屏加载效果
+- 🐛 移除PWA功能，简化部署
+- 💄 优化加载状态显示
+- 💄 优化桌面端侧边栏
+
+### V6
+- 🔧 修复Firebase部署路径问题
+- ✨ 新增GitHub链接
+
+### V5
+- 🔧 修复API图片获取问题
+- 💄 优化桌面端布局
+
+### V4
+- ✨ 新增桌面端侧边栏导航
+- 💄 优化响应式布局
+
+### V3
+- ✨ 新增宋体字体支持
+- 💄 优化全局样式
+
+---
+
+## 📄 许可证
+
+本项目基于 [MIT License](LICENSE) 开源。
+
+---
+
+## 🙏 免责声明
+
+**Bismuth Player 仅为播放工具壳子，不提供任何影视内容或资源。**
+
+- 本应用不存储、不托管、不传播任何影视内容
+- 所有内容来源于用户自行配置的第三方影视源
+- 用户需确保所使用的内容来源合法合规
+- 使用者应自行承担因使用非法来源产生的法律责任
+- 开发者不对任何第三方内容或用户行为负责
+
+**使用本应用即表示您已阅读并同意以上条款。**
+
+---
+
+<div align="center">
+  <p>Made with 💜 by <a href="https://github.com/Eq52">Eq52</a></p>
+  <a href="https://github.com/Eq52/Bismuth-Player">
+    <img src="https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github" alt="GitHub">
+  </a>
+</div>

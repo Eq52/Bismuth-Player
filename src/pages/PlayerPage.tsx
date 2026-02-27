@@ -89,7 +89,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
         <button 
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -97,7 +97,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-white text-base font-bold truncate">{displayData.vod_name}</h1>
+          <h1 className="text-white text-base md:text-lg font-bold truncate">{displayData.vod_name}</h1>
           {currentEp && (
             <p className="text-purple-400 text-sm truncate">{currentEp.name}</p>
           )}
@@ -105,9 +105,9 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
       </header>
 
       {/* 播放器 */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:flex-row">
         {/* 视频区域 */}
-        <div className="relative bg-black aspect-video">
+        <div className="relative bg-black aspect-video lg:flex-1 lg:aspect-auto">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -125,7 +125,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
 
         {/* 控制栏 */}
         {episodes.length > 0 && (
-          <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between">
+          <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between lg:hidden">
             <button
               onClick={prevEpisode}
               disabled={currentEpisode === 0}
@@ -152,11 +152,11 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
           </div>
         )}
 
-        {/* 选集 */}
+        {/* 选集 - 移动端在下方，桌面端在右侧 */}
         {episodes.length > 0 && (
-          <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className="flex-1 overflow-y-auto px-5 py-4 lg:w-80 lg:border-l lg:border-white/5 bg-[#0a0a0a]">
             <h3 className="text-white font-medium mb-3 text-sm">选集</h3>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-4 gap-2">
               {episodes.map((ep, index) => (
                 <button
                   key={index}

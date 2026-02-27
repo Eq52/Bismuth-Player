@@ -62,8 +62,8 @@ export function HistoryPage({ onVideoClick }: HistoryPageProps) {
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 flex items-center justify-between bg-[#0a0a0a] border-b border-white/5">
-        <h1 className="text-white text-lg font-bold">播放历史</h1>
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a] border-b border-white/5">
+        <h1 className="text-white text-lg md:text-xl font-bold">播放历史</h1>
         {history.length > 0 && (
           <button
             onClick={handleClearAll}
@@ -76,7 +76,7 @@ export function HistoryPage({ onVideoClick }: HistoryPageProps) {
       </header>
 
       {/* 历史列表 */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8">
         {history.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <Film className="w-16 h-16 mb-4 opacity-20" />
@@ -84,7 +84,7 @@ export function HistoryPage({ onVideoClick }: HistoryPageProps) {
             <p className="text-sm mt-1">观看的影片会显示在这里</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {history.map((item) => (
               <div
                 key={item.vod_id}

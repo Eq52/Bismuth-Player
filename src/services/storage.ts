@@ -4,6 +4,7 @@ const HISTORY_KEY = 'bismuth_history';
 const PLAYER_SETTINGS_KEY = 'bismuth_player';
 const CACHE_SETTINGS_KEY = 'bismuth_cache';
 const CORS_PROXY_KEY = 'bismuth_proxy';
+const DISCLAIMER_AGREED_KEY = 'bismuth_disclaimer_agreed';
 
 // 获取播放历史
 export function getPlayHistory(): PlayHistory[] {
@@ -92,37 +93,6 @@ export function saveCacheSettings(settings: CacheSettings): void {
   localStorage.setItem(CACHE_SETTINGS_KEY, JSON.stringify(settings));
 }
 
-// 获取缓存大小
-export async function getCacheSize(): Promise<string> {
-  if ('storage' in navigator && 'estimate' in navigator.storage) {
-    try {
-      const estimate = await navigator.storage.estimate();
-      const usage = estimate.usage || 0;
-      return formatBytes(usage);
-    } catch {
-      return '0 B';
-    }
-  }
-  return '0 B';
-}
-
-// 清除缓存
-export async function clearCache(): Promise<void> {
-  if ('caches' in window) {
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map(name => caches.delete(name)));
-  }
-}
-
-// 格式化字节
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
 // 获取CORS代理
 export function getCorsProxy(): string {
   return localStorage.getItem(CORS_PROXY_KEY) || 'https://api.codetabs.com/v1/proxy?quest=';
@@ -131,4 +101,14 @@ export function getCorsProxy(): string {
 // 设置CORS代理
 export function setCorsProxy(proxy: string): void {
   localStorage.setItem(CORS_PROXY_KEY, proxy);
+}
+
+// 检查是否已同意免责声明
+export function isDisclaimerAgreed(): boolean {
+  return localStorage.getItem(DISCLAIMER_AGREED_KEY) === 'true';
+}
+
+// 设置免责声明同意状态
+export function setDisclaimerAgreed(agreed: boolean): void {
+  localStorage.setItem(DISCLAIMER_AGREED_KEY, String(agreed));
 }

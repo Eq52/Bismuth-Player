@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2 } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls } from '@/services/api';
 import { addPlayHistory } from '@/services/storage';
 import type { VideoItem } from '@/types';
@@ -14,6 +14,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [detail, setDetail] = useState<VideoItem | null>(null);
   const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coverLoaded, setCoverLoaded] = useState(false);
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -60,35 +61,44 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
         <button 
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
         >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-white text-base font-bold truncate flex-1">{displayData.vod_name}</h1>
+        <h1 className="text-white text-base md:text-lg font-bold truncate flex-1">{displayData.vod_name}</h1>
       </header>
 
       {/* 内容 */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+            <p className="text-gray-400 text-sm mt-3">加载中...</p>
           </div>
         ) : (
           <>
             {/* 封面和信息 */}
-            <div className="px-5 py-5">
-              <div className="flex gap-4">
+            <div className="px-5 py-5 md:px-8 md:py-6">
+              <div className="flex gap-4 md:gap-6 max-w-4xl">
                 {/* 封面 */}
-                <div className="w-28 aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 shadow-xl shadow-purple-500/10">
+                <div className="w-28 md:w-36 aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 shadow-xl shadow-purple-500/10 bg-[#1a1a2e] relative">
+                  {/* 骨架屏 */}
+                  {!coverLoaded && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#252547] to-[#1a1a2e] animate-pulse flex items-center justify-center">
+                      <Film className="w-8 h-8 text-gray-600" />
+                    </div>
+                  )}
                   <img
                     src={displayData.vod_pic}
                     alt={displayData.vod_name}
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-all duration-500 ${coverLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => setCoverLoaded(true)}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTQxNDE0Ii8+PHBhdGggZD0iTTgwIDEyMGw0MCAzMC00MCAzMHoiIGZpbGw9IiMzMzMiLz48L3N2Zz4=';
+                      setCoverLoaded(true);
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWExYTJlIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMTYyMTNlIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9InVybCgjYmcpIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTUwIiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjM2NmYxIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPjxwb2x5Z29uIHBvaW50cz0iOTAsMTM1IDkwLDE2NSAxMTUsMTUwIiBmaWxsPSIjNjM2NmYxIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=';
                     }}
                   />
                 </div>
@@ -158,9 +168,9 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
             
             {/* 选集 */}
             {episodes.length > 0 && (
-              <div className="px-5 py-4 border-t border-white/5">
+              <div className="px-5 py-4 md:px-8 border-t border-white/5">
                 <h3 className="text-white font-medium mb-3 text-sm">选集</h3>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
                   {episodes.map((ep, index) => (
                     <button
                       key={index}
@@ -176,10 +186,10 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
             
             {/* 播放按钮 */}
             {episodes.length > 0 && (
-              <div className="px-5 py-4">
+              <div className="px-5 py-4 md:px-8">
                 <button
                   onClick={() => handlePlay(0)}
-                  className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium py-3.5 rounded-xl flex items-center justify-center transition-opacity hover:opacity-90 shadow-lg shadow-purple-500/25"
+                  className="w-full md:w-auto md:min-w-[200px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium py-3.5 px-8 rounded-xl flex items-center justify-center transition-opacity hover:opacity-90 shadow-lg shadow-purple-500/25"
                 >
                   <Play size={18} className="mr-2" fill="white" />
                   立即播放

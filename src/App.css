@@ -11,7 +11,7 @@ html, body {
   overflow: hidden;
   background-color: #0a0a0a;
   color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'SimSun', '宋体', 'Songti SC', 'Noto Serif SC', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -71,7 +71,57 @@ button, a {
   user-select: none;
 }
 
-/* 动画 */
+/* ========== 页面切换动画 ========== */
+
+/* 页面进入动画 - 从右滑入 */
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 页面退出动画 - 向左滑出 */
+@keyframes pageSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+/* 详情页/播放器进入 - 从底部滑入 */
+@keyframes pageSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 详情页/播放器退出 - 向下滑出 */
+@keyframes pageSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}
+
+/* 淡入淡出动画 */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -81,11 +131,47 @@ button, a {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 缩放动画 */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 动画类 */
+.page-slide-in {
+  animation: pageSlideIn 0.3s ease-out forwards;
+}
+
+.page-slide-up {
+  animation: pageSlideUp 0.35s ease-out forwards;
+}
+
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 加载动画 */
+.scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* ========== 加载动画 ========== */
+
+/* 旋转加载 */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -95,6 +181,87 @@ button, a {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* 脉冲加载 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 弹跳加载 */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* 波浪加载 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 骨架屏样式 */
+.skeleton {
+  background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,
+    #252547 50%,
+    #1a1a2e 100%
+  );
+  background-size: 200% 200%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ========== 启动加载屏幕 ========== */
+@keyframes startupPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.startup-loader {
+  animation: startupPulse 1.5s ease-in-out infinite;
+}
+
+/* ========== 特效 ========== */
 
 /* 渐变文字 */
 .gradient-text {
@@ -111,14 +278,64 @@ button, a {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* 响应式 */
+/* 发光效果 */
+.glow {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.1);
+}
+
+/* ========== 响应式布局 ========== */
+
+/* 电脑端全宽布局 */
 @media (min-width: 768px) {
   #root {
-    max-width: 480px;
-    margin: 0 auto;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    max-width: none;
+    margin: 0;
+    box-shadow: none;
   }
 }
+
+/* 电脑端侧边栏样式 */
+@media (min-width: 768px) {
+  .desktop-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 72px;
+    background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+    z-index: 50;
+  }
+
+  .desktop-main {
+    margin-left: 72px;
+  }
+
+  .desktop-bottom-nav {
+    display: none;
+  }
+}
+
+/* 移动端隐藏侧边栏 */
+@media (max-width: 767px) {
+  .desktop-sidebar {
+    display: none;
+  }
+
+  .desktop-main {
+    margin-left: 0;
+  }
+
+  .desktop-bottom-nav {
+    display: block;
+  }
+}
+
+/* ========== 其他样式 ========== */
 
 /* 选中效果 */
 ::selection {
@@ -135,4 +352,23 @@ input:focus, textarea:focus {
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* 滚动条美化（可选显示） */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

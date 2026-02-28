@@ -174,9 +174,6 @@ Bismuth-Player/
 
 ## 🎯 版本更新
 
-### V7.1 (当前版本)
-- 🐛 移除更新时未删除的多余文件
-
 ### V7
 - ✨ 新增启动屏幕动画
 - ✨ 新增页面切换动画
@@ -184,6 +181,7 @@ Bismuth-Player/
 - ✨ 新增优雅的SVG占位图
 - ✨ 新增骨架屏加载效果
 - 🐛 移除PWA功能，简化部署
+  > 推荐去 [Releases](https://github.com/Eq52/Bismuth-Player/releases/tag/v7) 下载优化版(By GLM-5 Agent)
 - 💄 优化加载状态显示
 - 💄 优化桌面端侧边栏
 

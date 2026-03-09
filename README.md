@@ -203,6 +203,12 @@ Bismuth-Player/
 
 ---
 
+## 💡 灵感来源
+
+本项目的灵感来源于 [LibreTV](https://github.com/LibreSpark/LibreTV/tree/main)，当时觉得 [LibreTV](https://github.com/LibreSpark/LibreTV/tree/main)好用但需要后端想着弄个没后端的，于是本项目就在我和AI们的聊天中诞生了... 总之感谢该项目提供的创意启发。
+
+---
+
 ## 📄 许可证
 
 本项目基于 [Apache License 2.0](LICENSE) 开源。

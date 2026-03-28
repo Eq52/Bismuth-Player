@@ -1,8 +1,5 @@
 # Bismuth Player V7
 
-## Star History 
-<a href="https://www.star-history.com/?repos=Eq52%2FBismuth-Player&type=date&legend=top-left"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&theme=dark&legend=top-left" /> <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&legend=top-left" /> <img alt="Star History Chart" src="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&legend=top-left" /> </picture> </a>
-
 <div align="center">
   <img src="https://img.shields.io/badge/version-V7-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
@@ -231,6 +228,8 @@ Bismuth-Player/
 **使用本应用即表示您已阅读并同意以上条款。**
 
 ---
+
+<a href="https://www.star-history.com/?repos=Eq52%2FBismuth-Player&type=date&legend=top-left"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&theme=dark&legend=top-left" /> <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&legend=top-left" /> <img alt="Star History Chart" src="https://api.star-history.com/image?repos=Eq52/Bismuth-Player&type=date&legend=top-left" /> </picture> </a>
 
 <div align="center">
   <p>Made with 💜 by <a href="https://github.com/Eq52">Eq52</a></p>

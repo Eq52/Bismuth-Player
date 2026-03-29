@@ -64,7 +64,7 @@ Choose any of the following platforms and click the button to quickly create you
 
 ### Local Deployment
 
-[Learn More](README.md#-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
+[Learn More](#-quick-start)
 
 ---
 

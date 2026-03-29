@@ -68,6 +68,12 @@ Choose any of the following platforms and click the button to quickly create you
 
 ---
 
+## Other Versions
+
+Material Design version created by `Minimax Agent` : [View Here](https://agent.minimaxi.com/share/381725144404201)
+
+---
+
 ## ✨ Features
 
 ### 🎨 Exquisite Interface
@@ -255,11 +261,6 @@ Bismuth-Player/
 
 ---
 
-## Other Versions
-
-Material by Minimax Agent : [View Here](https://agent.minimaxi.com/share/381725144404201)
-
----
 
 ## 💡 Inspiration
 

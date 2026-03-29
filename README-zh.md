@@ -6,7 +6,7 @@
 
 ---
 
-# <div align="center"> <h3>Bismuth Player V7 —— 如"秘"般美丽的影视播放壳子</h3></div>
+# <div align="center"> <h3>Bismuth Player —— 如"秘"般美丽的影视播放壳子</h3></div>
 
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 

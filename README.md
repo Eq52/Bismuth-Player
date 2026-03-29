@@ -207,6 +207,12 @@ Bismuth-Player/
 
 ---
 
+## 其他版本
+
+Material by Minimax Agent : [前往查看](https://agent.minimaxi.com/share/381725144404201)
+
+---
+
 ## 💡 灵感来源
 
 本项目的灵感来源于 [LibreTV](https://github.com/LibreSpark/LibreTV/tree/main)，当时觉得 [LibreTV](https://github.com/LibreSpark/LibreTV/tree/main)好用但需要后端想着弄个没后端的，于是本项目就在我和AI们的聊天中诞生了... 总之感谢该项目提供的创意启发。

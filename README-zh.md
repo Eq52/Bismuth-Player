@@ -70,7 +70,7 @@
 
 ## 其他版本
 
-Material by `Minimax Agent` : [前往查看](https://agent.minimaxi.com/share/381725144404201)
+Material Design version created by `Minimax Agent` : [前往查看](https://agent.minimaxi.com/share/381725144404201)
 
 ---
 

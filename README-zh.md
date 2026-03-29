@@ -68,6 +68,12 @@
 
 ---
 
+## 其他版本
+
+Material by `Minimax Agent` : [前往查看](https://agent.minimaxi.com/share/381725144404201)
+
+---
+
 ## ✨ 特性
 
 ### 🎨 精美界面
@@ -252,12 +258,6 @@ Bismuth-Player/
 ### V3
 - ✨ 新增宋体字体支持
 - 💄 优化全局样式
-
----
-
-## 其他版本
-
-Material by Minimax Agent : [前往查看](https://agent.minimaxi.com/share/381725144404201)
 
 ---
 

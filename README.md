@@ -6,7 +6,7 @@ English｜[简体中文](README-zh.md)
 
 ---
 
-# <div align="center"> <h3>Bismuth Player V7 —— A Video Player Shell as Beautiful as "Bismuth"</h3></div>
+# <div align="center"> <h3>Bismuth Player —— A Video Player Shell as Beautiful as "Bismuth"</h3></div>
 
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 

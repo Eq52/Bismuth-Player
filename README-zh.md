@@ -26,9 +26,49 @@
 
 ---
 
-## ✨ 特性
+## 说明
 
 > 本项目约等于是AI生成的,我只是检测问题、提出优化方向,使用模型如下：GLM-5 (Agent)，Kimi (Agent)，GLM-4.7/4.6/4.6V/4.5，Deepseek-R1/Chat (项目启动想法萌芽时提供帮助)
+
+---
+
+## 🚀 在线部署
+
+### 在线 Demo
+
+访问 [Demo](https://ericq521.web.app/vid/) 立即体验
+
+### 自行部署
+
+选择以下任一平台，点击按钮即可快速创建自己的 Bismuth Player 实例：
+
+<table>
+  <tr>
+    <td>
+      <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FEq52%2FBismuth-Player">
+        <img src="https://vercel.com/button" alt="Deploy with Vercel" />
+      </a>
+    </td>
+    <td>
+      <a href="https://app.netlify.com/start/deploy?repository=https://github.com/Eq52/Bismuth-Player">
+        <img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify" />
+      </a>
+    </td>
+    <td>
+      <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Eq52/Bismuth-Player">
+        <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare"/>
+      </a>
+    </td>
+  </tr>
+</table>
+
+### 本地部署
+
+[了解](README-zh.md#-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
+
+---
+
+## ✨ 特性
 
 ### 🎨 精美界面
 - **深色主题** - 护眼的暗黑配色方案

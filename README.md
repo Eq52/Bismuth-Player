@@ -1,5 +1,13 @@
 <div align="center">
 
+English｜[简体中文](README-zh.md)
+
+</div>
+
+---
+
+<div align="center">
+
 # Bismuth Player V7 —— A Video Player Shell as Beautiful as "Bismuth"
 
 A meticulously designed web-based video streaming application with custom video sources, elegant animations, and comprehensive caching mechanism

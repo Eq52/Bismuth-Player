@@ -108,6 +108,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
   const resumePromptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [videoResolution, setVideoResolution] = useState({ width: 0, height: 0 });
   const resumePromptShownRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
 
   const format = useMemo(() => detectFormat(src), [src]);
 
@@ -299,6 +301,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
   }, []);
 
   const handleMouseMove = useCallback(() => {
+    if (isDraggingRef.current) return; // don't reset timer while dragging
     setShowControls(true);
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     controlsTimeoutRef.current = setTimeout(() => {
@@ -367,15 +370,69 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     const vol = parseFloat(e.target.value); const v = videoRef.current; if (v) { v.volume = vol; v.muted = vol === 0; } setVolume(vol); setIsMuted(vol === 0);
   }, []);
 
-  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  // Seek to a position on the progress bar
+  const seekToPosition = useCallback((clientX: number) => {
     const v = videoRef.current; const bar = progressRef.current; if (!v || !bar || !duration) return;
-    v.currentTime = ((e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width) * duration;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    v.currentTime = ratio * duration;
+    setHoverTime(ratio * duration);
+    setHoverPosition(clientX - rect.left);
   }, [duration]);
 
+  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDraggingRef.current) return; // avoid double-fire at end of drag
+    seekToPosition(e.clientX);
+  }, [seekToPosition]);
+
   const handleProgressHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDraggingRef.current) return; // hover preview is handled by drag during drag
     const bar = progressRef.current; if (!bar || !duration) return;
     const rect = bar.getBoundingClientRect(); setHoverTime(((e.clientX - rect.left) / rect.width) * duration); setHoverPosition(e.clientX - rect.left);
   }, [duration]);
+
+  const handleProgressMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    seekToPosition(e.clientX);
+    // Keep controls visible while dragging
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+  }, [seekToPosition]);
+
+  // Global mouse/touch move & up listeners for dragging
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMove = (clientX: number) => {
+      seekToPosition(clientX);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+    };
+
+    const handleUp = () => {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      // Don't clear hoverTime immediately so the tooltip stays briefly
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleUp);
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleUp);
+    document.addEventListener('touchcancel', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleUp);
+      document.removeEventListener('touchcancel', handleUp);
+    };
+  }, [isDragging, seekToPosition]);
 
   const handlePiP = useCallback(async () => {
     const v = videoRef.current; if (!v || typeof v.requestPictureInPicture !== 'function') return;
@@ -469,7 +526,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       )}
 
       {/* Top Bar */}
-      <div className={`absolute top-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute top-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls || isDragging ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="bg-gradient-to-b from-black/70 to-transparent px-4 py-3">
           <div className="flex items-center justify-between">
             <h3 className="text-white text-sm font-medium truncate max-w-[70%]">{title || 'Bismuth Player'}</h3>
@@ -484,14 +541,14 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       />
 
       {/* Progress Bar */}
-      <div className={`absolute bottom-14 left-0 right-0 z-30 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      <div className={`absolute bottom-14 left-0 right-0 z-30 transition-opacity duration-300 ${showControls || isDragging ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onMouseLeave={() => setHoverTime(null)}
       >
-        <div ref={progressRef} className="relative h-1 group/progress cursor-pointer hover:h-2 transition-all" onClick={handleProgressClick} onMouseMove={handleProgressHover} onMouseLeave={() => setHoverTime(null)}>
+        <div ref={progressRef} className={`relative h-1 group/progress cursor-pointer ${isDragging ? 'h-2 progress-bar-dragging' : 'hover:h-2'} transition-all`} style={{ touchAction: 'none' }} onClick={handleProgressClick} onMouseDown={handleProgressMouseDown} onMouseMove={handleProgressHover} onMouseLeave={() => { if (!isDraggingRef.current) setHoverTime(null); }} onTouchStart={(e) => { const t = e.touches[0]; if (t) { e.preventDefault(); isDraggingRef.current = true; setIsDragging(true); seekToPosition(t.clientX); if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); } }}>
           <div className="absolute inset-0 bg-white/15 rounded-full" />
           <div className="absolute inset-y-0 left-0 bg-white/25 rounded-full" style={{ width: `${bufferedProgress}%` }} />
           <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style={{ width: `${progress}%` }} />
-          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity shadow-lg border-2 border-purple-400" style={{ left: `${progress}%`, marginLeft: '-6px' }} />
+          <div className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg border-2 border-purple-400 transition-opacity ${isDragging || hoverTime !== null ? 'opacity-100' : 'opacity-0 group-hover/progress:opacity-100'}`} style={{ left: `${progress}%`, marginLeft: '-6px' }} />
           {hoverTime !== null && (
             <div className="absolute -top-8 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none" style={{ left: `${hoverPosition}px` }}>
               {formatTime(hoverTime)}
@@ -514,7 +571,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       )}
 
       {/* Control Bar */}
-      <div className={`absolute bottom-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      <div className={`absolute bottom-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls || isDragging ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onMouseEnter={() => { setShowControls(true); if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); }}
       >
         <div className="bg-gradient-to-t from-black/80 to-transparent px-2 sm:px-3 py-1.5 sm:py-2">

@@ -272,7 +272,7 @@ function App() {
           case 'history':
             return (
               <PageTransition viewKey="history" type="list">
-                <HistoryPage onVideoClick={handleVideoClick} />
+                <HistoryPage onVideoClick={handleVideoClick} onContinuePlay={handlePlay} />
               </PageTransition>
             );
           

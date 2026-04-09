@@ -45,8 +45,12 @@ export interface PlayHistory {
   sourceId: string;
 }
 
+// 播放器模式
+export type PlayerMode = 'builtin' | 'external';
+
 // 播放器设置
 export interface PlayerSettings {
+  playerMode: PlayerMode;
   playerUrl: string;
   autoResume: boolean;
 }

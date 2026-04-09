@@ -5,9 +5,10 @@ import type { PlayHistory, VideoItem } from '@/types';
 
 interface HistoryPageProps {
   onVideoClick: (video: VideoItem) => void;
+  onContinuePlay: (video: VideoItem, episode: number) => void;
 }
 
-export function HistoryPage({ onVideoClick }: HistoryPageProps) {
+export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) {
   const [history, setHistory] = useState<PlayHistory[]>([]);
 
   // 加载历史记录
@@ -128,7 +129,7 @@ export function HistoryPage({ onVideoClick }: HistoryPageProps) {
                     </span>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => onVideoClick(toVideoItem(item))}
+                        onClick={() => onContinuePlay(toVideoItem(item), item.episode)}
                         className="flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-medium rounded-lg hover:opacity-90 transition-opacity"
                       >
                         <Play size={12} className="mr-1" />

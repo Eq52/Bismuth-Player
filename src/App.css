@@ -372,3 +372,104 @@ button:disabled {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ========== SimPlayer 播放器样式 ========== */
+
+/* 隐藏原生视频控件 */
+.sim-player-container video::-webkit-media-controls {
+  display: none !important;
+}
+.sim-player-container video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+/* 右键菜单动画 */
+@keyframes context-menu-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-context-menu-in {
+  animation: context-menu-in 0.15s ease-out both;
+}
+
+/* 淡入动画 */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out both;
+}
+
+/* 弹窗动画 */
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-dialog-in {
+  animation: dialog-in 0.2s ease-out both;
+}
+
+/* 截图闪光 */
+@keyframes screenshot-flash {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.animate-screenshot-flash {
+  animation: screenshot-flash 0.3s ease-out both;
+}
+
+/* 封面淡出 */
+@keyframes cover-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.animate-cover-fade-out {
+  animation: cover-fade-out 0.5s ease-out both;
+}
+
+/* 音量/进度滑块样式 */
+input[type="range"].sim-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"].sim-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+input[type="range"].sim-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  margin-top: -5px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+input[type="range"].sim-range:hover::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+input[type="range"].sim-range::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+input[type="range"].sim-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+input[type="range"].sim-range:hover::-moz-range-thumb {
+  opacity: 1;
+}

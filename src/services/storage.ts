@@ -65,6 +65,7 @@ export function getPlayerSettings(): PlayerSettings {
 // 默认播放器设置
 function getDefaultPlayerSettings(): PlayerSettings {
   return {
+    playerMode: 'builtin',
     playerUrl: 'https://ericq521.web.app/ckplayer/?v=',
     autoResume: true
   };
@@ -101,6 +102,16 @@ export function getCorsProxy(): string {
 // 设置CORS代理
 export function setCorsProxy(proxy: string): void {
   localStorage.setItem(CORS_PROXY_KEY, proxy);
+}
+
+// 是否启用CORS代理（默认启用）
+export function isCorsProxyEnabled(): boolean {
+  return localStorage.getItem('bismuth_cors_proxy_enabled') !== 'false';
+}
+
+// 设置是否启用CORS代理
+export function setCorsProxyEnabled(enabled: boolean): void {
+  localStorage.setItem('bismuth_cors_proxy_enabled', String(enabled));
 }
 
 // 检查是否已同意免责声明

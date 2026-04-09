@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
 import type { VideoItem } from '@/types';
+import SimPlayer from '@/components/SimPlayer';
 
 interface PlayerPageProps {
   video: VideoItem;
@@ -37,18 +38,22 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     loadDetail();
   }, [video.vod_id]);
 
-  // 获取当前播放地址
-  const getPlayUrl = () => {
+  // 获取当前播放地址（原始视频 URL）
+  const getCurrentPlayUrl = () => {
+    const ep = episodes[currentEpisode];
+    return ep?.url || '';
+  };
+
+  // 获取外部播放器的 iframe URL
+  const getExternalPlayerUrl = () => {
     const playerSettings = getPlayerSettings();
     const ep = episodes[currentEpisode];
     if (!ep) return '';
     
-    // 使用配置的播放器
     if (playerSettings.playerUrl) {
       return `${playerSettings.playerUrl}${encodeURIComponent(ep.url)}`;
     }
     
-    // 默认使用原生播放
     return ep.url;
   };
 
@@ -57,7 +62,6 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     if (index >= 0 && index < episodes.length) {
       setCurrentEpisode(index);
       
-      // 更新历史记录
       if (detail) {
         addPlayHistory({
           vod_id: detail.vod_id,
@@ -73,18 +77,14 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     }
   };
 
-  // 上一集
-  const prevEpisode = () => {
-    changeEpisode(currentEpisode - 1);
-  };
-
-  // 下一集
-  const nextEpisode = () => {
-    changeEpisode(currentEpisode + 1);
-  };
+  const prevEpisode = () => changeEpisode(currentEpisode - 1);
+  const nextEpisode = () => changeEpisode(currentEpisode + 1);
 
   const displayData = detail || video;
   const currentEp = episodes[currentEpisode];
+  const playerSettings = getPlayerSettings();
+  const useBuiltinPlayer = playerSettings.playerMode === 'builtin';
+  const currentPlayUrl = getCurrentPlayUrl();
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
@@ -99,77 +99,97 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
         <div className="flex-1 min-w-0">
           <h1 className="text-white text-base md:text-lg font-bold truncate">{displayData.vod_name}</h1>
           {currentEp && (
-            <p className="text-purple-400 text-sm truncate">{currentEp.name}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-purple-400 text-sm truncate">{currentEp.name}</p>
+              {useBuiltinPlayer && (
+                <span className="text-[10px] text-purple-500/60 bg-purple-500/10 px-1.5 py-0.5 rounded">SimPlayer</span>
+              )}
+            </div>
           )}
         </div>
       </header>
 
-      {/* 播放器 */}
-      <div className="flex-1 flex flex-col lg:flex-row">
+      {/* 播放器 + 选集 */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
         {/* 视频区域 */}
-        <div className="relative bg-black aspect-video lg:flex-1 lg:aspect-auto">
+        <div className="relative bg-black aspect-video shrink-0 lg:aspect-auto lg:shrink lg:flex-1 lg:max-h-[calc(100vh-12rem)] min-w-0 overflow-hidden">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>
+          ) : currentPlayUrl ? (
+            useBuiltinPlayer ? (
+              <SimPlayer
+                key={currentPlayUrl}
+                src={currentPlayUrl}
+                title={`${displayData.vod_name} - ${currentEp?.name || ''}`}
+                poster={displayData.vod_pic}
+                fillContainer
+              />
+            ) : (
+              <iframe
+                ref={iframeRef}
+                src={getExternalPlayerUrl()}
+                className="w-full h-full"
+                allowFullScreen
+                allow="autoplay; fullscreen"
+              />
+            )
           ) : (
-            <iframe
-              ref={iframeRef}
-              src={getPlayUrl()}
-              className="w-full h-full"
-              allowFullScreen
-              allow="autoplay; fullscreen"
-            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="text-gray-500 text-sm">暂无播放地址</p>
+            </div>
           )}
         </div>
 
-        {/* 控制栏 */}
+        {/* 右侧面板：控制栏 + 选集 */}
         {episodes.length > 0 && (
-          <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between lg:hidden">
-            <button
-              onClick={prevEpisode}
-              disabled={currentEpisode === 0}
-              className="flex items-center text-white disabled:text-gray-600 transition-colors"
-            >
-              <ChevronLeft size={18} />
-              <span className="text-sm ml-1">上一集</span>
-            </button>
-            
-            <span className="text-gray-400 text-sm">
-              <span className="text-white font-medium">{currentEpisode + 1}</span>
-              <span className="mx-1">/</span>
-              <span>{episodes.length}</span>
-            </span>
-            
-            <button
-              onClick={nextEpisode}
-              disabled={currentEpisode === episodes.length - 1}
-              className="flex items-center text-white disabled:text-gray-600 transition-colors"
-            >
-              <span className="text-sm mr-1">下一集</span>
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+          <div className="lg:w-72 xl:w-80 shrink-0 border-l border-white/5 bg-[#0a0a0a] flex flex-col min-h-0">
+            {/* 控制栏 */}
+            <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between shrink-0">
+              <button
+                onClick={prevEpisode}
+                disabled={currentEpisode === 0}
+                className="flex items-center text-white disabled:text-gray-600 transition-colors"
+              >
+                <ChevronLeft size={18} />
+                <span className="text-sm ml-1">上一集</span>
+              </button>
 
-        {/* 选集 - 移动端在下方，桌面端在右侧 */}
-        {episodes.length > 0 && (
-          <div className="flex-1 overflow-y-auto px-5 py-4 lg:w-80 lg:border-l lg:border-white/5 bg-[#0a0a0a]">
-            <h3 className="text-white font-medium mb-3 text-sm">选集</h3>
-            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-4 gap-2">
-              {episodes.map((ep, index) => (
-                <button
-                  key={index}
-                  onClick={() => changeEpisode(index)}
-                  className={`text-xs py-2.5 px-1 rounded-xl transition-all truncate ${
-                    index === currentEpisode
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium'
-                      : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-white/5'
-                  }`}
-                >
-                  {ep.name}
-                </button>
-              ))}
+              <span className="text-gray-400 text-sm">
+                <span className="text-white font-medium">{currentEpisode + 1}</span>
+                <span className="mx-1">/</span>
+                <span>{episodes.length}</span>
+              </span>
+
+              <button
+                onClick={nextEpisode}
+                disabled={currentEpisode === episodes.length - 1}
+                className="flex items-center text-white disabled:text-gray-600 transition-colors"
+              >
+                <span className="text-sm mr-1">下一集</span>
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* 选集列表（可滚动） */}
+            <div className="flex-1 overflow-y-auto px-5 py-4 min-h-0">
+              <h3 className="text-white font-medium mb-3 text-sm">选集 <span className="text-gray-500 font-normal">({episodes.length})</span></h3>
+              <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                {episodes.map((ep, index) => (
+                  <button
+                    key={index}
+                    onClick={() => changeEpisode(index)}
+                    className={`text-xs py-2.5 px-1 rounded-xl transition-all truncate ${
+                      index === currentEpisode
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium'
+                        : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-white/5'
+                    }`}
+                  >
+                    {ep.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

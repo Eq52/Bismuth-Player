@@ -1,5 +1,6 @@
 import type { VideoItem, ApiResponse, VideoSource } from '@/types';
 import { getCache, setCache } from './cache';
+import { isCorsProxyEnabled } from './storage';
 
 // CORS代理列表 - 按优先级排序
 const CORS_PROXIES = [
@@ -33,8 +34,11 @@ export function rotateProxy(): string {
   return nextProxy;
 }
 
-// 构建完整URL（添加代理）
+// 构建完整URL（根据设置决定是否添加代理）
 function buildUrl(apiUrl: string): string {
+  if (!isCorsProxyEnabled()) {
+    return apiUrl;
+  }
   const proxy = getProxyUrl();
   return `${proxy}${encodeURIComponent(apiUrl)}`;
 }
@@ -42,7 +46,8 @@ function buildUrl(apiUrl: string): string {
 // 带重试的请求
 async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
   let lastError: Error | null = null;
-  
+  const useProxy = isCorsProxyEnabled();
+
   for (let i = 0; i <= retries; i++) {
     try {
       const response = await fetch(url, {
@@ -51,25 +56,25 @@ async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
           'Accept': 'application/json',
         },
       });
-      
+
       if (response.ok) {
         return response;
       }
-      
-      // 如果失败且还有重试次数，尝试轮换代理
-      if (i < retries) {
+
+      // 如果失败且还有重试次数，且启用了代理，尝试轮换代理
+      if (i < retries && useProxy) {
         rotateProxy();
         url = buildUrl(decodeURIComponent(url.split('quest=')[1] || url.split('url=')[1] || ''));
       }
     } catch (error) {
       lastError = error as Error;
-      if (i < retries) {
+      if (i < retries && useProxy) {
         rotateProxy();
         url = buildUrl(decodeURIComponent(url.split('quest=')[1] || url.split('url=')[1] || ''));
       }
     }
   }
-  
+
   throw lastError || new Error('请求失败');
 }
 

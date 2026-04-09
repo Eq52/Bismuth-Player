@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V7-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V8-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -84,10 +84,12 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 
 ### 🎬 Core Functionality
 - **Custom Video Sources** - Support for multiple Apple CMS API sources (JSON format)
+- **Built-in Player ([SimPlayer](https://github.com/Eq52/Sim-Player))** - Integrated lightweight player supporting MP4/WebM/HLS with screenshot, PiP, speed control, and progress memory
+- **External Player Support** - Fallback iframe-based player for custom player URLs
 - **Category Browsing** - Filter videos by category
 - **Search Function** - Quickly find the content you want
-- **Playback History** - Automatically tracks viewing progress
-- **Episode Selection** - Clear episode selection interface
+- **Playback History** - Automatically tracks viewing progress with one-click continue
+- **Episode Selection** - Clear episode selection interface with left-right layout on desktop
 
 ### 🚀 Performance Optimization
 - **API Caching** - Intelligent caching of API responses to reduce network requests
@@ -112,6 +114,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 | Vite | 7.2 | Build Tool |
 | Tailwind CSS | 3.4 | Styling Framework |
 | shadcn/ui | - | UI Component Library |
+| hls.js | 1.6 | HLS Streaming |
 | Lucide React | 0.562 | Icon Library |
 
 ---
@@ -166,7 +169,7 @@ bun run preview
 Custom player addresses can be configured in the settings page, supporting any player that accepts URL parameters.
 
 ### CORS Proxy
-If you encounter CORS issues, you can configure a CORS proxy address in the settings.
+If you encounter CORS issues, you can configure a CORS proxy address in the settings. You can also disable the CORS proxy entirely to request sources directly.
 
 ### Cache Management
 - Enable/Disable API caching
@@ -205,6 +208,7 @@ Bismuth-Player/
 ├── src/
 │   ├── components/       # Reusable components
 │   │   ├── ui/          # shadcn/ui components
+│   │   ├── SimPlayer.tsx
 │   │   ├── BottomNav.tsx
 │   │   └── VideoCard.tsx
 │   ├── pages/           # Page components
@@ -231,6 +235,18 @@ Bismuth-Player/
 ---
 
 ## 🎯 Version Updates
+
+### V8
+- ✨ Integrated [SimPlayer](https://github.com/Eq52/Sim-Player) as built-in player (supports MP4/WebM/HLS)
+- ✨ Built-in player features: screenshot, picture-in-picture, playback speed, progress memory, keyboard shortcuts
+- ✨ Auto-hide player controls — move mouse to reveal, idle to hide (YouTube-style)
+- ✨ CORS proxy toggle — optionally disable CORS proxy for direct API requests
+- ✨ "Continue" button in history jumps directly to the player page
+- 💄 Desktop player and episode list in left-right layout, episode panel scrollable
+- 💄 Responsive player control bar with compact buttons for mobile
+- 💄 Transparent progress bar hover zone — controls hide properly while progress bar remains accessible
+- 🐛 Fixed invisible player on mobile in all modes
+- 🐛 Fixed PiP button not showing on some environments (multi-detection fallback)
 
 ### V7
 - ✨ Added splash screen animation

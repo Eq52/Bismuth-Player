@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V7-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V8-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -84,10 +84,12 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 
 ### 🎬 核心功能
 - **自定义影视源** - 支持添加多个苹果CMS API源 (json格式)
+- **内置播放器 ([SimPlayer](https://github.com/Eq52/Sim-Player))** - 集成轻量播放器，支持MP4/WebM/HLS，含截图、画中画、倍速播放、进度记忆
+- **外部播放器支持** - 支持自定义播放器URL，以iframe方式嵌入
 - **分类浏览** - 按分类筛选影片
 - **搜索功能** - 快速搜索你想要的内容
-- **播放历史** - 自动记录观看进度
-- **选集播放** - 清晰的剧集选择界面
+- **播放历史** - 自动记录观看进度，支持一键继续播放
+- **选集播放** - 清晰的剧集选择界面，桌面端左右布局
 
 ### 🚀 性能优化
 - **API缓存** - 智能缓存API响应，减少网络请求
@@ -112,6 +114,7 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 | Vite | 7.2 | 构建工具 |
 | Tailwind CSS | 3.4 | 样式框架 |
 | shadcn/ui | - | UI组件库 |
+| hls.js | 1.6 | HLS流媒体 |
 | Lucide React | 0.562 | 图标库 |
 
 ---
@@ -166,7 +169,7 @@ bun run preview
 在设置页面可以配置自定义播放器地址，支持任何支持URL参数的播放器。
 
 ### CORS代理
-如果遇到跨域问题，可以在设置中配置CORS代理地址。
+如果遇到跨域问题，可以在设置中配置CORS代理地址。也可以完全关闭CORS代理，直接请求影视源API。
 
 ### 缓存管理
 - 启用/禁用API缓存
@@ -205,6 +208,7 @@ Bismuth-Player/
 ├── src/
 │   ├── components/       # 可复用组件
 │   │   ├── ui/          # shadcn/ui 组件
+│   │   ├── SimPlayer.tsx
 │   │   ├── BottomNav.tsx
 │   │   └── VideoCard.tsx
 │   ├── pages/           # 页面组件
@@ -231,6 +235,18 @@ Bismuth-Player/
 ---
 
 ## 🎯 版本更新
+
+### V8
+- ✨ 集成 [SimPlayer](https://github.com/Eq52/Sim-Player) 内置播放器（支持 MP4/WebM/HLS）
+- ✨ 内置播放器功能：截图、画中画、倍速播放、进度记忆、键盘快捷键
+- ✨ 播放器控件自动隐藏 — 移动鼠标显示，静止后隐藏（类似YouTube）
+- ✨ CORS代理开关 — 可关闭CORS代理直接请求影视源API
+- ✨ 历史记录「继续」按钮直接跳转播放页
+- 💄 桌面端播放器与选集列表左右布局，选集面板可滚动
+- 💄 响应式播放器控制栏，移动端按钮紧凑排列
+- 💄 进度条透明热区 — 控件正常隐藏时仍可悬停触发显示进度条
+- 🐛 修复移动端播放器在所有模式下不可见的问题
+- 🐛 修复画中画按钮在部分环境下不显示（多重检测回退）
 
 ### V7
 - ✨ 新增启动屏幕动画

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Trash2, Save, Monitor, Database, Info, Check, AlertCircle, TestTube, Github, Shield } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ArrowLeft, Plus, Trash2, Save, Monitor, Database, Info, Check, AlertCircle, TestTube, Github, Shield, RefreshCw, ExternalLink, Download } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,33 @@ interface SettingsPageProps {
   onBack?: () => void;
 }
 
+// 从 Vite define 注入的版本号（类型声明见 env.d.ts）
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '8.0.0';
+const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
+
+// 比较语义版本号，返回 >0 表示 a 更新
+function compareVersions(a: string, b: string): number {
+  const pa = a.replace(/^v/i, '').split('.').map(Number);
+  const pb = b.replace(/^v/i, '').split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
+}
+
+interface GithubRelease {
+  tag_name: string;
+  name: string;
+  html_url: string;
+  body: string;
+  published_at: string;
+}
+
+type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'error';
+
 export function SettingsPage({ onBack }: SettingsPageProps) {
   const [sources, setSources] = useState<VideoSource[]>([]);
   const [currentSourceId, setCurrentSourceId] = useState('');
@@ -25,6 +52,8 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [testingSource, setTestingSource] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
+  const [latestRelease, setLatestRelease] = useState<GithubRelease | null>(null);
 
   // 加载设置
   useEffect(() => {
@@ -129,6 +158,23 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     setCorsProxy(corsProxy);
     alert('代理设置已保存');
   };
+
+  // 检测最新版本
+  const handleCheckUpdate = useCallback(async () => {
+    setUpdateStatus('checking');
+    setLatestRelease(null);
+    try {
+      const resp = await fetch('https://api.github.com/repos/Eq52/Bismuth-Player/releases/latest');
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data: GithubRelease = await resp.json();
+      setLatestRelease(data);
+      const cmp = compareVersions(data.tag_name, APP_VERSION);
+      setUpdateStatus(cmp > 0 ? 'update-available' : 'up-to-date');
+    } catch (err) {
+      console.error('检查更新失败:', err);
+      setUpdateStatus('error');
+    }
+  }, []);
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
@@ -492,7 +538,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">版本</span>
-              <span className="text-white text-sm">V8</span>
+              <span className="text-white text-sm">{APP_DISPLAY_VERSION} ({APP_VERSION})</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">类型</span>
@@ -502,6 +548,57 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
               <span className="text-gray-500 text-sm">功能</span>
               <span className="text-white text-sm">影视播放壳子</span>
             </div>
+          </div>
+
+          {/* 版本检测 */}
+          <div className="mt-3">
+            <button
+              onClick={handleCheckUpdate}
+              disabled={updateStatus === 'checking'}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 text-sm rounded-xl transition-all disabled:opacity-50 border border-white/5"
+            >
+              <RefreshCw size={14} className={updateStatus === 'checking' ? 'animate-spin' : ''} />
+              <span>{updateStatus === 'checking' ? '正在检查...' : '检查更新'}</span>
+            </button>
+
+            {/* 检查结果 */}
+            {updateStatus === 'up-to-date' && (
+              <div className="flex items-center gap-2 mt-2.5 p-3 bg-green-500/10 border border-green-500/15 rounded-xl">
+                <Check size={14} className="text-green-400 shrink-0" />
+                <span className="text-green-300/90 text-xs">当前已是最新版本</span>
+              </div>
+            )}
+
+            {updateStatus === 'update-available' && latestRelease && (
+              <div className="mt-2.5 p-3 bg-indigo-500/10 border border-indigo-500/15 rounded-xl space-y-2">
+                <div className="flex items-center gap-2">
+                  <Download size={14} className="text-indigo-400 shrink-0" />
+                  <span className="text-indigo-300/90 text-xs font-medium">发现新版本 {latestRelease.tag_name}</span>
+                </div>
+                <p className="text-gray-500 text-[11px] leading-relaxed pl-5.5">
+                  {latestRelease.name || latestRelease.tag_name}
+                  {latestRelease.published_at && (
+                    <> · 发布于 {new Date(latestRelease.published_at).toLocaleDateString('zh-CN')}</>
+                  )}
+                </p>
+                <a
+                  href={latestRelease.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 pl-5.5 text-indigo-400 hover:text-indigo-300 text-xs transition-colors"
+                >
+                  <ExternalLink size={12} />
+                  查看发布详情
+                </a>
+              </div>
+            )}
+
+            {updateStatus === 'error' && (
+              <div className="flex items-center gap-2 mt-2.5 p-3 bg-red-500/10 border border-red-500/15 rounded-xl">
+                <AlertCircle size={14} className="text-red-400 shrink-0" />
+                <span className="text-red-300/90 text-xs">检查更新失败，请检查网络连接</span>
+              </div>
+            )}
           </div>
           
           <p className="text-gray-600 text-xs text-center mt-6 leading-relaxed">

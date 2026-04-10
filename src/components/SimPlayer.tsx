@@ -535,8 +535,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
         </div>
       </div>
 
-      {/* 进度条热区 — 控件隐藏时仍可通过 hover 触发显示 */}
-      <div className="absolute bottom-12 left-0 right-0 z-[31] h-6 pointer-events-auto"
+      {/* 进度条热区 — 控件隐藏时仍可通过 hover 触发显示；控件可见时禁用指针事件以免遮挡进度条 */}
+      <div className={`absolute bottom-12 left-0 right-0 z-[31] h-6 ${showControls || isDragging ? 'pointer-events-none' : 'pointer-events-auto'}`}
         onMouseEnter={() => { setShowControls(true); if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); }}
       />
 

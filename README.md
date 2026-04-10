@@ -236,6 +236,11 @@ Bismuth-Player/
 
 ## 🎯 Version Updates
 
+### V8.1
+- 🐛 Fixed progress bar not responding to clicks and drags (hot zone z-index conflict blocked pointer events on progress bar)
+- ✨ Version number now dynamically read from `package.json` instead of being hardcoded
+- ✨ Added "Check for Updates" feature in Settings → About, using [GitHub Releases API](https://api.github.com/repos/Eq52/Bismuth-Player/releases/latest) to detect new versions
+
 ### V8
 - ✨ Integrated [SimPlayer](https://github.com/Eq52/Sim-Player) as built-in player (supports MP4/WebM/HLS)
 - ✨ Built-in player features: screenshot, picture-in-picture, playback speed, progress memory, keyboard shortcuts

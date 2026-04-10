@@ -236,6 +236,11 @@ Bismuth-Player/
 
 ## 🎯 版本更新
 
+### V8.1
+- 🐛 修复进度条无法点击和拖动的问题（热区 z-index 冲突导致进度条无法接收指针事件）
+- ✨ 版本号改为从 `package.json` 动态读取，不再硬编码
+- ✨ 设置页「关于」区域新增「检查更新」功能，通过 [GitHub Releases API](https://api.github.com/repos/Eq52/Bismuth-Player/releases/latest) 检测最新版本
+
 ### V8
 - ✨ 集成 [SimPlayer](https://github.com/Eq52/Sim-Player) 内置播放器（支持 MP4/WebM/HLS）
 - ✨ 内置播放器功能：截图、画中画、倍速播放、进度记忆、键盘快捷键

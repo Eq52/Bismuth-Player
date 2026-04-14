@@ -293,10 +293,21 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    const c = containerRef.current; if (!c) return;
+    const c = containerRef.current; const v = videoRef.current; if (!c) return;
     try {
-      if (!document.fullscreenElement) await c.requestFullscreen();
-      else await document.exitFullscreen();
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+        // iOS Safari only supports fullscreen on <video> via webkitEnterFullscreen
+        if (v && (v as any).webkitEnterFullscreen && !c.requestFullscreen) {
+          (v as any).webkitEnterFullscreen();
+        } else {
+          const el = c as any;
+          if (el.requestFullscreen) await el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+      } else {
+        if ((document as any).exitFullscreen) await document.exitFullscreen();
+        else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+      }
     } catch (err) { console.error('Fullscreen error:', err); }
   }, []);
 
@@ -344,11 +355,22 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
 
   useEffect(() => {
     const h = () => {
-      const isFs = !!document.fullscreenElement; setIsFullscreen(isFs);
-      if (!isFs && (showParamsDialog || showShortcutsDialog)) { const c = containerRef.current; if (c) c.requestFullscreen().catch(() => {}); }
+      const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+      setIsFullscreen(isFs);
+      if (!isFs && (showParamsDialog || showShortcutsDialog)) {
+        const c = containerRef.current; if (c) {
+          const el = c as any;
+          if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+      }
     };
     document.addEventListener('fullscreenchange', h);
-    return () => document.removeEventListener('fullscreenchange', h);
+    document.addEventListener('webkitfullscreenchange', h);
+    return () => {
+      document.removeEventListener('fullscreenchange', h);
+      document.removeEventListener('webkitfullscreenchange', h);
+    };
   }, [showParamsDialog, showShortcutsDialog]);
 
   const dismissContextMenu = useCallback(() => {

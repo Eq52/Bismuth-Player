@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V8-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V8.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -235,6 +235,11 @@ Bismuth-Player/
 ---
 
 ## 🎯 版本更新
+
+### V8.2
+- 🐛 修复 iOS Safari 下全屏按钮无响应的问题（增加 `webkitEnterFullscreen` 降级方案，使用 iOS 原生视频全屏）
+- 🐛 修复 Safari 下全屏状态检测失败的问题（增加 `webkitfullscreenchange` 事件监听）
+- ✨ 全屏功能现在优先使用标准 API，Safari/iOS 环境自动降级为 webkit 前缀版本
 
 ### V8.1
 - 🐛 修复进度条无法点击和拖动的问题（热区 z-index 冲突导致进度条无法接收指针事件）

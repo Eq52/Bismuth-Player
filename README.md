@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V8-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V8.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -235,6 +235,11 @@ Bismuth-Player/
 ---
 
 ## 🎯 Version Updates
+
+### V8.2
+- 🐛 Fixed fullscreen button not responding on iOS Safari (added `webkitEnterFullscreen` fallback for iOS native video fullscreen)
+- 🐛 Fixed fullscreen state detection on Safari (added `webkitfullscreenchange` event listener)
+- ✨ Fullscreen now uses webkit-prefixed APIs as fallback for Safari/iOS compatibility
 
 ### V8.1
 - 🐛 Fixed progress bar not responding to clicks and drags (hot zone z-index conflict blocked pointer events on progress bar)

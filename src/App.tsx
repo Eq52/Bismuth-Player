@@ -4,11 +4,17 @@ import { BottomNav } from '@/components/BottomNav';
 import { HomePage } from '@/pages/HomePage';
 import { SearchPage } from '@/pages/SearchPage';
 import { HistoryPage } from '@/pages/HistoryPage';
-import { SettingsPage } from '@/pages/SettingsPage';
+import { SettingsPage, type SettingsSubPage } from '@/pages/SettingsPage';
+import { VideoSourcePage } from '@/pages/settings/VideoSourcePage';
+import { PlayerSettingsPage } from '@/pages/settings/PlayerSettingsPage';
+import { CorsProxyPage } from '@/pages/settings/CorsProxyPage';
+import { CacheSettingsPage } from '@/pages/settings/CacheSettingsPage';
+import { AboutPage } from '@/pages/settings/AboutPage';
 import { DetailPage } from '@/pages/DetailPage';
 import { PlayerPage } from '@/pages/PlayerPage';
 import { isDisclaimerAgreed, setDisclaimerAgreed } from '@/services/storage';
 import type { VideoItem } from '@/types';
+import { Toaster } from '@/components/Toaster';
 import './App.css';
 
 type PageType = 'home' | 'search' | 'history' | 'settings';
@@ -158,6 +164,7 @@ function App() {
   const [isReady, setIsReady] = useState(false);
   const [_viewKey, setViewKey] = useState(0);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [settingsSubPage, setSettingsSubPage] = useState<SettingsSubPage>('none');
 
   // 初始化
   useEffect(() => {
@@ -206,9 +213,22 @@ function App() {
     setViewKey(prev => prev + 1);
   }, []);
 
-  // 跳转到添加影视源
+  // 跳转到添加影视源（直接进入影视源设置页）
   const handleAddSourceClick = useCallback(() => {
     setCurrentPage('settings');
+    setSettingsSubPage('source');
+    setViewKey(prev => prev + 1);
+  }, []);
+
+  // 设置子页面切换
+  const handleSettingsSubPageChange = useCallback((page: SettingsSubPage) => {
+    setSettingsSubPage(page);
+    setViewKey(prev => prev + 1);
+  }, []);
+
+  // 返回设置首页
+  const handleBackToSettings = useCallback(() => {
+    setSettingsSubPage('none');
     setViewKey(prev => prev + 1);
   }, []);
 
@@ -218,10 +238,11 @@ function App() {
     setViewKey(prev => prev + 1);
   }, []);
 
-  // 页面切换
+  // 页面切换（重置设置子页面状态）
   const handlePageChange = useCallback((page: string) => {
     setCurrentPage(page as PageType);
     setCurrentView('list');
+    setSettingsSubPage('none');
     setViewKey(prev => prev + 1);
   }, []);
 
@@ -277,9 +298,38 @@ function App() {
             );
           
           case 'settings':
+            // 渲染设置子页面或设置首页
+            if (settingsSubPage !== 'none') {
+              const subPageKey = `settings-${settingsSubPage}`;
+              const renderSubPage = () => {
+                switch (settingsSubPage) {
+                  case 'source':
+                    return <VideoSourcePage onBack={handleBackToSettings} />;
+                  case 'player':
+                    return <PlayerSettingsPage onBack={handleBackToSettings} />;
+                  case 'cors':
+                    return <CorsProxyPage onBack={handleBackToSettings} />;
+                  case 'cache':
+                    return <CacheSettingsPage onBack={handleBackToSettings} />;
+                  case 'about':
+                    return <AboutPage onBack={handleBackToSettings} />;
+                  default:
+                    return null;
+                }
+              };
+              return (
+                <PageTransition viewKey={subPageKey} type="detail">
+                  {renderSubPage()}
+                </PageTransition>
+              );
+            }
             return (
               <PageTransition viewKey="settings" type="list">
-                <SettingsPage onBack={() => handlePageChange('home')} />
+                <SettingsPage
+                  onBack={() => handlePageChange('home')}
+                  subPage={settingsSubPage}
+                  onSubPageChange={handleSettingsSubPageChange}
+                />
               </PageTransition>
             );
           
@@ -301,6 +351,9 @@ function App() {
 
   return (
     <div className="h-screen w-screen bg-[#0a0a0a] text-white overflow-hidden">
+      {/* Toast 通知 */}
+      <Toaster />
+
       {/* 免责声明弹窗 */}
       {showDisclaimer && <DisclaimerModal onAgree={handleAgreeDisclaimer} />}
       

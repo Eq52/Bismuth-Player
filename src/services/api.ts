@@ -1,12 +1,6 @@
 import type { VideoItem, ApiResponse, VideoSource } from '@/types';
 import { getCache, setCache } from './cache';
-import { isCorsProxyEnabled } from './storage';
-
-// CORS代理列表 - 按优先级排序
-const CORS_PROXIES = [
-  'https://api.codetabs.com/v1/proxy?quest=',
-  'https://api.cors.lol/?url='
-];
+import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList } from './storage';
 
 // 默认无影视源 - 用户需自行添加
 export const DEFAULT_SOURCES: VideoSource[] = [];
@@ -19,58 +13,51 @@ const CACHE_TTL = {
   search: 5,          // 搜索缓存5分钟
 };
 
-// 获取当前使用的代理（带轮换机制）
-function getProxyUrl(): string {
-  return localStorage.getItem('cors_proxy') || CORS_PROXIES[0];
-}
-
-// 轮换代理（当当前代理失败时）
-export function rotateProxy(): string {
-  const current = getProxyUrl();
-  const currentIndex = CORS_PROXIES.indexOf(current);
-  const nextIndex = (currentIndex + 1) % CORS_PROXIES.length;
-  const nextProxy = CORS_PROXIES[nextIndex];
-  localStorage.setItem('cors_proxy', nextProxy);
-  return nextProxy;
-}
-
 // 构建完整URL（根据设置决定是否添加代理）
-function buildUrl(apiUrl: string): string {
+function buildUrl(apiUrl: string, proxy?: string): string {
   if (!isCorsProxyEnabled()) {
     return apiUrl;
   }
-  const proxy = getProxyUrl();
-  return `${proxy}${encodeURIComponent(apiUrl)}`;
+  const p = proxy || getCorsProxyList()[0];
+  return `${p}${encodeURIComponent(apiUrl)}`;
 }
 
-// 带重试的请求
-async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+// 轮换代理：将列表第一个移到末尾，并持久化
+function rotateProxy(): string {
+  const list = getCorsProxyList();
+  if (list.length <= 1) return list[0] || '';
+  const first = list.shift()!;
+  list.push(first);
+  setCorsProxyList(list);
+  return list[0];
+}
+
+// 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
+async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Response> {
   let lastError: Error | null = null;
   const useProxy = isCorsProxyEnabled();
+  let proxyUrl = buildUrl(originalUrl);
 
   for (let i = 0; i <= retries; i++) {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(proxyUrl, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
       });
 
       if (response.ok) {
         return response;
       }
 
-      // 如果失败且还有重试次数，且启用了代理，尝试轮换代理
       if (i < retries && useProxy) {
         rotateProxy();
-        url = buildUrl(decodeURIComponent(url.split('quest=')[1] || url.split('url=')[1] || ''));
+        proxyUrl = buildUrl(originalUrl);
       }
     } catch (error) {
       lastError = error as Error;
       if (i < retries && useProxy) {
         rotateProxy();
-        url = buildUrl(decodeURIComponent(url.split('quest=')[1] || url.split('url=')[1] || ''));
+        proxyUrl = buildUrl(originalUrl);
       }
     }
   }
@@ -159,7 +146,7 @@ export async function getVideoList(
       url += `&pg=${page}`;
     }
     
-    const response = await fetchWithRetry(buildUrl(url));
+    const response = await fetchWithRetry(url);
     const data: ApiResponse = await response.json();
     return data;
   }
@@ -180,7 +167,7 @@ export async function getVideoList(
     url += `&t=${type}`;
   }
 
-  const response = await fetchWithRetry(buildUrl(url));
+  const response = await fetchWithRetry(url);
   const data: ApiResponse = await response.json();
   
   // 缓存结果
@@ -209,7 +196,7 @@ export async function getVideoDetail(id: number): Promise<VideoItem | null> {
   
   const url = `${source.url}?ac=detail&ids=${id}`;
   
-  const response = await fetchWithRetry(buildUrl(url));
+  const response = await fetchWithRetry(url);
   const data: ApiResponse = await response.json();
   
   if (data.list && data.list.length > 0) {
@@ -247,7 +234,7 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
   const url = `${source.url}?ac=videolist`;
   
   try {
-    const response = await fetchWithRetry(buildUrl(url));
+    const response = await fetchWithRetry(url);
     const data = await response.json();
     
     let categories: { id: string; name: string }[];
@@ -308,7 +295,7 @@ export function parsePlayUrls(vod_play_url?: string, _vod_play_from?: string): {
 export async function testSource(url: string): Promise<boolean> {
   try {
     const testUrl = `${url}?ac=videolist&limit=1`;
-    const response = await fetchWithRetry(buildUrl(testUrl));
+    const response = await fetchWithRetry(testUrl);
     const data = await response.json();
     return data.code === 1 || data.code === 200;
   } catch {

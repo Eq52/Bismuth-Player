@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { toast } from '@/hooks/use-toast';
+import { getPlayerSettings } from '@/services/storage';
 import {
   Play,
   Pause,
@@ -50,6 +51,12 @@ function detectFormat(url: string): string {
 }
 
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+function detectIOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
 
 interface ContextMenuState {
   visible: boolean;
@@ -163,6 +170,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
   }, [clearProgressForUrl]);
 
   const corsRetryRef = useRef(false);
+  const [isIOS] = useState(detectIOS);
 
   // Initialize video
   useEffect(() => {
@@ -203,6 +211,19 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
         hlsRef.current = hls;
       } else if (format === 'HLS' && video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = src;
+        video.addEventListener('error', function iosHlsErrorHandler() {
+          video.removeEventListener('error', iosHlsErrorHandler);
+          // 延迟重试，避免与系统内部恢复机制冲突
+          setTimeout(() => { if (video.src) video.load(); }, 500);
+        });
+        // iOS 原生 HLS 缓冲不足时，尝试通过 seek 当前位置触发重新缓冲
+        video.addEventListener('stalled', function iosHlsStalledHandler() {
+          if (!video.paused && video.readyState < 3) {
+            const ct = video.currentTime;
+            video.currentTime = ct + 0.1;
+            setTimeout(() => { video.currentTime = ct; }, 100);
+          }
+        });
       } else {
         video.src = src;
       }
@@ -242,6 +263,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       setIsBuffering(false);
       if (!resumePromptShownRef.current && src) {
         resumePromptShownRef.current = true;
+        const settings = getPlayerSettings();
+        if (!settings.autoResume) return;
         const saved = loadProgress();
         if (saved > 3 && video.duration > 0 && saved < video.duration - 2) {
           setSavedProgressTime(saved);
@@ -518,7 +541,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       }}
       onContextMenu={handleContextMenu}
     >
-      <video ref={videoRef} className="w-full h-full object-contain" playsInline crossOrigin="anonymous" preload="metadata" onClick={handleClick} />
+      <video ref={videoRef} className="w-full h-full object-contain" playsInline crossOrigin={isIOS ? undefined : 'anonymous'} preload={isIOS ? 'auto' : 'metadata'} onClick={handleClick} />
 
       {/* Video Cover */}
       {!hasEverPlayed && coverUrl && (

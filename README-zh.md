@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V8.2-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -28,7 +28,7 @@
 
 ## 说明
 
-> 本项目约等于是AI生成的,我只是检测问题、提出优化方向,使用模型如下：GLM-5 (Agent)，Kimi (Agent)，GLM-4.7/4.6/4.6V/4.5，Deepseek-R1/Chat (项目启动想法萌芽时提供帮助)
+> 本项目约等于是AI生成的,我只是检测问题、提出优化方向,使用模型如下：GLM-5 (Agent)，Kimi (Agent)，GLM-5-Turbo，GLM-4.7/4.6/4.6V/4.5，Deepseek-R1/Chat (项目启动想法萌芽时提供帮助)
 
 ---
 
@@ -217,7 +217,13 @@ Bismuth-Player/
 │   │   ├── DetailPage.tsx
 │   │   ├── PlayerPage.tsx
 │   │   ├── HistoryPage.tsx
-│   │   └── SettingsPage.tsx
+│   │   ├── SettingsPage.tsx
+│   │   └── settings/       # 设置子页面
+│   │       ├── VideoSourcePage.tsx
+│   │       ├── PlayerSettingsPage.tsx
+│   │       ├── CorsProxyPage.tsx
+│   │       ├── CacheSettingsPage.tsx
+│   │       └── AboutPage.tsx
 │   ├── services/        # 服务层
 │   │   ├── api.ts       # API请求
 │   │   ├── cache.ts     # 缓存服务
@@ -235,6 +241,27 @@ Bismuth-Player/
 ---
 
 ## 🎯 版本更新
+
+### V9.1
+- 🐛 修复设置页崩溃问题 — `ArrowLeft` 图标未导入导致 "ArrowLeft is not defined" 运行时报错
+- 🐛 修复 CORS 代理双重嵌套严重 Bug — `buildUrl()` 在调用方和 `fetchWithRetry()` 内部各调用一次，导致代理 URL 被嵌套自身，CORS 代理开启时所有 API 请求必定失败
+- 🐛 修复 Toast 通知不可见 — `SimPlayer` 发送了截图失败等提示但没有渲染组件；新建轻量级 Toaster 组件接入已有 `use-toast` 系统
+- 🐛 修复自动续播设置无效 — "自动续播"开关保存了值但 `SimPlayer` 从未读取，续播提示始终显示
+- 🧹 清理未使用的 `carousel.tsx` 组件及 embla-carousel 依赖
+
+### V9.0
+- 🏗️ **设置页全面重构** — 每个设置项（影视源、播放器、CORS代理、缓存、关于）独立为单独页面，支持全屏导航
+- ✨ CORS 代理新增排序功能 — 通过上下箭头调整代理优先级顺序
+- ✨ 缓存设置页新增缓存策略详情 — 展示各类型请求的 TTL（影视列表10分钟、分类30分钟、详情60分钟、搜索不缓存）
+- ✨ 设置首页实时显示摘要信息（代理数量、缓存数量、版本号等）
+- 🎨 所有设置子页面统一页面头部设计，彩色图标区分类别
+- 🎨 每个设置子页面底部新增功能说明文案
+- 🔧 统一 localStorage 存储键命名规范（全部使用 `bismuth_` 前缀）
+- 🔧 优化 API 请求层 — `fetchWithRetry` 使用变量追踪原始 URL，替代脆弱的字符串反解逻辑
+
+### V8.3
+- 🐛 修复 iOS Safari 下 HLS 播放卡顿问题 — 移除 iOS 端不必要的 `crossOrigin="anonymous"`，改为 `preload="auto"` 积极预缓冲，新增错误重试与缓冲停滞恢复逻辑
+- 🐛 修复 iOS 端 CORS 预检请求导致缓冲过慢的问题
 
 ### V8.2
 - 🐛 修复 iOS Safari 下全屏按钮无响应的问题（增加 `webkitEnterFullscreen` 降级方案，使用 iOS 原生视频全屏）

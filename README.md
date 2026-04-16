@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V8.2-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -28,7 +28,7 @@ English｜[简体中文](README-zh.md)
 
 ## Description
 
-> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: GLM-5 (Agent), Kimi (Agent), GLM-4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
+> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: GLM-5 (Agent), Kimi (Agent), GLM-5-Turbo, GLM-4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
 
 ---
 
@@ -217,7 +217,13 @@ Bismuth-Player/
 │   │   ├── DetailPage.tsx
 │   │   ├── PlayerPage.tsx
 │   │   ├── HistoryPage.tsx
-│   │   └── SettingsPage.tsx
+│   │   ├── SettingsPage.tsx
+│   │   └── settings/       # Settings sub-pages
+│   │       ├── VideoSourcePage.tsx
+│   │       ├── PlayerSettingsPage.tsx
+│   │       ├── CorsProxyPage.tsx
+│   │       ├── CacheSettingsPage.tsx
+│   │       └── AboutPage.tsx
 │   ├── services/        # Service layer
 │   │   ├── api.ts       # API requests
 │   │   ├── cache.ts     # Caching service
@@ -235,6 +241,27 @@ Bismuth-Player/
 ---
 
 ## 🎯 Version Updates
+
+### V9.1
+- 🐛 Fixed settings page crash — `ArrowLeft` icon missing from import caused "ArrowLeft is not defined" runtime error
+- 🐛 Fixed critical CORS proxy double-wrapping bug — `buildUrl()` was called both in callers and inside `fetchWithRetry()`, causing proxy URLs to be nested inside themselves and all API requests to fail when CORS proxy was enabled
+- 🐛 Fixed Toast notifications invisible — `SimPlayer` dispatched toast messages but no `<Toaster>` renderer existed in the app; created a lightweight Toaster component using the existing `use-toast` hook
+- 🐛 Fixed auto-resume setting not working — the "Auto Resume" toggle saved its value but `SimPlayer` never read it, always showing the resume prompt regardless
+- 🧹 Removed dead `carousel.tsx` import dependencies (embla-carousel) that were never used by any page component
+
+### V9.0
+- 🏗️ **Settings page redesigned** — each setting category (Video Sources, Player, CORS Proxy, Cache, About) now has its own dedicated page with full-screen navigation
+- ✨ Added proxy priority reordering — drag proxies up/down with arrow buttons to adjust priority order
+- ✨ Enhanced cache settings page — now displays detailed cache policy breakdown (TTL for each request type)
+- ✨ Settings home page now shows live summaries (active proxy count, cache item count, version info)
+- 🎨 Consistent page header design across all settings sub-pages with color-coded icons
+- 🎨 Added explanatory help text on every settings page for better user guidance
+- 🔧 Unified storage key naming convention (`bismuth_` prefix across all keys)
+- 🔧 Improved API layer — `fetchWithRetry` now uses proper URL variable tracking instead of fragile string reverse-parsing
+
+### V8.3
+- 🐛 Fixed iOS Safari HLS playback stuttering — switched from bare `video.src` to optimized native HLS with `preload="auto"`, removed unnecessary `crossOrigin="anonymous"` on iOS, added error recovery and buffer stall recovery logic
+- 🐛 Fixed CORS preflight overhead on iOS causing slow buffering
 
 ### V8.2
 - 🐛 Fixed fullscreen button not responding on iOS Safari (added `webkitEnterFullscreen` fallback for iOS native video fullscreen)

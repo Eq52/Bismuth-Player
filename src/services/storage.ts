@@ -2,8 +2,9 @@ import type { PlayHistory, PlayerSettings, CacheSettings } from '@/types';
 
 const HISTORY_KEY = 'bismuth_history';
 const PLAYER_SETTINGS_KEY = 'bismuth_player';
-const CACHE_SETTINGS_KEY = 'bismuth_cache';
-const CORS_PROXY_KEY = 'bismuth_proxy';
+const CACHE_SETTINGS_KEY = 'bismuth_cache_settings';
+const CORS_PROXY_LIST_KEY = 'bismuth_cors_proxy_list';
+const CORS_PROXY_ENABLED_KEY = 'bismuth_cors_proxy_enabled';
 const DISCLAIMER_AGREED_KEY = 'bismuth_disclaimer_agreed';
 
 // 获取播放历史
@@ -94,24 +95,63 @@ export function saveCacheSettings(settings: CacheSettings): void {
   localStorage.setItem(CACHE_SETTINGS_KEY, JSON.stringify(settings));
 }
 
-// 获取CORS代理
+const DEFAULT_CORS_PROXIES = [
+  'https://api.codetabs.com/v1/proxy?quest=',
+  'https://api.cors.lol/?url=',
+];
+
+// 获取 CORS 代理列表
+export function getCorsProxyList(): string[] {
+  const stored = localStorage.getItem(CORS_PROXY_LIST_KEY);
+  if (stored) {
+    try {
+      const list = JSON.parse(stored);
+      return Array.isArray(list) && list.length > 0 ? list : DEFAULT_CORS_PROXIES;
+    } catch {
+      return DEFAULT_CORS_PROXIES;
+    }
+  }
+  return DEFAULT_CORS_PROXIES;
+}
+
+// 保存 CORS 代理列表
+export function setCorsProxyList(proxies: string[]): void {
+  localStorage.setItem(CORS_PROXY_LIST_KEY, JSON.stringify(proxies));
+}
+
+// 添加单个 CORS 代理（去重）
+export function addCorsProxy(proxy: string): void {
+  const list = getCorsProxyList();
+  if (!list.includes(proxy)) {
+    list.push(proxy);
+    setCorsProxyList(list);
+  }
+}
+
+// 删除单个 CORS 代理
+export function removeCorsProxy(index: number): void {
+  const list = getCorsProxyList();
+  if (index >= 0 && index < list.length) {
+    list.splice(index, 1);
+    if (list.length === 0) list.push(...DEFAULT_CORS_PROXIES);
+    setCorsProxyList(list);
+  }
+}
+
+// 获取当前活跃的 CORS 代理（列表第一个）
 export function getCorsProxy(): string {
-  return localStorage.getItem(CORS_PROXY_KEY) || 'https://api.codetabs.com/v1/proxy?quest=';
+  const list = getCorsProxyList();
+  return list[0] || DEFAULT_CORS_PROXIES[0];
 }
 
-// 设置CORS代理
-export function setCorsProxy(proxy: string): void {
-  localStorage.setItem(CORS_PROXY_KEY, proxy);
-}
-
-// 是否启用CORS代理（默认启用）
+// 是否启用 CORS 代理（默认启用）
 export function isCorsProxyEnabled(): boolean {
-  return localStorage.getItem('bismuth_cors_proxy_enabled') !== 'false';
+  return localStorage.getItem(CORS_PROXY_ENABLED_KEY) !== 'false';
 }
 
-// 设置是否启用CORS代理
+// 设置是否启用 CORS 代理
 export function setCorsProxyEnabled(enabled: boolean): void {
-  localStorage.setItem('bismuth_cors_proxy_enabled', String(enabled));
+  localStorage.setItem(CORS_PROXY_ENABLED_KEY, String(enabled));
 }
 
 // 检查是否已同意免责声明

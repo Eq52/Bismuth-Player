@@ -61,7 +61,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-[#1a1a2e]">
         {/* 加载中的骨架屏动画 */}
-        {!imageLoaded && !imageError && (
+        {!imageLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#252547] to-[#1a1a2e] animate-pulse">
             <div className="absolute inset-0 flex items-center justify-center">
               <Film className="w-10 h-10 text-gray-600 animate-pulse" />

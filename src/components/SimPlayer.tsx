@@ -632,16 +632,6 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
             <div className="flex items-center gap-0.5 shrink-0">
               <div className="flex items-center group/vol">
                 <button onClick={toggleMute} className="p-1 sm:p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white" aria-label="Toggle mute"><VolumeIcon className="w-4 h-4 sm:w-5 sm:h-5" /></button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-0 group-hover/vol:w-16 sm:group-hover/vol:w-20 transition-all duration-200 opacity-0 group-hover/vol:opacity-100 h-1 appearance-none bg-white/20 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md"
-                  aria-label="Volume slider"
-                />
               </div>
               <div className="relative">
                 <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="p-1 sm:p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white flex items-center gap-0.5 sm:gap-1" aria-label="Playback speed">

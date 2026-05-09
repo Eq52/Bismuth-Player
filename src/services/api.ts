@@ -49,9 +49,6 @@ async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Respons
         return response;
       }
 
-      // 记录非 OK 响应为错误，便于最终抛出有意义的错误信息
-      lastError = new Error(`请求失败，HTTP 状态码: ${response.status}`);
-
       if (i < retries && useProxy) {
         rotateProxy();
         proxyUrl = buildUrl(originalUrl);
@@ -274,14 +271,12 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
   }
 }
 
-// 解析播放地址（支持多播放源，以 $$$ 分隔，默认使用第一个源）
+// 解析播放地址
 export function parsePlayUrls(vod_play_url?: string, _vod_play_from?: string): { name: string; url: string }[] {
   if (!vod_play_url) return [];
   
   const episodes: { name: string; url: string }[] = [];
-  // 多个播放源以 $$$ 分隔，取第一个源（也是大多数 API 的默认行为）
-  const sourceUrl = vod_play_url.split('$$$')[0];
-  const lines = sourceUrl.split('#');
+  const lines = vod_play_url.split('#');
   
   for (const line of lines) {
     const parts = line.split('$');

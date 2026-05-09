@@ -54,18 +54,30 @@ interface VideoCardProps {
 export function VideoCard({ video, onClick }: VideoCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const aliveRef = useRef(true);
 
   // 使用 IntersectionObserver 替代原生 loading="lazy"
-  // 组件卸载时断开观察器并清空 src，阻止后台继续加载图片
+  // 组件卸载时断开观察器并移除事件回调，阻止后台继续加载图片
   useEffect(() => {
     const img = imgRef.current;
     if (!img) return;
+    aliveRef.current = true;
 
     // 无图片时直接标记加载完成（img src 保持占位图）
     if (!video.vod_pic) {
       setImageLoaded(true);
       return;
     }
+
+    const handleLoad = () => { if (aliveRef.current) setImageLoaded(true); };
+    const handleError = (e: Event) => {
+      if (!aliveRef.current) return;
+      setImageLoaded(true);
+      (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
+    };
+
+    img.addEventListener('load', handleLoad);
+    img.addEventListener('error', handleError);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -83,9 +95,12 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
     observer.observe(img);
 
     return () => {
+      aliveRef.current = false;
       observer.disconnect();
-      // 组件卸载时清空 src，阻止已排队但未完成的图片请求继续下载
-      if (img) img.src = '';
+      // 组件卸载时移除事件监听，阻止中断下载触发的 error 事件
+      img.removeEventListener('load', handleLoad);
+      img.removeEventListener('error', handleError);
+      img.removeAttribute('src');
     };
   }, [video.vod_pic]);
 
@@ -104,19 +119,13 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
           </div>
         )}
 
-        {/* 图片 — 初始 src 为空，由 IntersectionObserver 按需赋值 */}
+        {/* 图片 — 初始无 src，由 IntersectionObserver 按需赋值 */}
         <img
           ref={imgRef}
-          src=""
           alt={video.vod_name}
           className={`w-full h-full object-cover transition-all duration-500 ${
             imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
           } group-hover:scale-110`}
-          onLoad={() => setImageLoaded(true)}
-          onError={(e) => {
-            setImageLoaded(true);
-            (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
-          }}
         />
 
         {/* 播放按钮遮罩 */}

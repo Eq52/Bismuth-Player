@@ -65,7 +65,7 @@ Choose any of the following platforms and click the button to quickly create you
 
 ### Local Deployment
 
-[了解更多](#-quick-start)
+[More](#-quick-start)
 
 ---
 

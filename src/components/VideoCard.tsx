@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Star, Play, Film } from 'lucide-react';
 import type { VideoItem } from '@/types';
 
@@ -53,9 +53,44 @@ interface VideoCardProps {
 
 export function VideoCard({ video, onClick }: VideoCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // 使用 IntersectionObserver 替代原生 loading="lazy"
+  // 组件卸载时断开观察器并清空 src，阻止后台继续加载图片
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img) return;
+
+    // 无图片时直接标记加载完成（img src 保持占位图）
+    if (!video.vod_pic) {
+      setImageLoaded(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            // 进入视口 300px 范围内才开始加载真实图片
+            (entry.target as HTMLImageElement).src = video.vod_pic!;
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(img);
+
+    return () => {
+      observer.disconnect();
+      // 组件卸载时清空 src，阻止已排队但未完成的图片请求继续下载
+      if (img) img.src = '';
+    };
+  }, [video.vod_pic]);
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group relative bg-[#141414] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10"
     >
@@ -68,29 +103,29 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
             </div>
           </div>
         )}
-        
-        {/* 实际图片 */}
+
+        {/* 图片 — 初始 src 为空，由 IntersectionObserver 按需赋值 */}
         <img
-          src={video.vod_pic || PLACEHOLDER_SVG}
+          ref={imgRef}
+          src=""
           alt={video.vod_name}
           className={`w-full h-full object-cover transition-all duration-500 ${
             imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
           } group-hover:scale-110`}
-          loading="lazy"
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             setImageLoaded(true);
             (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
           }}
         />
-        
+
         {/* 播放按钮遮罩 */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300">
             <Play className="w-5 h-5 text-white ml-1" fill="white" />
           </div>
         </div>
-        
+
         {/* 标签 */}
         {video.vod_remarks && (
           <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-lg text-xs text-white font-medium">

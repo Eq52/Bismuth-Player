@@ -17,6 +17,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [coverLoaded, setCoverLoaded] = useState(false);
 
   useEffect(() => {
+    setCoverLoaded(false);
     const loadDetail = async () => {
       setLoading(true);
       try {

@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -244,75 +244,60 @@ Bismuth-Player/
 
 ## 🎯 版本更新
 
+> 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.2
+- 🐛 修复 `parsePlayUrls` 不处理多播放源 `$$$` 分隔符的问题
+- 🐛 修复 iOS Safari HLS 事件监听器内存泄漏和错误处理器竞态条件
+- 🐛 修复 `DetailPage` 切换视频时骨架屏不重置
+- 🐛 修复 `PlayerPage` 集数不随 prop 同步的问题
+- 🐛 修复 `fetchWithRetry` 非 OK 响应错误信息不准确和连接池耗尽问题
+- 🐛 修复版本号 fallback 不匹配的问题
+- ✨ SimPlayer 新增音量滑块（悬停音量图标展开）
+- ✨ 改进分页判断逻辑，使用 API 元数据提高准确性
+- 🧹 移除未使用的 `_viewKey` 和 `imageError` 状态
+- ⚡ 优化 App、PlayerPage 和 SimPlayer 的重渲染性能
+- 📁 新增 `.gitignore`，从仓库中移除构建产物
+
+<details>
+<summary>V9.1 及更早版本</summary>
+
 ### V9.1
-- 🐛 修复设置页崩溃问题 — `ArrowLeft` 图标未导入导致 "ArrowLeft is not defined" 运行时报错
-- 🐛 修复 CORS 代理双重嵌套严重 Bug — `buildUrl()` 在调用方和 `fetchWithRetry()` 内部各调用一次，导致代理 URL 被嵌套自身，CORS 代理开启时所有 API 请求必定失败
-- 🐛 修复 Toast 通知不可见 — `SimPlayer` 发送了截图失败等提示但没有渲染组件；新建轻量级 Toaster 组件接入已有 `use-toast` 系统
-- 🐛 修复自动续播设置无效 — "自动续播"开关保存了值但 `SimPlayer` 从未读取，续播提示始终显示
-- 🧹 清理未使用的 `carousel.tsx` 组件及 embla-carousel 依赖
+- 🐛 修复设置页崩溃问题 — `ArrowLeft` 图标未导入
+- 🐛 修复 CORS 代理双重嵌套严重 Bug
+- 🐛 修复 Toast 通知不可见
+- 🐛 修复自动续播设置无效
+- 🧹 清理未使用的 `carousel.tsx` 组件
 
 ### V9.0
-- 🏗️ **设置页全面重构** — 每个设置项（影视源、播放器、CORS代理、缓存、关于）独立为单独页面，支持全屏导航
-- ✨ CORS 代理新增排序功能 — 通过上下箭头调整代理优先级顺序
-- ✨ 缓存设置页新增缓存策略详情 — 展示各类型请求的 TTL（影视列表10分钟、分类30分钟、详情60分钟、搜索不缓存）
-- ✨ 设置首页实时显示摘要信息（代理数量、缓存数量、版本号等）
-- 🎨 所有设置子页面统一页面头部设计，彩色图标区分类别
-- 🎨 每个设置子页面底部新增功能说明文案
-- 🔧 统一 localStorage 存储键命名规范（全部使用 `bismuth_` 前缀）
-- 🔧 优化 API 请求层 — `fetchWithRetry` 使用变量追踪原始 URL，替代脆弱的字符串反解逻辑
+- 🏗️ **设置页全面重构** — 每个设置项独立为单独页面
+- ✨ CORS 代理新增排序功能
+- ✨ 缓存设置页新增缓存策略详情
+- 🔧 统一 localStorage 存储键命名规范
 
 ### V8.3
-- 🐛 修复 iOS Safari 下 HLS 播放卡顿问题 — 移除 iOS 端不必要的 `crossOrigin="anonymous"`，改为 `preload="auto"` 积极预缓冲，新增错误重试与缓冲停滞恢复逻辑
-- 🐛 修复 iOS 端 CORS 预检请求导致缓冲过慢的问题
+- 🐛 修复 iOS Safari 下 HLS 播放卡顿问题
 
 ### V8.2
-- 🐛 修复 iOS Safari 下全屏按钮无响应的问题（增加 `webkitEnterFullscreen` 降级方案，使用 iOS 原生视频全屏）
-- 🐛 修复 Safari 下全屏状态检测失败的问题（增加 `webkitfullscreenchange` 事件监听）
-- ✨ 全屏功能现在优先使用标准 API，Safari/iOS 环境自动降级为 webkit 前缀版本
+- 🐛 修复 iOS Safari 下全屏按钮无响应的问题
 
 ### V8.1
-- 🐛 修复进度条无法点击和拖动的问题（热区 z-index 冲突导致进度条无法接收指针事件）
-- ✨ 版本号改为从 `package.json` 动态读取，不再硬编码
-- ✨ 设置页「关于」区域新增「检查更新」功能，通过 [GitHub Releases API](https://api.github.com/repos/Eq52/Bismuth-Player/releases/latest) 检测最新版本
+- 🐛 修复进度条无法点击和拖动的问题
+- ✨ 新增「检查更新」功能
 
 ### V8
-- ✨ 集成 [SimPlayer](https://github.com/Eq52/Sim-Player) 内置播放器（支持 MP4/WebM/HLS）
-- ✨ 内置播放器功能：截图、画中画、倍速播放、进度记忆、键盘快捷键
-- ✨ 播放器控件自动隐藏 — 移动鼠标显示，静止后隐藏（类似YouTube）
-- ✨ CORS代理开关 — 可关闭CORS代理直接请求影视源API
-- ✨ 历史记录「继续」按钮直接跳转播放页
-- 💄 桌面端播放器与选集列表左右布局，选集面板可滚动
-- 💄 响应式播放器控制栏，移动端按钮紧凑排列
-- 💄 进度条透明热区 — 控件正常隐藏时仍可悬停触发显示进度条
-- 🐛 修复移动端播放器在所有模式下不可见的问题
-- 🐛 修复画中画按钮在部分环境下不显示（多重检测回退）
+- ✨ 集成 SimPlayer 内置播放器
+- ✨ 内置播放器功能：截图、画中画、倍速播放、进度记忆
+- ✨ CORS代理开关
 
 ### V7
-- ✨ 新增启动屏幕动画
-- ✨ 新增页面切换动画
-- ✨ 新增图片加载动画
-- ✨ 新增优雅的SVG占位图
-- ✨ 新增骨架屏加载效果
-- 🐛 移除PWA功能，简化部署
-  > 推荐去 [Releases](https://github.com/Eq52/Bismuth-Player/releases/tag/v7) 下载优化版(By GLM-5 Agent)
-- 💄 优化加载状态显示
-- 💄 优化桌面端侧边栏
+- ✨ 新增启动屏幕、页面切换、骨架屏动画
+- 🐛 移除PWA功能
 
-### V6
-- 🔧 修复Firebase部署路径问题
-- ✨ 新增GitHub链接
+### V6 ~ V3
+- 各类 UI 优化和 Bug 修复
 
-### V5
-- 🔧 修复API图片获取问题
-- 💄 优化桌面端布局
-
-### V4
-- ✨ 新增桌面端侧边栏导航
-- 💄 优化响应式布局
-
-### V3
-- ✨ 新增宋体字体支持
-- 💄 优化全局样式
+</details>
 
 ---
 

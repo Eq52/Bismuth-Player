@@ -53,7 +53,6 @@ interface VideoCardProps {
 
 export function VideoCard({ video, onClick }: VideoCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
   return (
     <div 
@@ -72,7 +71,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
         
         {/* 实际图片 */}
         <img
-          src={imageError ? PLACEHOLDER_SVG : (video.vod_pic || PLACEHOLDER_SVG)}
+          src={video.vod_pic || PLACEHOLDER_SVG}
           alt={video.vod_name}
           className={`w-full h-full object-cover transition-all duration-500 ${
             imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
@@ -80,7 +79,6 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
-            setImageError(true);
             setImageLoaded(true);
             (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
           }}

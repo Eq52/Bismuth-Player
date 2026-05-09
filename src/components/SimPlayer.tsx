@@ -181,6 +181,11 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     corsRetryRef.current = false;
     video.crossOrigin = 'anonymous';
 
+    // iOS HLS 原生处理器引用（用于清理）
+    let iosErrorHandler: (() => void) | null = null;
+    let iosStalledHandler: (() => void) | null = null;
+    const isIOSNativeHLS = format === 'HLS' && !Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl');
+
     const initHls = (withCORS: boolean) => {
       if (format === 'HLS' && Hls.isSupported()) {
         const hls = new Hls({
@@ -209,21 +214,22 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
           }
         });
         hlsRef.current = hls;
-      } else if (format === 'HLS' && video.canPlayType('application/vnd.apple.mpegurl')) {
+      } else if (isIOSNativeHLS) {
         video.src = src;
-        video.addEventListener('error', function iosHlsErrorHandler() {
-          video.removeEventListener('error', iosHlsErrorHandler);
-          // 延迟重试，避免与系统内部恢复机制冲突
+        iosErrorHandler = function iosHlsErrorHandler() {
+          video.removeEventListener('error', iosErrorHandler!);
+          iosErrorHandler = null;
           setTimeout(() => { if (video.src) video.load(); }, 500);
-        });
-        // iOS 原生 HLS 缓冲不足时，尝试通过 seek 当前位置触发重新缓冲
-        video.addEventListener('stalled', function iosHlsStalledHandler() {
+        };
+        video.addEventListener('error', iosErrorHandler);
+        iosStalledHandler = function iosHlsStalledHandler() {
           if (!video.paused && video.readyState < 3) {
             const ct = video.currentTime;
             video.currentTime = ct + 0.1;
             setTimeout(() => { video.currentTime = ct; }, 100);
           }
-        });
+        };
+        video.addEventListener('stalled', iosStalledHandler);
       } else {
         video.src = src;
       }
@@ -232,6 +238,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     initHls(true);
 
     const handleError = () => {
+      // iOS 原生 HLS 有自己的错误处理器，跳过 CORS 重试避免双重触发
+      if (isIOSNativeHLS) return;
       if (!corsRetryRef.current && video.crossOrigin === 'anonymous') {
         corsRetryRef.current = true;
         video.removeAttribute('crossOrigin');
@@ -243,6 +251,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     video.addEventListener('error', handleError);
     return () => {
       video.removeEventListener('error', handleError);
+      if (iosErrorHandler) video.removeEventListener('error', iosErrorHandler);
+      if (iosStalledHandler) video.removeEventListener('stalled', iosStalledHandler);
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     };
   }, [src, format, onError]);
@@ -292,6 +302,10 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     return () => {
       clearInterval(saveTimer);
       if (video.currentTime > 0) saveProgress(video.currentTime);
+      if (resumePromptTimerRef.current) {
+        clearTimeout(resumePromptTimerRef.current);
+        resumePromptTimerRef.current = null;
+      }
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
       video.removeEventListener('timeupdate', onTimeUpdate);
@@ -493,17 +507,18 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       const canvas = document.createElement('canvas'); canvas.width = v.videoWidth; canvas.height = v.videoHeight;
       const ctx = canvas.getContext('2d'); if (!ctx) return;
       ctx.drawImage(v, 0, 0);
+      const snapshotTime = v.currentTime;
       try {
         canvas.toBlob((blob) => {
           if (!blob) { toast({ title: '截图失败', description: '无法生成截图数据' }); return; }
           const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
-          a.download = `screenshot_${formatTime(currentTime).replace(/:/g, '-')}.png`;
+          a.download = `screenshot_${formatTime(snapshotTime).replace(/:/g, '-')}.png`;
           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         }, 'image/png');
       } catch { toast({ title: '截图失败', description: '跨域视频无法截取画面' }); return; }
       setShowScreenshotFlash(true); setTimeout(() => setShowScreenshotFlash(false), 300);
     } catch (err) { console.error('Screenshot error:', err); toast({ title: '截图失败', description: '发生未知错误' }); }
-  }, [currentTime]);
+  }, []);
 
   const lastClickRef = useRef<number>(0);
   const handleClick = useCallback((e: React.MouseEvent) => {

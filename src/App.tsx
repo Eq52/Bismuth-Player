@@ -162,7 +162,6 @@ function App() {
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const [initialEpisode, setInitialEpisode] = useState(0);
   const [isReady, setIsReady] = useState(false);
-  const [_viewKey, setViewKey] = useState(0);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [settingsSubPage, setSettingsSubPage] = useState<SettingsSubPage>('none');
 
@@ -189,7 +188,6 @@ function App() {
   const handleVideoClick = useCallback((video: VideoItem) => {
     setSelectedVideo(video);
     setCurrentView('detail');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 处理播放
@@ -197,45 +195,38 @@ function App() {
     setSelectedVideo(video);
     setInitialEpisode(episodeIndex);
     setCurrentView('player');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 返回列表
   const handleBackToList = useCallback(() => {
     setCurrentView('list');
     setSelectedVideo(null);
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 返回详情
   const handleBackToDetail = useCallback(() => {
     setCurrentView('detail');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 跳转到添加影视源（直接进入影视源设置页）
   const handleAddSourceClick = useCallback(() => {
     setCurrentPage('settings');
     setSettingsSubPage('source');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 设置子页面切换
   const handleSettingsSubPageChange = useCallback((page: SettingsSubPage) => {
     setSettingsSubPage(page);
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 返回设置首页
   const handleBackToSettings = useCallback(() => {
     setSettingsSubPage('none');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 跳转到搜索页
   const handleSearchClick = useCallback(() => {
     setCurrentPage('search');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 页面切换（重置设置子页面状态）
@@ -243,7 +234,6 @@ function App() {
     setCurrentPage(page as PageType);
     setCurrentView('list');
     setSettingsSubPage('none');
-    setViewKey(prev => prev + 1);
   }, []);
 
   // 渲染当前视图

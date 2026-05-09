@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
-import type { VideoItem } from '@/types';
+import type { VideoItem, PlayerSettings } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
 
 interface PlayerPageProps {
@@ -17,6 +17,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   const [currentEpisode, setCurrentEpisode] = useState(initialEpisode);
   const [loading, setLoading] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [playerSettings, setPlayerSettings] = useState<PlayerSettings>(getPlayerSettings);
 
   useEffect(() => {
     setCurrentEpisode(initialEpisode);
@@ -83,7 +84,6 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
 
   const displayData = detail || video;
   const currentEp = episodes[currentEpisode];
-  const playerSettings = getPlayerSettings();
   const useBuiltinPlayer = playerSettings.playerMode === 'builtin';
   const currentPlayUrl = getCurrentPlayUrl();
 

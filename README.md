@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, 和 a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -243,75 +243,60 @@ Bismuth-Player/
 
 ## 🎯 Version Updates
 
+> Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.2
+- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator
+- 🐛 Fixed iOS Safari HLS event listener memory leak and error handler race condition
+- 🐛 Fixed `DetailPage` skeleton screen not resetting on video switch
+- 🐛 Fixed `PlayerPage` episode not syncing with prop
+- 🐛 Fixed `fetchWithRetry` non-OK response error reporting and connection pool exhaustion
+- 🐛 Fixed version number fallback mismatch
+- ✨ Added volume slider to SimPlayer (hover to reveal)
+- ✨ Improved pagination accuracy using API metadata
+- 🧹 Removed unused `_viewKey` and `imageError` states
+- ⚡ Optimized re-render performance in App, PlayerPage, and SimPlayer
+- 📁 Added `.gitignore`, removed build artifacts from repository
+
+<details>
+<summary>V9.1 and earlier</summary>
+
 ### V9.1
 - 🐛 Fixed settings page crash — `ArrowLeft` icon missing from import caused "ArrowLeft is not defined" runtime error
-- 🐛 Fixed critical CORS proxy double-wrapping bug — `buildUrl()` was called both in callers and inside `fetchWithRetry()`, causing proxy URLs to be nested inside themselves and all API requests to fail when CORS proxy was enabled
-- 🐛 Fixed Toast notifications invisible — `SimPlayer` dispatched toast messages but no `<Toaster>` renderer existed in the app; created a lightweight Toaster component using the existing `use-toast` hook
-- 🐛 Fixed auto-resume setting not working — the "Auto Resume" toggle saved its value but `SimPlayer` never read it, always showing the resume prompt regardless
-- 🧹 Removed dead `carousel.tsx` import dependencies (embla-carousel) that were never used by any page component
+- 🐛 Fixed critical CORS proxy double-wrapping bug
+- 🐛 Fixed Toast notifications invisible
+- 🐛 Fixed auto-resume setting not working
+- 🧹 Removed dead `carousel.tsx` import dependencies
 
 ### V9.0
-- 🏗️ **Settings page redesigned** — each setting category (Video Sources, Player, CORS Proxy, Cache, About) now has its own dedicated page with full-screen navigation
-- ✨ Added proxy priority reordering — drag proxies up/down with arrow buttons to adjust priority order
-- ✨ Enhanced cache settings page — now displays detailed cache policy breakdown (TTL for each request type)
-- ✨ Settings home page now shows live summaries (active proxy count, cache item count, version info)
-- 🎨 Consistent page header design across all settings sub-pages with color-coded icons
-- 🎨 Added explanatory help text on every settings page for better user guidance
-- 🔧 Unified storage key naming convention (`bismuth_` prefix across all keys)
-- 🔧 Improved API layer — `fetchWithRetry` now uses proper URL variable tracking instead of fragile string reverse-parsing
+- 🏗️ **Settings page redesigned** — each setting category now has its own dedicated page
+- ✨ Added proxy priority reordering
+- ✨ Enhanced cache settings page
+- 🔧 Unified storage key naming convention
 
 ### V8.3
-- 🐛 Fixed iOS Safari HLS playback stuttering — switched from bare `video.src` to optimized native HLS with `preload="auto"`, removed unnecessary `crossOrigin="anonymous"` on iOS, added error recovery and buffer stall recovery logic
-- 🐛 Fixed CORS preflight overhead on iOS causing slow buffering
+- 🐛 Fixed iOS Safari HLS playback stuttering
 
 ### V8.2
-- 🐛 Fixed fullscreen button not responding on iOS Safari (added `webkitEnterFullscreen` fallback for iOS native video fullscreen)
-- 🐛 Fixed fullscreen state detection on Safari (added `webkitfullscreenchange` event listener)
-- ✨ Fullscreen now uses webkit-prefixed APIs as fallback for Safari/iOS compatibility
+- 🐛 Fixed fullscreen button not responding on iOS Safari
 
 ### V8.1
-- 🐛 Fixed progress bar not responding to clicks and drags (hot zone z-index conflict blocked pointer events on progress bar)
-- ✨ Version number now dynamically read from `package.json` instead of being hardcoded
-- ✨ Added "Check for Updates" feature in Settings → About, using [GitHub Releases API](https://api.github.com/repos/Eq52/Bismuth-Player/releases/latest) to detect new versions
+- 🐛 Fixed progress bar not responding to clicks and drags
+- ✨ Added "Check for Updates" feature
 
 ### V8
-- ✨ Integrated [SimPlayer](https://github.com/Eq52/Sim-Player) as built-in player (supports MP4/WebM/HLS)
-- ✨ Built-in player features: screenshot, picture-in-picture, playback speed, progress memory, keyboard shortcuts
-- ✨ Auto-hide player controls — move mouse to reveal, idle to hide (YouTube-style)
-- ✨ CORS proxy toggle — optionally disable CORS proxy for direct API requests
-- ✨ "Continue" button in history jumps directly to the player page
-- 💄 Desktop player and episode list in left-right layout, episode panel scrollable
-- 💄 Responsive player control bar with compact buttons for mobile
-- 💄 Transparent progress bar hover zone — controls hide properly while progress bar remains accessible
-- 🐛 Fixed invisible player on mobile in all modes
-- 🐛 Fixed PiP button not showing on some environments (multi-detection fallback)
+- ✨ Integrated SimPlayer as built-in player
+- ✨ Built-in player features: screenshot, PiP, speed control, progress memory
+- ✨ CORS proxy toggle
 
 ### V7
-- ✨ Added splash screen animation
-- ✨ Added page transition animations
-- ✨ Added image loading animations
-- ✨ Added elegant SVG placeholder images
-- ✨ Added skeleton screen loading effects
-- 🐛 Removed PWA functionality for simplified deployment
-  > Recommended: Download the optimized version from [Releases](https://github.com/Eq52/Bismuth-Player/releases/tag/v7) (By GLM-5 Agent)
-- 💄 Optimized loading state display
-- 💄 Optimized desktop sidebar
+- ✨ Added splash screen, page transitions, skeleton screens
+- 🐛 Removed PWA functionality
 
-### V6
-- 🔧 Fixed Firebase deployment path issues
-- ✨ Added GitHub link
+### V6 ~ V3
+- Various UI improvements and bug fixes
 
-### V5
-- 🔧 Fixed API image fetching issues
-- 💄 Optimized desktop layout
-
-### V4
-- ✨ Added desktop sidebar navigation
-- 💄 Optimized responsive layout
-
-### V3
-- ✨ Added serif font support
-- 💄 Optimized global styles
+</details>
 
 ---
 

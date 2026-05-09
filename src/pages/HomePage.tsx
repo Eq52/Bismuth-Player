@@ -52,7 +52,9 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
         setPage(targetPage + 1);
       }
       
-      setHasMore(response.list.length === 18);
+      setHasMore(response.page != null && response.pagecount != null
+        ? response.page < response.pagecount
+        : response.list.length >= limit);
     } catch (error) {
       console.error('加载影视失败:', error);
     } finally {
@@ -66,7 +68,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
       setPage(1);
       loadVideos(1, true);
     }
-  }, [currentCategory, hasSources]);
+  }, [currentCategory, hasSources, loadVideos]);
 
   // 滚动加载更多
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {

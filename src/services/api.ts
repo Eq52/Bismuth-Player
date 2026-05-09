@@ -49,7 +49,8 @@ async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Respons
         return response;
       }
 
-      // 记录非 OK 响应为错误，便于最终抛出有意义的错误信息
+      // 消费响应体以释放连接并记录调试信息
+      const errorBody = await response.text().catch(() => '');
       lastError = new Error(`请求失败，HTTP 状态码: ${response.status}`);
 
       if (i < retries && useProxy) {

@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.2-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.2.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -245,6 +245,13 @@ Bismuth-Player/
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
 
+### V9.2.1
+- 🐛 Fixed VideoCard referencing removed `imageError` after v9.2.0 cleanup
+- 🐛 Replaced native `loading="lazy"` with `IntersectionObserver` to stop background image loading
+- 🐛 Fixed `img.src` clearing on unmount triggering console error
+- 🐛 Fixed `HomePage` `hasMore` referencing undefined `limit` variable causing infinite fetch loop
+- 🧹 Removed unused `CACHE_TTL.search` dead code
+
 ### V9.2
 - 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator
 - 🐛 Fixed iOS Safari HLS event listener memory leak and error handler race condition
@@ -252,9 +259,6 @@ Bismuth-Player/
 - 🐛 Fixed `PlayerPage` episode not syncing with prop
 - 🐛 Fixed `fetchWithRetry` non-OK response error reporting and connection pool exhaustion
 - 🐛 Fixed version number fallback mismatch
-- 🐛 Fixed VideoCard referencing removed `imageError` after v9.2.0 cleanup (subsequent hotfix)
-- 🐛 Replaced native `loading="lazy"` with `IntersectionObserver` to stop background image loading after leaving home page
-- 🐛 Fixed `img.src` clearing on unmount triggering console error (subsequent hotfix)
 - ✨ Added volume slider to SimPlayer (hover to reveal)
 - ✨ Improved pagination accuracy using API metadata
 - 🧹 Removed unused `_viewKey` and `imageError` states

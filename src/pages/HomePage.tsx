@@ -54,7 +54,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
       
       setHasMore(response.page != null && response.pagecount != null
         ? response.page < response.pagecount
-        : response.list.length >= limit);
+        : response.list.length >= 18);
     } catch (error) {
       console.error('加载影视失败:', error);
     } finally {

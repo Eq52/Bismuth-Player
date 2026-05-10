@@ -10,7 +10,6 @@ const CACHE_TTL = {
   videoList: 10,      // 列表缓存10分钟
   videoDetail: 60,    // 详情缓存1小时
   categories: 30,     // 分类缓存30分钟
-  search: 5,          // 搜索缓存5分钟
 };
 
 // 构建完整URL（根据设置决定是否添加代理）

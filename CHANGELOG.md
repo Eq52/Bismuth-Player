@@ -5,13 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [9.2.1] - 2026-05-10
 
 ### 🐛 Bug Fixes
 
 - 🐛 Fixed VideoCard still referencing the removed `imageError` variable after the v9.2.0 cleanup — caused runtime crash when `imageError` was referenced in the render path
 - 🐛 Fixed images continuing to load in the background after leaving the home page — replaced native `loading="lazy"` with `IntersectionObserver` so that observers can be properly disconnected on unmount
 - 🐛 Fixed `img.src` being cleared on component unmount triggering "Image corrupt or truncated" console error — cleanup logic now removes event listeners before clearing `src` to prevent aborted-download error events
+- 🐛 Fixed `HomePage` `hasMore` pagination referencing undefined variable `limit` — caused `ReferenceError` crash on API sources that do not return `page`/`pagecount` metadata, leading to infinite re-fetch loop
+
+### 🧹 Cleanup
+
+- 🧹 Removed unused `CACHE_TTL.search` from `api.ts` — search requests bypass cache entirely, making this configuration dead code
 
 ---
 

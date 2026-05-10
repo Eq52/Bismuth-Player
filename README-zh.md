@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.2-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.2.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -246,6 +246,13 @@ Bismuth-Player/
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
 
+### V9.2.1
+- 🐛 修复 VideoCard 引用已移除的 `imageError` 导致运行时报错
+- 🐛 替换原生 `loading="lazy"` 为 IntersectionObserver，解决离开主页后后台持续加载图片
+- 🐛 修复组件卸载时清空 `img.src` 触发控制台报错
+- 🐛 修复 `HomePage` 分页判断引用未定义变量 `limit`，导致无限请求死循环
+- 🧹 移除未使用的 `CACHE_TTL.search` 死代码
+
 ### V9.2
 - 🐛 修复 `parsePlayUrls` 不处理多播放源 `$$$` 分隔符的问题
 - 🐛 修复 iOS Safari HLS 事件监听器内存泄漏和错误处理器竞态条件
@@ -253,9 +260,6 @@ Bismuth-Player/
 - 🐛 修复 `PlayerPage` 集数不随 prop 同步的问题
 - 🐛 修复 `fetchWithRetry` 非 OK 响应错误信息不准确和连接池耗尽问题
 - 🐛 修复版本号 fallback 不匹配的问题
-- 🐛 修复 VideoCard 引用已移除的 `imageError` 导致运行时报错（后续热修复）
-- 🐛 替换原生 `loading="lazy"` 为 IntersectionObserver，解决离开主页后后台持续加载图片的问题
-- 🐛 修复组件卸载时清空 `img.src` 触发控制台报错（后续热修复）
 - ✨ SimPlayer 新增音量滑块（悬停音量图标展开）
 - ✨ 改进分页判断逻辑，使用 API 元数据提高准确性
 - 🧹 移除未使用的 `_viewKey` 和 `imageError` 状态

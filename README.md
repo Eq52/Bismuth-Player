@@ -8,7 +8,7 @@ English｜[简体中文](README-zh.md)
 
 # <div align="center"> <h3>Bismuth Player —— A Video Player Shell as Beautiful as "Bismuth"</h3></div>
 
-<div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, 和 a robust caching mechanism</p> </div>
+<div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
   <img src="https://img.shields.io/badge/version-V9.2-purple?style=for-the-badge" alt="Version">
@@ -252,6 +252,9 @@ Bismuth-Player/
 - 🐛 Fixed `PlayerPage` episode not syncing with prop
 - 🐛 Fixed `fetchWithRetry` non-OK response error reporting and connection pool exhaustion
 - 🐛 Fixed version number fallback mismatch
+- 🐛 Fixed VideoCard referencing removed `imageError` after v9.2.0 cleanup (subsequent hotfix)
+- 🐛 Replaced native `loading="lazy"` with `IntersectionObserver` to stop background image loading after leaving home page
+- 🐛 Fixed `img.src` clearing on unmount triggering console error (subsequent hotfix)
 - ✨ Added volume slider to SimPlayer (hover to reveal)
 - ✨ Improved pagination accuracy using API metadata
 - 🧹 Removed unused `_viewKey` and `imageError` states
@@ -275,7 +278,7 @@ Bismuth-Player/
 - 🔧 Unified storage key naming convention
 
 ### V8.3
-- 🐛 Fixed iOS Safari HLS playback stuttering
+- 🐛 Fixed iOS Safari HLS playback stuttering and CORS preflight overhead on iOS
 
 ### V8.2
 - 🐛 Fixed fullscreen button not responding on iOS Safari

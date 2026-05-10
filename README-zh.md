@@ -253,6 +253,9 @@ Bismuth-Player/
 - 🐛 修复 `PlayerPage` 集数不随 prop 同步的问题
 - 🐛 修复 `fetchWithRetry` 非 OK 响应错误信息不准确和连接池耗尽问题
 - 🐛 修复版本号 fallback 不匹配的问题
+- 🐛 修复 VideoCard 引用已移除的 `imageError` 导致运行时报错（后续热修复）
+- 🐛 替换原生 `loading="lazy"` 为 IntersectionObserver，解决离开主页后后台持续加载图片的问题
+- 🐛 修复组件卸载时清空 `img.src` 触发控制台报错（后续热修复）
 - ✨ SimPlayer 新增音量滑块（悬停音量图标展开）
 - ✨ 改进分页判断逻辑，使用 API 元数据提高准确性
 - 🧹 移除未使用的 `_viewKey` 和 `imageError` 状态
@@ -276,7 +279,7 @@ Bismuth-Player/
 - 🔧 统一 localStorage 存储键命名规范
 
 ### V8.3
-- 🐛 修复 iOS Safari 下 HLS 播放卡顿问题
+- 🐛 修复 iOS Safari 下 HLS 播放卡顿和 CORS 预检开销问题
 
 ### V8.2
 - 🐛 修复 iOS Safari 下全屏按钮无响应的问题

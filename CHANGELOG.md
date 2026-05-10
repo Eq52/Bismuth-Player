@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed VideoCard still referencing the removed `imageError` variable after the v9.2.0 cleanup — caused runtime crash when `imageError` was referenced in the render path
+- 🐛 Fixed images continuing to load in the background after leaving the home page — replaced native `loading="lazy"` with `IntersectionObserver` so that observers can be properly disconnected on unmount
+- 🐛 Fixed `img.src` being cleared on component unmount triggering "Image corrupt or truncated" console error — cleanup logic now removes event listeners before clearing `src` to prevent aborted-download error events
+
+---
+
 ## [9.2.0] - 2026-05-09
 
 ### 🐛 Bug Fixes
 
-- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator — only the first source's episodes were parsed, causing missing episodes on sources with multiple播放源
+- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator — only the first source's episodes were parsed, causing missing episodes on sources with multiple playlists
 - 🐛 Fixed iOS Safari HLS event listener memory leak — `stalled` and `error` handlers accumulated on every `src` change, never cleaned up on unmount
 - 🐛 Fixed iOS HLS error handler race condition — CORS retry handler and iOS native error handler both fired on the same error event, causing double-reload and potential playback failure
 - 🐛 Fixed `DetailPage` skeleton screen not showing when switching videos — `coverLoaded` state was never reset
@@ -22,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✨ Added volume slider to SimPlayer — hover over the volume icon to reveal a draggable volume control (previously volume could only be adjusted via keyboard)
 - ✨ Improved pagination accuracy — `hasMore` now uses API `page/pagecount` metadata when available, falling back to list length check (prevents premature scroll stop on sources with custom page sizes)
 - 🧹 Removed unused `_viewKey` state from `App.tsx` — was written 7+ times per navigation but never read, causing unnecessary full-tree re-renders
-- 🧹 Removed unused `imageError` state from `VideoCard` — original image URL is now preserved for retry after transient network failures
+- 🧹 Removed unused `imageError` state from `VideoCard` — original image URL is now preserved for retry after transient network failures (note: one stale reference was missed and fixed in a subsequent commit)
 - ⚡ Optimized `PlayerPage` — `getPlayerSettings()` no longer reads localStorage on every render, cached in state instead
 - ⚡ Optimized `SimPlayer.handleScreenshot` — no longer recreates ~4 times per second due to `currentTime` dependency, reads directly from video element
 - 🔧 Added `loadVideos` to useEffect dependency array in `HomePage` (exhaustive-deps compliance)
@@ -50,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [9.0.0] - 2026-04-16
 
+> **Note:** No separate Git tag was created for v9.0.0. The changes below are included within the v9.1 tag range (`v8.2..v9.1`).
+
 ### ✨ New Features
 
 - 🏗️ **Settings page redesigned** — each setting category (Video Sources, Player, CORS Proxy, Cache, About) now has its own dedicated page with full-screen navigation
@@ -66,7 +78,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [8.3.0] - 2026-04-15
+## [8.3.0] - 2026-04-16
+
+> **Note:** No separate Git tag was created for v8.3.0. The changes below are included within the v9.1 tag range (`v8.2..v9.1`). The original CHANGELOG entry listed the date as 2026-04-15, but no commits exist on that date — the actual changes were committed on 2026-04-16 alongside the v9.0/v9.1 release batch.
 
 ### 🐛 Bug Fixes
 

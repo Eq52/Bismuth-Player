@@ -49,7 +49,7 @@ async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Respons
       }
 
       // 消费响应体以释放连接并记录调试信息
-      const errorBody = await response.text().catch(() => '');
+      await response.text().catch(() => '');
       lastError = new Error(`请求失败，HTTP 状态码: ${response.status}`);
 
       if (i < retries && useProxy) {

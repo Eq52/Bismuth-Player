@@ -17,7 +17,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   const [currentEpisode, setCurrentEpisode] = useState(initialEpisode);
   const [loading, setLoading] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [playerSettings, setPlayerSettings] = useState<PlayerSettings>(getPlayerSettings);
+  const [playerSettings] = useState<PlayerSettings>(getPlayerSettings);
 
   useEffect(() => {
     setCurrentEpisode(initialEpisode);

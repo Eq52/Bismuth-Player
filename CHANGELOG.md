@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.3.0] - 2026-05-10
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed HomePage not refreshing after adding the first video source — the mount-only `useEffect` never re-checked `localStorage`, so the empty welcome screen persisted until page reload
+- 🐛 Fixed HomePage categories not updating after switching video source — same root cause: categories were loaded once on mount and never refreshed
+- 🐛 Fixed SimPlayer `crossOrigin` conflict on iOS — the init `useEffect` unconditionally set `video.crossOrigin = 'anonymous'`, overriding the JSX `crossOrigin={isIOS ? undefined : 'anonymous'}` intent to skip CORS on iOS native HLS, potentially causing playback failures on CDN resources without `Access-Control-Allow-Origin`
+- 🐛 Fixed API response not validated — raw `response.json()` was cast directly to `ApiResponse`, so malformed or error responses without a `list` field caused `TypeError` crashes at all consumption sites (video list spread, detail access, etc.)
+- 🐛 Fixed `components.json` pointing to wrong Tailwind config file — `postcss.config.js` instead of `tailwind.config.js`, breaking `npx shadcn add` CLI commands
+
+### 🔧 Changes
+
+- 🔧 Updated version fallback from `9.2.0` to `9.3.0` in Settings and About pages
+
+---
+
 ## [9.2.1] - 2026-05-10
 
 ### 🐛 Bug Fixes

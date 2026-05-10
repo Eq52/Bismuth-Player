@@ -11,7 +11,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.2.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.3.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -244,6 +244,13 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.3.0
+- 🐛 Fixed HomePage not refreshing after adding first video source or switching source
+- 🐛 Fixed SimPlayer `crossOrigin` conflict on iOS causing HLS playback failures
+- 🐛 Fixed API response not validated — malformed responses caused TypeError crashes
+- 🐛 Fixed `components.json` pointing to wrong Tailwind config file
+- 🔧 Updated version fallback to V9.3.0
 
 ### V9.2.1
 - 🐛 Fixed VideoCard referencing removed `imageError` after v9.2.0 cleanup

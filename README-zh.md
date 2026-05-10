@@ -11,7 +11,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.2.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.3.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -245,6 +245,14 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.3.0
+- 🐛 修复添加首个影视源后首页不刷新的问题
+- 🐛 修复切换影视源后分类列表不更新的问题
+- 🐛 修复 SimPlayer 在 iOS 上 crossOrigin 属性冲突导致 HLS 播放失败
+- 🐛 修复 API 响应未验证，畸形响应导致 TypeError 崩溃
+- 🐛 修复 `components.json` 指向错误的 Tailwind 配置文件
+- 🔧 更新版本号回退值为 V9.3.0
 
 ### V9.2.1
 - 🐛 修复 VideoCard 引用已移除的 `imageError` 导致运行时报错

@@ -4,7 +4,7 @@ import { getCorsProxyList, isCorsProxyEnabled } from '@/services/storage';
 import { getCacheStats } from '@/services/cache';
 
 // 从 Vite define 注入的版本号（类型声明见 env.d.ts）
-const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.2.0';
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.3.0';
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
 export type SettingsSubPage = 'none' | 'source' | 'player' | 'cors' | 'cache' | 'about';

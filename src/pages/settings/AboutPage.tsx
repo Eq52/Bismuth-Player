@@ -6,7 +6,7 @@ interface AboutPageProps {
 }
 
 // 从 Vite define 注入的版本号（类型声明见 env.d.ts）
-const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.2.0';
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.3.0';
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
 // 比较语义版本号，返回 >0 表示 a 更新

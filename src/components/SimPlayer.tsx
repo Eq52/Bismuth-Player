@@ -179,7 +179,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
 
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     corsRetryRef.current = false;
-    video.crossOrigin = 'anonymous';
+    if (!isIOS) video.crossOrigin = 'anonymous';
 
     // iOS HLS 原生处理器引用（用于清理）
     let iosErrorHandler: (() => void) | null = null;

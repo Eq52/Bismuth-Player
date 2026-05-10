@@ -9,9 +9,11 @@ interface HomePageProps {
   onSettingsClick: () => void;
   onAddSourceClick: () => void;
   onSearchClick: () => void;
+  /** 递增计数器，每次从设置页返回首页时更新，触发分类和影视源列表刷新 */
+  refreshKey: number;
 }
 
-export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSearchClick }: HomePageProps) {
+export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSearchClick, refreshKey }: HomePageProps) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [currentCategory, setCurrentCategory] = useState('all');
@@ -25,7 +27,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
   const loadingRef = useRef(loading);
   loadingRef.current = loading;
 
-  // 加载分类和检查影视源
+  // 加载分类和检查影视源（refreshKey 变化时重新加载，例如从设置页返回）
   useEffect(() => {
     const sources = getSources();
     setHasSources(sources.length > 0);
@@ -34,7 +36,7 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
     if (sources.length > 0) {
       getCategories().then(setCategories);
     }
-  }, []);
+  }, [refreshKey]);
 
   // 加载影视列表
   const loadVideos = useCallback(async (targetPage: number, reset: boolean = false) => {

@@ -31,6 +31,14 @@ function rotateProxy(): string {
   return list[0];
 }
 
+// 验证 API 响应格式，防止 malformed JSON 导致消费端崩溃
+function safeApiResponse(data: any): ApiResponse {
+  if (data && typeof data === 'object' && Array.isArray(data.list)) {
+    return data as ApiResponse;
+  }
+  return { code: data?.code ?? 0, msg: data?.msg || 'Invalid API response', list: [] };
+}
+
 // 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
 async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Response> {
   let lastError: Error | null = null;
@@ -150,8 +158,7 @@ export async function getVideoList(
     }
     
     const response = await fetchWithRetry(url);
-    const data: ApiResponse = await response.json();
-    return data;
+    return safeApiResponse(await response.json());
   }
   
   // 普通列表请求使用缓存
@@ -171,7 +178,7 @@ export async function getVideoList(
   }
 
   const response = await fetchWithRetry(url);
-  const data: ApiResponse = await response.json();
+  const data = safeApiResponse(await response.json());
   
   // 缓存结果
   if (data.code === 1 || data.code === 200) {
@@ -200,7 +207,7 @@ export async function getVideoDetail(id: number): Promise<VideoItem | null> {
   const url = `${source.url}?ac=detail&ids=${id}`;
   
   const response = await fetchWithRetry(url);
-  const data: ApiResponse = await response.json();
+  const data = safeApiResponse(await response.json());
   
   if (data.list && data.list.length > 0) {
     const video = data.list[0];
@@ -239,6 +246,10 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
   try {
     const response = await fetchWithRetry(url);
     const data = await response.json();
+    
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid API response');
+    }
     
     let categories: { id: string; name: string }[];
     
@@ -302,7 +313,7 @@ export async function testSource(url: string): Promise<boolean> {
     const testUrl = `${url}?ac=videolist&limit=1`;
     const response = await fetchWithRetry(testUrl);
     const data = await response.json();
-    return data.code === 1 || data.code === 200;
+    return data && (data.code === 1 || data.code === 200);
   } catch {
     return false;
   }

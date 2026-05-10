@@ -164,6 +164,7 @@ function App() {
   const [isReady, setIsReady] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [settingsSubPage, setSettingsSubPage] = useState<SettingsSubPage>('none');
+  const [homeRefreshKey, setHomeRefreshKey] = useState(0);
 
   // 初始化
   useEffect(() => {
@@ -234,6 +235,8 @@ function App() {
     setCurrentPage(page as PageType);
     setCurrentView('list');
     setSettingsSubPage('none');
+    // 从其他页面返回首页时刷新分类和影视源状态
+    if (page === 'home') setHomeRefreshKey(k => k + 1);
   }, []);
 
   // 渲染当前视图
@@ -332,6 +335,7 @@ function App() {
                   onSettingsClick={() => handlePageChange('settings')}
                   onAddSourceClick={handleAddSourceClick}
                   onSearchClick={handleSearchClick}
+                  refreshKey={homeRefreshKey}
                 />
               </PageTransition>
             );

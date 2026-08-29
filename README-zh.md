@@ -1,9 +1,13 @@
 <div align="center">
 
-[英文](README.md)｜简体中文
+English｜[简体中文](README-zh.md)
 
 </div>
 
+---
+
+> NOTE:
+> 我已经有了新的更新计划，在学业之余会抽空更新的；如果找不到稳定的跨域服务可以考虑安装[安卓版_内置本地CORS服务](https://github.com/Eq52/Bismuth-Player/releases/download/v9.3.0/Bismuth_9.3.0_CORS.apk)
 ---
 
 # <div align="center"> <h3>Bismuth Player —— 如"秘"般美丽的影视播放壳子</h3></div>

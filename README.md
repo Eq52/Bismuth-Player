@@ -1,3 +1,8 @@
+
+> NOTE:
+> I have set new update goals and will continue to release updates in my spare time outside of study. If you need a reliable cross-origin solution, consider using the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.3.0/Bismuth_9.3.0_CORS.apk).
+---
+
 <div align="center">
 
 English｜[简体中文](README-zh.md)

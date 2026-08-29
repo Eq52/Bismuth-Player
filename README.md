@@ -31,7 +31,7 @@ English｜[简体中文](README-zh.md)
 
 ---
 
-## 描述
+## Description
 
 > This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: GLM-5 (Agent), Kimi (Agent), GLM-5-Turbo, GLM-4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
 

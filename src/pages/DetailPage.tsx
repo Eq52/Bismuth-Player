@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2 } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls } from '@/services/api';
+import { getVideoDetail, parsePlayUrls, getCurrentSource } from '@/services/api';
 import { addPlayHistory } from '@/services/storage';
 import type { VideoItem } from '@/types';
 
@@ -50,7 +50,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
         episodeName: ep.name,
         progress: 0,
         timestamp: Date.now(),
-        sourceId: localStorage.getItem('current_source_id') || ''
+        sourceId: getCurrentSource()?.id || ''
       });
       
       onPlay(detail, episodeIndex);

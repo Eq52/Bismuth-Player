@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls } from '@/services/api';
+import { getVideoDetail, parsePlayUrls, getCurrentSource } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
 import type { VideoItem, PlayerSettings } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
@@ -73,7 +73,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
           episodeName: episodes[index].name,
           progress: 0,
           timestamp: Date.now(),
-          sourceId: localStorage.getItem('current_source_id') || ''
+          sourceId: getCurrentSource()?.id || ''
         });
       }
     }

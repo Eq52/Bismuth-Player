@@ -5,6 +5,29 @@ import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList } from './storag
 // 默认无影视源 - 用户需自行添加
 export const DEFAULT_SOURCES: VideoSource[] = [];
 
+// 存储键名（统一 bismuth_ 前缀，兼容旧数据自动迁移）
+const SOURCES_KEY = 'bismuth_video_sources';
+const CURRENT_SOURCE_KEY = 'bismuth_current_source_id';
+const OLD_SOURCES_KEY = 'video_sources';
+const OLD_CURRENT_SOURCE_KEY = 'current_source_id';
+
+// 带迁移的读取：先读新键，没有就读旧键并自动迁移
+function readWithMigration<T>(newKey: string, oldKey: string, parse: (raw: string) => T | null): T | null {
+  const fresh = localStorage.getItem(newKey);
+  if (fresh !== null) {
+    return parse(fresh);
+  }
+  const legacy = localStorage.getItem(oldKey);
+  if (legacy !== null) {
+    const parsed = parse(legacy);
+    // 迁移到新键，删除旧键
+    localStorage.setItem(newKey, legacy);
+    localStorage.removeItem(oldKey);
+    return parsed;
+  }
+  return null;
+}
+
 // 缓存有效期配置（分钟）
 const CACHE_TTL = {
   videoList: 10,      // 列表缓存10分钟
@@ -34,9 +57,20 @@ function rotateProxy(): string {
 // 验证 API 响应格式，防止 malformed JSON 导致消费端崩溃
 function safeApiResponse(data: any): ApiResponse {
   if (data && typeof data === 'object' && Array.isArray(data.list)) {
-    return data as ApiResponse;
+    // 类型归一化：苹果CMS分页字段可能是字符串也可能是数字，统一转 number
+    return {
+      code: Number(data.code) || 0,
+      msg: String(data.msg || ''),
+      page: data.page !== undefined ? Number(data.page) : undefined,
+      pagecount: data.pagecount !== undefined ? Number(data.pagecount) : undefined,
+      limit: data.limit !== undefined ? Number(data.limit) : undefined,
+      total: data.total !== undefined ? Number(data.total) : undefined,
+      list: data.list,
+      // 透传 class 字段（分类数据，getCategories 需要）
+      ...(data.class !== undefined ? { class: data.class } : {}),
+    } as ApiResponse;
   }
-  return { code: data?.code ?? 0, msg: data?.msg || 'Invalid API response', list: [] };
+  return { code: Number(data?.code) || 0, msg: String(data?.msg || 'Invalid API response'), list: [] };
 }
 
 // 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
@@ -80,32 +114,39 @@ async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Respons
 export function getCurrentSource(): VideoSource | null {
   const sources = getSources();
   if (sources.length === 0) return null;
-  const currentId = localStorage.getItem('current_source_id');
+  const currentId = readWithMigration<string>(
+    CURRENT_SOURCE_KEY,
+    OLD_CURRENT_SOURCE_KEY,
+    (raw) => raw
+  );
   return sources.find(s => s.id === currentId) || sources[0] || null;
 }
 
 // 获取所有影视源
 export function getSources(): VideoSource[] {
-  const stored = localStorage.getItem('video_sources');
-  if (stored) {
-    try {
-      const sources = JSON.parse(stored);
-      return Array.isArray(sources) ? sources : [];
-    } catch {
-      return [];
+  const result = readWithMigration<VideoSource[]>(
+    SOURCES_KEY,
+    OLD_SOURCES_KEY,
+    (raw) => {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
     }
-  }
-  return [];
+  );
+  return result || [];
 }
 
 // 保存影视源
 export function saveSources(sources: VideoSource[]): void {
-  localStorage.setItem('video_sources', JSON.stringify(sources));
+  localStorage.setItem(SOURCES_KEY, JSON.stringify(sources));
 }
 
 // 设置当前影视源
 export function setCurrentSource(sourceId: string): void {
-  localStorage.setItem('current_source_id', sourceId);
+  localStorage.setItem(CURRENT_SOURCE_KEY, sourceId);
 }
 
 // 添加影视源
@@ -225,23 +266,32 @@ export async function searchVideos(wd: string, page: number = 1, limit: number =
 }
 
 // 获取分类列表（带缓存）
-export async function getCategories(): Promise<{ id: string; name: string }[]> {
+// 分类项（含层级信息）
+export interface CategoryItem {
+  id: string;
+  name: string;
+  type_id: number;
+  type_pid: number;
+}
+
+export async function getCategories(): Promise<CategoryItem[]> {
   const source = getCurrentSource();
   if (!source) {
-    return [{ id: 'all', name: '全部' }];
+    return [{ id: 'all', name: '全部', type_id: 0, type_pid: -1 }];
   }
   
   // 生成缓存键
   const cacheKey = generateCacheKey('categories', {});
   
   // 尝试从缓存获取
-  const cached = getCache<{ id: string; name: string }[]>(cacheKey);
+  const cached = getCache<CategoryItem[]>(cacheKey);
   if (cached) {
     console.log('[Cache] 命中分类缓存');
     return cached;
   }
   
-  const url = `${source.url}?ac=videolist`;
+  // 苹果CMS不带参数时返回 list + class；带 ?ac=videolist 时不返回 class
+  const url = source.url;
   
   try {
     const response = await fetchWithRetry(url);
@@ -251,21 +301,26 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
       throw new Error('Invalid API response');
     }
     
-    let categories: { id: string; name: string }[];
+    let categories: CategoryItem[];
     
     if (data.class && Array.isArray(data.class)) {
       categories = [
-        { id: 'all', name: '全部' },
-        ...data.class.map((c: any) => ({ id: String(c.type_id), name: c.type_name }))
+        { id: 'all', name: '全部', type_id: 0, type_pid: -1 },
+        ...data.class.map((c: any) => ({
+          id: String(c.type_id),
+          name: c.type_name,
+          type_id: Number(c.type_id),
+          type_pid: Number(c.type_pid)
+        }))
       ];
     } else {
-      // 默认分类
+      // 默认分类（fallback）
       categories = [
-        { id: 'all', name: '全部' },
-        { id: '2', name: '电视剧' },
-        { id: '1', name: '电影' },
-        { id: '3', name: '综艺' },
-        { id: '4', name: '动漫' }
+        { id: 'all', name: '全部', type_id: 0, type_pid: -1 },
+        { id: '2', name: '电视剧', type_id: 2, type_pid: 0 },
+        { id: '1', name: '电影', type_id: 1, type_pid: 0 },
+        { id: '3', name: '综艺', type_id: 3, type_pid: 0 },
+        { id: '4', name: '动漫', type_id: 4, type_pid: 0 }
       ];
     }
     
@@ -276,11 +331,11 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
   } catch (error) {
     console.error('获取分类失败:', error);
     return [
-      { id: 'all', name: '全部' },
-      { id: '2', name: '电视剧' },
-      { id: '1', name: '电影' },
-      { id: '3', name: '综艺' },
-      { id: '4', name: '动漫' }
+      { id: 'all', name: '全部', type_id: 0, type_pid: -1 },
+      { id: '2', name: '电视剧', type_id: 2, type_pid: 0 },
+      { id: '1', name: '电影', type_id: 1, type_pid: 0 },
+      { id: '3', name: '综艺', type_id: 3, type_pid: 0 },
+      { id: '4', name: '动漫', type_id: 4, type_pid: 0 }
     ];
   }
 }

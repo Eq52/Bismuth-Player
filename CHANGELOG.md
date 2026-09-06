@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.4.0] - 2026-09-06
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed build failure — removed 49 unused shadcn/ui zombie components (only button/input/dialog/switch are actually referenced) and restored the missing `index.html` Vite entry file that was absent from the repository
+- 🐛 Fixed categories always falling back to hardcoded list — `getCategories()` requested `?ac=videolist`, but Apple CMS omits the `class` field when that parameter is present; now requests the base URL directly so categories are dynamically loaded from the API (43 categories on iqiyizyapi, 48 on jyzyapi)
+- 🐛 Fixed inconsistent localStorage key naming — `video_sources` and `current_source_id` were the only keys without the `bismuth_` prefix; renamed to `bismuth_video_sources` / `bismuth_current_source_id` with automatic one-time migration of legacy data
+- 🐛 Fixed pagination field type inconsistency — Apple CMS returns `page`/`pagecount`/`total` as numbers without parameters but as strings with `pg`/`limit`; `safeApiResponse()` now normalizes all pagination fields with `Number()` to prevent string-comparison bugs like `"10" < "9" === true`
+- 🐛 Fixed sub-category "All" tab showing empty results — Apple CMS top-level categories (e.g. "连续剧" type_id=8) contain no direct videos (all videos live under sub-categories), so requesting `t=8` returns `total: 0`; clicking a top-level category now auto-selects its first sub-category, and the non-functional "All" sub-category button has been removed
+
+### ✨ Improvements
+
+- ✨ Added two-level category navigation — leverages the `type_pid` hierarchy from Apple CMS `class` field: top-level categories as tabs (first row), sub-categories as chips (second row), replacing the previous flat horizontal scroll of 40+ categories
+- ✨ Added `Category` type to `ApiResponse` — the `class` field is now properly typed and passed through `safeApiResponse()`
+
+### 🧹 Cleanup
+
+- 🧹 Removed 49 unused shadcn/ui component files from `src/components/ui/` (accordion, alert, avatar, badge, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, drawer, dropdown-menu, field, form, hover-card, input-group, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, spinner, table, tabs, textarea, toggle, toggle-group, tooltip, button-group, alert-dialog, empty, aspect-ratio, breadcrumb)
+
+---
+
 ## [9.3.0] - 2026-05-10
 
 ### 🐛 Bug Fixes

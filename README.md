@@ -15,7 +15,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.3.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.4.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -33,7 +33,7 @@ English｜[简体中文](README-zh.md)
 
 ## Description
 
-> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: GLM-5 (Agent), Kimi (Agent), GLM-5-Turbo, GLM-4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
+> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: Doubao, GLM-5 (Agent), Kimi (Agent), GLM-5-Turbo, GLM-4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
 
 ---
 
@@ -91,7 +91,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 - **Custom Video Sources** - Support for multiple Apple CMS API sources (JSON format)
 - **Built-in Player ([SimPlayer](https://github.com/Eq52/Sim-Player))** - Integrated lightweight player supporting MP4/WebM/HLS with screenshot, PiP, speed control, and progress memory
 - **External Player Support** - Fallback iframe-based player for custom player URLs
-- **Category Browsing** - Filter videos by category
+- **Two-level Category Navigation** — Dynamic categories loaded from API with top-level tabs and sub-category chips (leveraging Apple CMS `type_pid` hierarchy)
 - **Search Function** - Quickly find the content you want
 - **Playback History** - Automatically tracks viewing progress with one-click continue
 - **Episode Selection** - Clear episode selection interface with left-right layout on desktop
@@ -248,6 +248,15 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.4.0
+- 🐛 Fixed build failure — removed 49 unused shadcn/ui zombie components and restored the missing `index.html` Vite entry file (was incorrectly gitignored)
+- 🐛 Fixed categories always falling back to hardcoded list — `getCategories()` now requests the base URL directly (Apple CMS omits `class` field when `?ac=videolist` parameter is present)
+- 🐛 Fixed inconsistent localStorage key naming — `video_sources`/`current_source_id` renamed to `bismuth_` prefix with automatic one-time migration of legacy data
+- 🐛 Fixed pagination field type inconsistency — `safeApiResponse()` normalizes all pagination fields with `Number()` to prevent string-comparison bugs
+- 🐛 Fixed sub-category "All" tab showing empty results — clicking a top-level category now auto-selects its first sub-category (Apple CMS top-level categories contain no direct videos)
+- ✨ Added two-level category navigation — leverages `type_pid` hierarchy: top-level categories as tabs + sub-categories as chips
+- 🔧 Updated `.gitignore` to track `/index.html` (critical fix for build reproducibility)
 
 ### V9.3.0
 - 🐛 Fixed HomePage not refreshing after adding first video source or switching source

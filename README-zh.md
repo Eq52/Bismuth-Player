@@ -15,7 +15,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.3.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.4.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -34,7 +34,7 @@
 
 ## 说明
 
-> 本项目约等于是AI生成的,我只是检测问题、提出优化方向,使用模型如下：GLM-5 (Agent)，Kimi (Agent)，GLM-5-Turbo，GLM-4.7/4.6/4.6V/4.5，Deepseek-R1/Chat (项目启动想法萌芽时提供帮助)
+> 本项目约等于是AI生成的,我只是检测问题、提出优化方向,使用模型如下：豆包、GLM-5 (Agent)，Kimi (Agent)，GLM-5-Turbo，GLM-4.7/4.6/4.6V/4.5，Deepseek-R1/Chat (项目启动想法萌芽时提供帮助)
 
 ---
 
@@ -92,7 +92,7 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 - **自定义影视源** - 支持添加多个苹果CMS API源 (json格式)
 - **内置播放器 ([SimPlayer](https://github.com/Eq52/Sim-Player))** - 集成轻量播放器，支持MP4/WebM/HLS，含截图、画中画、倍速播放、进度记忆
 - **外部播放器支持** - 支持自定义播放器URL，以iframe方式嵌入
-- **分类浏览** - 按分类筛选影片
+- **两级分类导航** - 从API动态加载分类，顶级分类Tab + 子分类标签（利用苹果CMS `type_pid` 层级结构）
 - **搜索功能** - 快速搜索你想要的内容
 - **播放历史** - 自动记录观看进度，支持一键继续播放
 - **选集播放** - 清晰的剧集选择界面，桌面端左右布局
@@ -249,6 +249,15 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.4.0
+- 🐛 修复构建失败 — 移除49个未使用的 shadcn/ui 僵尸组件，补全缺失的 `index.html` Vite 入口文件（之前被错误地加入了 .gitignore）
+- 🐛 修复分类永远回退到硬编码列表 — `getCategories()` 改为直接请求基础URL（苹果CMS在带 `?ac=videolist` 参数时不返回 `class` 字段）
+- 🐛 修复 localStorage 键名不统一 — `video_sources`/`current_source_id` 改为 `bismuth_` 前缀，带旧数据自动一次性迁移
+- 🐛 修复分页字段类型不一致 — `safeApiResponse()` 用 `Number()` 归一化所有分页字段，避免字符串比较错误
+- 🐛 修复子分类"全部"标签显示空结果 — 点击顶级分类后自动选中第一个子分类（苹果CMS顶级分类下没有直接内容）
+- ✨ 新增两级分类导航 — 利用 `type_pid` 层级结构：顶级分类Tab + 子分类标签
+- 🔧 更新 `.gitignore`，不再忽略 `/index.html`（构建可复现性的关键修复）
 
 ### V9.3.0
 - 🐛 修复添加首个影视源后首页不刷新的问题

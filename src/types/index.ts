@@ -61,6 +61,7 @@ export interface PlayerSettings {
   playerMode: PlayerMode;
   playerUrl: string;
   autoResume: boolean;
+  blockEthics: boolean;
 }
 
 // 缓存设置
@@ -74,6 +75,17 @@ export interface AppSettings {
   currentSourceId: string;
   player: PlayerSettings;
   cache: CacheSettings;
+}
+
+// 收藏类型
+export interface FavoriteItem {
+  vod_id: number;
+  vod_name: string;
+  vod_pic: string;
+  vod_remarks?: string;
+  type_name?: string;
+  timestamp: number;
+  sourceId: string;
 }
 
 // 分类类型

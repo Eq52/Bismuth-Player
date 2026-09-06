@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, Monitor, Check, AlertCircle, TestTube, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { getSources, addSource, removeSource, getCurrentSource, setCurrentSource, testSource } from '@/services/api';
+import { getPlayerSettings, savePlayerSettings } from '@/services/storage';
 import type { VideoSource } from '@/types';
 
 interface VideoSourcePageProps {
@@ -17,12 +19,21 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [testingSource, setTestingSource] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
+  const [blockEthics, setBlockEthics] = useState(false);
 
   useEffect(() => {
     setSources(getSources());
     const current = getCurrentSource();
     setCurrentSourceId(current?.id || '');
+    setBlockEthics(getPlayerSettings().blockEthics);
   }, []);
+
+  // 切换伦理片屏蔽
+  const handleBlockEthicsChange = (checked: boolean) => {
+    setBlockEthics(checked);
+    const settings = getPlayerSettings();
+    savePlayerSettings({ ...settings, blockEthics: checked });
+  };
 
   // 测试影视源
   const handleTestSource = async () => {
@@ -228,6 +239,22 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
               ))}
             </div>
           )}
+
+          {/* 🔞 内容过滤设置 */}
+          <div className="mt-6 bg-[#141414] border border-white/5 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm flex items-center gap-1.5">
+                  <span className="text-red-400">🔞</span> 屏蔽伦理片
+                </p>
+                <p className="text-gray-500 text-xs mt-1">开启后首页不显示伦理片分类，列表过滤伦理片内容</p>
+              </div>
+              <Switch
+                checked={blockEthics}
+                onCheckedChange={handleBlockEthicsChange}
+              />
+            </div>
+          </div>
 
           {/* 说明 */}
           <div className="mt-6 flex items-start gap-2 p-3 bg-white/[0.02] border border-white/5 rounded-xl">

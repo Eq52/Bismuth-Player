@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Settings, Plus, Film, Search } from 'lucide-react';
+import { Plus, Film, Search, History } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
 import { getVideoList, getCategories, getCurrentSource, getSources } from '@/services/api';
 import type { CategoryItem } from '@/services/api';
@@ -7,14 +7,14 @@ import type { VideoItem, VideoSource } from '@/types';
 
 interface HomePageProps {
   onVideoClick: (video: VideoItem) => void;
-  onSettingsClick: () => void;
+  onHistoryClick: () => void;
   onAddSourceClick: () => void;
   onSearchClick: () => void;
   /** 递增计数器，每次从设置页返回首页时更新，触发分类和影视源列表刷新 */
   refreshKey: number;
 }
 
-export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSearchClick, refreshKey }: HomePageProps) {
+export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSearchClick, refreshKey }: HomePageProps) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [currentCategory, setCurrentCategory] = useState('all');
@@ -108,10 +108,11 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
             </div>
           </div>
           <button 
-            onClick={onSettingsClick}
+            onClick={onHistoryClick}
             className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+            title="播放历史"
           >
-            <Settings size={20} />
+            <History size={20} />
           </button>
         </header>
 
@@ -150,10 +151,11 @@ export function HomePage({ onVideoClick, onSettingsClick, onAddSourceClick, onSe
           </div>
         </div>
         <button 
-          onClick={onSettingsClick}
+          onClick={onHistoryClick}
           className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+          title="播放历史"
         >
-          <Settings size={20} />
+          <History size={20} />
         </button>
       </header>
 

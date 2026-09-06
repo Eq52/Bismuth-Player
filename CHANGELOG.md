@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.5.0] - 2026-09-06
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed episode list not scrollable on player page — the right-side panel had no height constraint on mobile, causing `overflow-y-auto` to never activate; added `flex-1 max-h-[45vh]` on mobile so episode grid scrolls independently when there are many episodes
+- 🐛 Fixed resume playback bug — `PlayerPage` useEffect was missing `initialEpisode` in dependency array, causing episode to not update when navigating from history with a specific episode
+
+### ✨ New Features
+
+- ✨ Added 🔞 Ethics content filter — "屏蔽伦理片" toggle in **Video Source Settings**; when enabled, ethics categories are hidden from homepage navigation and ethics videos are filtered from all lists (matches category names containing 伦理/情色/成人/色情/18禁/三级 etc.)
+- ✨ Added Favorites system — ❤️ button on video detail page to add/remove favorites; "收藏" tab in bottom navigation and desktop sidebar with full favorites management (view, play, remove individual, clear all)
+- ✨ Favorites persist across sessions via localStorage (`bismuth_favorites` key)
+
+### 📱 UI/UX
+
+- 📱 **Navigation redesign** — History moved from bottom tab to homepage top-right icon button; bottom nav now 4 items (Home / Search / Favorites / Settings); desktop sidebar synced
+- 📱 **Ethics filter relocated** — moved from Player Settings to Video Source Settings for better content-source association
+- 📱 Favorite indicator (❤️ badge) on video cards in favorites list
+- 📱 Global scrollbar styling — unified 6px thin scrollbar across all scrollable areas with hover highlight
+- 📱 Current episode pulse animation — selected episode button in player page has a breathing purple glow effect
+- 📱 Homepage top-right button changed from Settings to History (settings accessible via bottom nav)
+
+---
+
 ## [9.4.0] - 2026-09-06
 
 ### 🐛 Bug Fixes

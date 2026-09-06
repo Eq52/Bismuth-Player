@@ -1,4 +1,4 @@
-import { Home, Search, History, Settings } from 'lucide-react';
+import { Home, Search, Heart, Settings } from 'lucide-react';
 
 interface BottomNavProps {
   currentPage: string;
@@ -9,7 +9,7 @@ export function BottomNav({ currentPage, onPageChange }: BottomNavProps) {
   const navItems = [
     { id: 'home', label: '首页', icon: Home },
     { id: 'search', label: '搜索', icon: Search },
-    { id: 'history', label: '历史', icon: History },
+    { id: 'favorites', label: '收藏', icon: Heart },
     { id: 'settings', label: '设置', icon: Settings },
   ];
 

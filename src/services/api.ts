@@ -1,6 +1,13 @@
 import type { VideoItem, ApiResponse, VideoSource } from '@/types';
 import { getCache, setCache } from './cache';
-import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList } from './storage';
+import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettings } from './storage';
+
+// 判断是否为伦理片/成人内容（用于内容过滤）
+function isEthicsContent(name?: string): boolean {
+  if (!name) return false;
+  // 匹配常见的伦理片分类名和标签
+  return /伦理片|伦理|情色片|情色|成人片|成人|色情|18禁|三级片|三级|午夜|福利片|国产自拍|偷拍|无码|有码/.test(name);
+}
 
 // 默认无影视源 - 用户需自行添加
 export const DEFAULT_SOURCES: VideoSource[] = [];
@@ -221,6 +228,16 @@ export async function getVideoList(
   const response = await fetchWithRetry(url);
   const data = safeApiResponse(await response.json());
   
+  // 🔞 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片视频
+  const settings = getPlayerSettings();
+  if (settings.blockEthics && data.list && data.list.length > 0) {
+    data.list = data.list.filter(v => !isEthicsContent(v.type_name));
+    // 更新 total（如果存在）
+    if (data.total !== undefined) {
+      data.total = data.list.length;
+    }
+  }
+  
   // 缓存结果
   if (data.code === 1 || data.code === 200) {
     setCache(cacheKey, data, CACHE_TTL.videoList);
@@ -322,6 +339,22 @@ export async function getCategories(): Promise<CategoryItem[]> {
         { id: '3', name: '综艺', type_id: 3, type_pid: 0 },
         { id: '4', name: '动漫', type_id: 4, type_pid: 0 }
       ];
+    }
+    
+    // 🔞 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片分类
+    const settings = getPlayerSettings();
+    if (settings.blockEthics) {
+      const ethicsIds = new Set<number>();
+      // 先找出所有伦理片顶级分类的 id
+      categories.forEach(c => {
+        if (c.type_pid === 0 && isEthicsContent(c.name)) {
+          ethicsIds.add(c.type_id);
+        }
+      });
+      // 过滤掉伦理片顶级分类及其子分类
+      categories = categories.filter(c => 
+        c.type_id === 0 || (!ethicsIds.has(c.type_id) && !ethicsIds.has(c.type_pid))
+      );
     }
     
     // 缓存结果

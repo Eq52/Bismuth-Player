@@ -38,7 +38,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     };
 
     loadDetail();
-  }, [video.vod_id]);
+  }, [video.vod_id, initialEpisode]);
 
   // 获取当前播放地址（原始视频 URL）
   const getCurrentPlayUrl = () => {
@@ -145,7 +145,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
 
         {/* 右侧面板：控制栏 + 选集 */}
         {episodes.length > 0 && (
-          <div className="lg:w-72 xl:w-80 shrink-0 border-l border-white/5 bg-[#0a0a0a] flex flex-col min-h-0">
+          <div className="lg:w-72 xl:w-80 shrink-0 lg:shrink-0 flex-1 lg:flex-none max-h-[45vh] lg:max-h-none border-l border-white/5 bg-[#0a0a0a] flex flex-col min-h-0">
             {/* 控制栏 */}
             <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between shrink-0">
               <button
@@ -183,7 +183,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
                     onClick={() => changeEpisode(index)}
                     className={`text-xs py-2.5 px-1 rounded-xl transition-all truncate ${
                       index === currentEpisode
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium'
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium episode-current'
                         : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-white/5'
                     }`}
                   >

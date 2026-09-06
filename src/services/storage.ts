@@ -1,4 +1,4 @@
-import type { PlayHistory, PlayerSettings, CacheSettings } from '@/types';
+import type { PlayHistory, PlayerSettings, CacheSettings, FavoriteItem } from '@/types';
 
 const HISTORY_KEY = 'bismuth_history';
 const PLAYER_SETTINGS_KEY = 'bismuth_player';
@@ -6,6 +6,7 @@ const CACHE_SETTINGS_KEY = 'bismuth_cache_settings';
 const CORS_PROXY_LIST_KEY = 'bismuth_cors_proxy_list';
 const CORS_PROXY_ENABLED_KEY = 'bismuth_cors_proxy_enabled';
 const DISCLAIMER_AGREED_KEY = 'bismuth_disclaimer_agreed';
+const FAVORITES_KEY = 'bismuth_favorites';
 
 // 获取播放历史
 export function getPlayHistory(): PlayHistory[] {
@@ -68,7 +69,8 @@ function getDefaultPlayerSettings(): PlayerSettings {
   return {
     playerMode: 'builtin',
     playerUrl: 'https://ericq521.web.app/ckplayer/?v=',
-    autoResume: true
+    autoResume: true,
+    blockEthics: false,
   };
 }
 
@@ -162,4 +164,58 @@ export function isDisclaimerAgreed(): boolean {
 // 设置免责声明同意状态
 export function setDisclaimerAgreed(agreed: boolean): void {
   localStorage.setItem(DISCLAIMER_AGREED_KEY, String(agreed));
+}
+
+// ========== 收藏功能 ==========
+
+// 获取收藏列表
+export function getFavorites(): FavoriteItem[] {
+  const stored = localStorage.getItem(FAVORITES_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// 添加收藏
+export function addFavorite(item: FavoriteItem): void {
+  const favorites = getFavorites();
+  const existingIndex = favorites.findIndex(f => f.vod_id === item.vod_id);
+  if (existingIndex >= 0) {
+    favorites[existingIndex] = item;
+  } else {
+    favorites.unshift(item);
+  }
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+}
+
+// 移除收藏
+export function removeFavorite(vodId: number): void {
+  const favorites = getFavorites().filter(f => f.vod_id !== vodId);
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+}
+
+// 检查是否已收藏
+export function isFavorite(vodId: number): boolean {
+  return getFavorites().some(f => f.vod_id === vodId);
+}
+
+// 切换收藏状态
+export function toggleFavorite(item: FavoriteItem): boolean {
+  if (isFavorite(item.vod_id)) {
+    removeFavorite(item.vod_id);
+    return false;
+  } else {
+    addFavorite(item);
+    return true;
+  }
+}
+
+// 清空所有收藏
+export function clearFavorites(): void {
+  localStorage.removeItem(FAVORITES_KEY);
 }

@@ -15,7 +15,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.4.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.5.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -92,9 +92,11 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 - **Built-in Player ([SimPlayer](https://github.com/Eq52/Sim-Player))** - Integrated lightweight player supporting MP4/WebM/HLS with screenshot, PiP, speed control, and progress memory
 - **External Player Support** - Fallback iframe-based player for custom player URLs
 - **Two-level Category Navigation** — Dynamic categories loaded from API with top-level tabs and sub-category chips (leveraging Apple CMS `type_pid` hierarchy)
+- **Favorites System** — ❤️ button on detail page to save favorites; dedicated Favorites tab with full management (view, play, remove, clear all)
+- **🔞 Ethics Content Filter** — Optional toggle in Video Source Settings to hide ethics categories and filter ethics videos from all lists
 - **Search Function** - Quickly find the content you want
-- **Playback History** - Automatically tracks viewing progress with one-click continue
-- **Episode Selection** - Clear episode selection interface with left-right layout on desktop
+- **Playback History** - Automatically tracks viewing progress with one-click continue (accessible via homepage top-right button)
+- **Episode Selection** - Clear episode selection interface with scrollable episode grid and current episode pulse highlight
 
 ### 🚀 Performance Optimization
 - **API Caching** - Intelligent caching of API responses to reduce network requests
@@ -248,6 +250,14 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.5.0
+- 🐛 Fixed episode list not scrollable on player page — added `flex-1 max-h-[45vh]` on mobile so episode grid scrolls independently with many episodes
+- 🐛 Fixed resume playback bug — `PlayerPage` useEffect missing `initialEpisode` dependency
+- ✨ Added 🔞 Ethics content filter — toggle in Video Source Settings to hide ethics categories and filter ethics videos
+- ✨ Added Favorites system — ❤️ button on detail page + dedicated Favorites tab with full management
+- 📱 Navigation redesign — History moved to homepage top-right button; bottom nav now 4 items (Home/Search/Favorites/Settings)
+- 📱 Global scrollbar styling + current episode pulse animation
 
 ### V9.4.0
 - 🐛 Fixed build failure — removed 49 unused shadcn/ui zombie components and restored the missing `index.html` Vite entry file (was incorrectly gitignored)

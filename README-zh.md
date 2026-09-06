@@ -15,7 +15,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.4.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.5.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -93,9 +93,11 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 - **内置播放器 ([SimPlayer](https://github.com/Eq52/Sim-Player))** - 集成轻量播放器，支持MP4/WebM/HLS，含截图、画中画、倍速播放、进度记忆
 - **外部播放器支持** - 支持自定义播放器URL，以iframe方式嵌入
 - **两级分类导航** - 从API动态加载分类，顶级分类Tab + 子分类标签（利用苹果CMS `type_pid` 层级结构）
+- **收藏功能** - 详情页❤️按钮收藏影片，专属收藏标签页支持完整管理（查看/播放/删除/清空）
+- **🔞 伦理片屏蔽** - 影视源设置中可选开启，开启后首页隐藏伦理片分类，所有列表过滤伦理片内容
 - **搜索功能** - 快速搜索你想要的内容
-- **播放历史** - 自动记录观看进度，支持一键继续播放
-- **选集播放** - 清晰的剧集选择界面，桌面端左右布局
+- **播放历史** - 自动记录观看进度，支持一键继续播放（首页右上角按钮进入）
+- **选集播放** - 清晰的剧集选择界面，可滚动剧集网格，当前集数脉冲高亮
 
 ### 🚀 性能优化
 - **API缓存** - 智能缓存API响应，减少网络请求
@@ -249,6 +251,14 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.5.0
+- 🐛 修复播放页剧集列表无法上下滑动 — 移动端添加 `flex-1 max-h-[45vh]`，剧集多时可独立滚动
+- 🐛 修复续播 Bug — `PlayerPage` useEffect 缺少 `initialEpisode` 依赖
+- ✨ 新增 🔞 伦理片屏蔽设置 — 影视源设置中开启后，首页隐藏伦理片分类，列表过滤伦理片视频
+- ✨ 新增收藏功能 — 详情页❤️按钮 + 专属收藏标签页，支持完整收藏管理
+- 📱 导航重构 — 历史移至首页右上角按钮，底部导航精简为4项（首页/搜索/收藏/设置）
+- 📱 全局滚动条美化 + 当前集数脉冲动画效果
 
 ### V9.4.0
 - 🐛 修复构建失败 — 移除49个未使用的 shadcn/ui 僵尸组件，补全缺失的 `index.html` Vite 入口文件（之前被错误地加入了 .gitignore）

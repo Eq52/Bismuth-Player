@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2, Heart } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls, getCurrentSource } from '@/services/api';
-import { addPlayHistory } from '@/services/storage';
+import { addPlayHistory, isFavorite, toggleFavorite } from '@/services/storage';
 import type { VideoItem } from '@/types';
 
 interface DetailPageProps {
@@ -15,6 +15,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [coverLoaded, setCoverLoaded] = useState(false);
+  const [favorited, setFavorited] = useState(false);
 
   useEffect(() => {
     setCoverLoaded(false);
@@ -36,6 +37,26 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
 
     loadDetail();
   }, [video.vod_id]);
+
+  // 检查收藏状态
+  useEffect(() => {
+    setFavorited(isFavorite(video.vod_id));
+  }, [video.vod_id]);
+
+  // 切换收藏状态
+  const handleToggleFavorite = () => {
+    const data = detail || video;
+    const newState = toggleFavorite({
+      vod_id: data.vod_id,
+      vod_name: data.vod_name,
+      vod_pic: data.vod_pic,
+      vod_remarks: data.vod_remarks,
+      type_name: data.type_name,
+      timestamp: Date.now(),
+      sourceId: getCurrentSource()?.id || ''
+    });
+    setFavorited(newState);
+  };
 
   // 处理播放
   const handlePlay = (episodeIndex: number) => {
@@ -70,6 +91,17 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-white text-base md:text-lg font-bold truncate flex-1">{displayData.vod_name}</h1>
+        <button
+          onClick={handleToggleFavorite}
+          className={`p-2 rounded-xl transition-all ml-2 ${
+            favorited 
+              ? 'text-red-500 bg-red-500/10 hover:bg-red-500/20' 
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+          title={favorited ? '取消收藏' : '添加收藏'}
+        >
+          <Heart size={20} fill={favorited ? 'currentColor' : 'none'} />
+        </button>
       </header>
 
       {/* 内容 */}

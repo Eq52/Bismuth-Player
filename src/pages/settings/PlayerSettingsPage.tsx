@@ -15,6 +15,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
     playerMode: 'builtin',
     playerUrl: '',
     autoResume: true,
+    blockEthics: false,
   });
 
   useEffect(() => {

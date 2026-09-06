@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Home, Search, History, Settings, Film, Loader2, Shield, AlertTriangle } from 'lucide-react';
+import { Home, Search, Settings, Film, Loader2, Shield, AlertTriangle, Heart } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { HomePage } from '@/pages/HomePage';
 import { SearchPage } from '@/pages/SearchPage';
+import { FavoritesPage } from '@/pages/FavoritesPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import { SettingsPage, type SettingsSubPage } from '@/pages/SettingsPage';
 import { VideoSourcePage } from '@/pages/settings/VideoSourcePage';
@@ -17,7 +18,7 @@ import type { VideoItem } from '@/types';
 import { Toaster } from '@/components/Toaster';
 import './App.css';
 
-type PageType = 'home' | 'search' | 'history' | 'settings';
+type PageType = 'home' | 'search' | 'favorites' | 'history' | 'settings';
 type ViewType = 'list' | 'detail' | 'player';
 
 // 免责声明弹窗组件
@@ -92,7 +93,7 @@ function DesktopSidebar({ currentPage, onPageChange }: { currentPage: string; on
   const navItems = [
     { id: 'home', icon: Home, label: '首页' },
     { id: 'search', icon: Search, label: '搜索' },
-    { id: 'history', icon: History, label: '历史' },
+    { id: 'favorites', icon: Heart, label: '收藏' },
     { id: 'settings', icon: Settings, label: '设置' },
   ];
 
@@ -230,6 +231,11 @@ function App() {
     setCurrentPage('search');
   }, []);
 
+  // 跳转到历史页
+  const handleHistoryClick = useCallback(() => {
+    setCurrentPage('history');
+  }, []);
+
   // 页面切换（重置设置子页面状态）
   const handlePageChange = useCallback((page: string) => {
     setCurrentPage(page as PageType);
@@ -283,6 +289,16 @@ function App() {
               </PageTransition>
             );
           
+          case 'favorites':
+            return (
+              <PageTransition viewKey="favorites" type="list">
+                <FavoritesPage
+                  onVideoClick={handleVideoClick}
+                  onContinuePlay={handlePlay}
+                />
+              </PageTransition>
+            );
+          
           case 'history':
             return (
               <PageTransition viewKey="history" type="list">
@@ -332,7 +348,7 @@ function App() {
               <PageTransition viewKey="home" type="list">
                 <HomePage
                   onVideoClick={handleVideoClick}
-                  onSettingsClick={() => handlePageChange('settings')}
+                  onHistoryClick={handleHistoryClick}
                   onAddSourceClick={handleAddSourceClick}
                   onSearchClick={handleSearchClick}
                   refreshKey={homeRefreshKey}

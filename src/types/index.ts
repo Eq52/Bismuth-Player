@@ -22,6 +22,13 @@ export interface VideoItem {
   vod_play_from?: string;
 }
 
+// 分类类型（苹果CMS class 字段）
+export interface Category {
+  type_id: number;
+  type_pid: number;
+  type_name: string;
+}
+
 // API响应类型
 export interface ApiResponse {
   code: number;
@@ -31,6 +38,7 @@ export interface ApiResponse {
   limit?: number;
   total?: number;
   list: VideoItem[];
+  class?: Category[];
 }
 
 // 播放历史类型

@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📱 Current episode pulse animation — selected episode button in player page has a breathing purple glow effect
 - 📱 Homepage top-right button changed from Settings to History (settings accessible via bottom nav)
 
+### 🧹 Cleanup
+
+- 🧹 Removed duplicate `Category` interface definition in `src/types/index.ts` — the legacy `{ id, name }` definition at line 92 was dead code (TypeScript interface merging combined it with the active `{ type_id, type_pid, type_name }` definition); only the Apple CMS class-field definition is retained
+
 ---
 
 ## [9.4.0] - 2026-09-06

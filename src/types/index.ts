@@ -87,9 +87,3 @@ export interface FavoriteItem {
   timestamp: number;
   sourceId: string;
 }
-
-// 分类类型
-export interface Category {
-  id: string;
-  name: string;
-}

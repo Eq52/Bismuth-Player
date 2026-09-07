@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Hls from 'hls.js';
+// 仅作类型使用：运行时改为按需动态加载（见下方 useEffect），首页首包不再包含播放器内核
+import type HlsType from 'hls.js';
 import { toast } from '@/hooks/use-toast';
 import { getPlayerSettings } from '@/services/storage';
 import {
@@ -79,7 +80,7 @@ interface VideoParams {
 export default function SimPlayer({ src, title, poster, fillContainer, onVideoInfo, onError }: SimPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const hlsRef = useRef<HlsType | null>(null);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const contextMenuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -184,72 +185,88 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
     // iOS HLS 原生处理器引用（用于清理）
     let iosErrorHandler: (() => void) | null = null;
     let iosStalledHandler: (() => void) | null = null;
-    const isIOSNativeHLS = format === 'HLS' && !Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl');
+    // hls.js 走原生兜底时置 true，错误处理跳过 CORS 重试避免双重触发
+    let usedNativeHls = false;
+    // 卸载/换源竞态保护：动态 import 是异步的，可能晚于 cleanup 完成
+    let cancelled = false;
 
-    const initHls = (withCORS: boolean) => {
-      if (format === 'HLS' && Hls.isSupported()) {
-        const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          xhrSetup: withCORS ? (xhr) => { xhr.withCredentials = false; } : undefined,
-        });
-        hls.loadSource(src);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.ERROR, (_event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                onError?.('网络错误，请检查视频地址');
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                onError?.('媒体错误，正在尝试恢复...');
-                hls.recoverMediaError();
-                break;
-              default:
-                onError?.('加载视频失败，请尝试其他地址');
-                hls.destroy();
-                break;
-            }
+    // 动态加载 hls.js：仅在真正播放 HLS 流时拉取内核，首页首包不再包含 500KB+ 的 hls 代码
+    const setupHls = async (withCORS: boolean): Promise<boolean> => {
+      const { default: Hls } = await import('hls.js');
+      if (cancelled) return false;
+      if (!Hls.isSupported()) return false;
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        xhrSetup: withCORS ? (xhr) => { xhr.withCredentials = false; } : undefined,
+      });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              onError?.('网络错误，请检查视频地址');
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              onError?.('媒体错误，正在尝试恢复...');
+              hls.recoverMediaError();
+              break;
+            default:
+              onError?.('加载视频失败，请尝试其他地址');
+              hls.destroy();
+              break;
           }
-        });
-        hlsRef.current = hls;
-      } else if (isIOSNativeHLS) {
-        video.src = src;
-        iosErrorHandler = function iosHlsErrorHandler() {
-          video.removeEventListener('error', iosErrorHandler!);
-          iosErrorHandler = null;
-          setTimeout(() => { if (video.src) video.load(); }, 500);
-        };
-        video.addEventListener('error', iosErrorHandler);
-        iosStalledHandler = function iosHlsStalledHandler() {
-          if (!video.paused && video.readyState < 3) {
-            const ct = video.currentTime;
-            video.currentTime = ct + 0.1;
-            setTimeout(() => { video.currentTime = ct; }, 100);
-          }
-        };
-        video.addEventListener('stalled', iosStalledHandler);
-      } else {
-        video.src = src;
-      }
+        }
+      });
+      hlsRef.current = hls;
+      return true;
     };
 
-    initHls(true);
+    // iOS Safari 原生 HLS 兜底（hls.js 不支持或加载失败时）
+    const attachNativeHls = () => {
+      usedNativeHls = true;
+      video.src = src;
+      iosErrorHandler = function iosHlsErrorHandler() {
+        video.removeEventListener('error', iosErrorHandler!);
+        iosErrorHandler = null;
+        setTimeout(() => { if (video.src) video.load(); }, 500);
+      };
+      video.addEventListener('error', iosErrorHandler);
+      iosStalledHandler = function iosHlsStalledHandler() {
+        if (!video.paused && video.readyState < 3) {
+          const ct = video.currentTime;
+          video.currentTime = ct + 0.1;
+          setTimeout(() => { video.currentTime = ct; }, 100);
+        }
+      };
+      video.addEventListener('stalled', iosStalledHandler);
+    };
+
+    const initSource = async (withCORS: boolean) => {
+      if (format !== 'HLS') { video.src = src; return; }
+      const ok = await setupHls(withCORS);
+      if (cancelled) return;
+      if (!ok) attachNativeHls();
+    };
+
+    initSource(true);
 
     const handleError = () => {
       // iOS 原生 HLS 有自己的错误处理器，跳过 CORS 重试避免双重触发
-      if (isIOSNativeHLS) return;
+      if (usedNativeHls) return;
       if (!corsRetryRef.current && video.crossOrigin === 'anonymous') {
         corsRetryRef.current = true;
         video.removeAttribute('crossOrigin');
         if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-        initHls(false);
+        initSource(false);
       }
     };
 
     video.addEventListener('error', handleError);
     return () => {
+      cancelled = true;
       video.removeEventListener('error', handleError);
       if (iosErrorHandler) video.removeEventListener('error', iosErrorHandler);
       if (iosStalledHandler) video.removeEventListener('stalled', iosStalledHandler);

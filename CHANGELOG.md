@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [9.5.1] - 2026-09-07
 
 ### 🐛 Bug Fixes
 
@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ⚡ Performance
 
-- ⚡ Added `manualChunks` code-splitting in `vite.config.ts` — the single 902 KB bundle is now split into `hls` (hls.js, independently cacheable), `react` (runtime), and `vendor` chunks, all under the 500 KB warning threshold
+- ⚡ Added `manualChunks` code-splitting in `vite.config.ts` — the single 902 KB bundle is now split into `hls` (hls.js), `react` (runtime), and `vendor` chunks; hls.js is additionally loaded on demand via dynamic import, cutting first-payload JS from ~277 KB to ~114 KB gzip (-59%)
 
 ### 📦 CI/CD
 
 - 🔧 Added GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) — builds on every push to `main` and auto-publishes to GitHub Pages (also supports manual `workflow_dispatch`)
+- ☁️ Added Cloudflare Pages one-click deploy support — `wrangler.toml` (project recognition for the "Deploy to Cloudflare" button), `public/_redirects` (SPA fallback), and `public/_headers` (security headers + immutable caching for hashed assets); all three deploy buttons (Vercel / Netlify / Cloudflare) now work out of the box
 
 ## [9.5.0] - 2026-09-06
 

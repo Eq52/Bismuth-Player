@@ -10,7 +10,7 @@
 > 
 > 我已经有了新的更新计划，学业之余会尽量抽空继续更新。  
 > 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth_9.5.0_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。  
-> 详细更新内容可以看 [发布说明](https://github.com/Eq52/Bismuth-Player/releases/tag/v9.5.0)。
+> 详细更新内容可以看 [发布说明](https://github.com/Eq52/Bismuth-Player/releases/tag/v9.5.1)。
 
 ---
 
@@ -19,7 +19,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.5.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.5.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -265,6 +265,13 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.5.1
+- 🐛 修复 favicon 404 — `index.html` 引用了不存在的 `/vite.svg`（Vite 模板残留），改为真实应用图标
+- 🐛 修正 Node.js 版本要求 — Vite 7 实际要求 >= 20.19，同步两份 README 并为 `package.json` 补充 `engines` 字段
+- ⚡ 代码分割 — `manualChunks` 将 902KB 单包拆分为 hls/react/vendor，hls.js 按需动态加载，首包 JS gzip 体积降低约 59%
+- 📦 新增 GitHub Pages 自动发布工作流 — push 到 main 自动构建部署，支持手动触发
+- ☁️ 新增 Cloudflare Pages 一键部署支持 — `wrangler.toml` + `_redirects`（SPA 回退）+ `_headers`（安全头与长缓存），三平台部署按钮（Vercel/Netlify/Cloudflare）全部开箱即用
 
 ### V9.5.0
 - 🐛 修复播放页剧集列表无法上下滑动 — 移动端添加 `flex-1 max-h-[45vh]`，剧集多时可独立滚动

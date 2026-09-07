@@ -42,7 +42,7 @@ English｜[简体中文](README-zh.md)
 
 ## Description
 
-> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: Doubao, GLM-5, Kimi (Agent), GLM-5.3-Flash/5/5-Turbo/4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
+> This project is essentially AI-generated. I was responsible for issue detection and optimization direction guidance. Models used: Doubao, Kimi, GLM-5.3-Flash/5/5-Turbo/4.7/4.6/4.6V/4.5, Deepseek-R1/Chat (provided assistance during project inception)
 
 ---
 

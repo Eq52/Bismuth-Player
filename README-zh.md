@@ -6,8 +6,12 @@
 
 ---
 
-> NOTE:
-> 我已经有了新的更新计划，在学业之余会抽空更新的；如果找不到稳定的跨域服务可以考虑安装[安卓版_内置本地CORS服务](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth_9.5.0_CORS.apk)
+> Note:
+> 
+> 我已经有了新的更新计划，学业之余会尽量抽空继续更新。  
+> 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth_9.5.0_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。  
+> 详细更新内容可以看 [发布说明](https://github.com/Eq52/Bismuth-Player/releases/tag/v9.5.0)。
+
 ---
 
 # <div align="center"> <h3>Bismuth Player —— 如"秘"般美丽的影视播放壳子</h3></div>

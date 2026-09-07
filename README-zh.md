@@ -54,7 +54,7 @@
 
 ### 在线 Demo
 
-访问 [Demo](https://ericq521.web.app/vid/) 立即体验
+访问 [Demo](https://eq52.github.io/Bismuth-Player/) 立即体验
 
 ### 自行部署
 

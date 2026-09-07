@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed favicon 404 — `index.html` referenced `/vite.svg` (a Vite template leftover that does not exist in `public/`); now points to the real app icons (`icon-192x192.svg` + `apple-touch-icon`)
+- 🐛 Fixed incorrect Node.js requirement — README claimed Node >= 18, but Vite 7 requires >= 20.19; corrected both READMEs and added an `engines` field to `package.json`
+
+### ⚡ Performance
+
+- ⚡ Added `manualChunks` code-splitting in `vite.config.ts` — the single 902 KB bundle is now split into `hls` (hls.js, independently cacheable), `react` (runtime), and `vendor` chunks, all under the 500 KB warning threshold
+
+### 📦 CI/CD
+
+- 🔧 Added GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) — builds on every push to `main` and auto-publishes to GitHub Pages (also supports manual `workflow_dispatch`)
+
 ## [9.5.0] - 2026-09-06
 
 ### 🐛 Bug Fixes

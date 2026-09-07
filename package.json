@@ -2,6 +2,9 @@
   "name": "bismuth-player",
   "private": true,
   "version": "9.5.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

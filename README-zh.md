@@ -142,7 +142,7 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 ## 📦 快速开始
 
 ### 环境要求
-- Node.js >= 18
+- Node.js >= 20.19(Vite 7 要求,推荐 20/22/24 LTS)
 - npm 或 bun
 
 ### 安装依赖

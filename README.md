@@ -138,7 +138,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 ## 📦 Quick Start
 
 ### Requirements
-- Node.js >= 18
+- Node.js >= 20.19 (required by Vite 7; LTS 20/22/24 recommended)
 - npm or bun
 
 ### Install Dependencies

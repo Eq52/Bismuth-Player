@@ -50,7 +50,7 @@ English｜[简体中文](README-zh.md)
 
 ### Live Demo
 
-Visit [Demo](https://ericq521.web.app/vid/) to try it now
+Visit [Demo](https://eq52.github.io/Bismuth-Player/) to try it now
 
 ### Self-Hosting
 

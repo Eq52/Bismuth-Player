@@ -7,7 +7,7 @@ English｜[简体中文](README-zh.md)
 ---
 
 > NOTE: 
-> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth_9.5.0_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). For full release details, see the [V9.5.1 release notes](https://github.com/Eq52/Bismuth-Player/releases/tag/v9.5.1).
+> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth_9.5.0_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). 
 
 ---
 

@@ -1,0 +1,8 @@
+# Cloudflare Pages 部署配置
+# 仓库根目录提供此文件后，README 中的 "Deploy to Cloudflare" 按钮即可将本仓库
+# 识别为 Pages 项目并完成一键部署（构建命令/输出目录由 Cloudflare 按框架自动检测）。
+# 手动部署：npm run build && npx wrangler pages deploy
+
+name = "bismuth-player"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"

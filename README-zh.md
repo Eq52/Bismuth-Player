@@ -80,6 +80,8 @@
   </tr>
 </table>
 
+> ☁️ **Cloudflare Pages 已内置支持**：仓库根目录提供 `wrangler.toml`，`public/` 内置 `_redirects`（SPA 回退）与 `_headers`（安全头 + 静态资源长缓存），点击上方按钮即可直接部署，无需额外配置。
+
 ### 本地部署
 
 [了解](README-zh.md#-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)

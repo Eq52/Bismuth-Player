@@ -1,0 +1,9 @@
+# Cloudflare Pages 响应头配置
+# 安全头全站生效；带 hash 的静态资源长缓存
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -76,6 +76,8 @@ Choose any of the following platforms and click the button to quickly create you
   </tr>
 </table>
 
+> ☁️ **Cloudflare Pages is supported out of the box**: a `wrangler.toml` is provided at the repo root, and `_redirects` (SPA fallback) & `_headers` (security headers + long-term asset caching) ship in `public/`. Just click the button above to deploy — no extra configuration needed.
+
 ### Local Deployment
 
 [More](#-quick-start)

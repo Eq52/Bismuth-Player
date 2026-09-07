@@ -1,0 +1,2 @@
+# SPA 回退：所有未匹配路径返回 index.html（由前端根据 hash/状态自行路由）
+/*    /index.html   200

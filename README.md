@@ -28,7 +28,15 @@ English｜[简体中文](README-zh.md)
   </a>
 </div>
 
-[![Stargazers over time](https://starchart.cc/Eq52/Bismuth-Player.svg?variant=adaptive)](https://starchart.cc/Eq52/Bismuth-Player)
+<div align="center">
+  <a href="https://www.star-history.com/?repos=eq52%2Fbismuth-player&type=date&legend=top-left">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=eq52/bismuth-player&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=eq52/bismuth-player&type=date&legend=top-left" />
+      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=eq52/bismuth-player&type=date&legend=top-left" />
+    </picture>
+  </a>
+</div>
 
 ---
 

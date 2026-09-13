@@ -1,6 +1,7 @@
 import type { VideoItem, ApiResponse, VideoSource } from '@/types';
 import { getCache, setCache } from './cache';
 import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettings } from './storage';
+import { isDesktopMode, desktopApiUrl } from './desktop';
 
 // 判断是否为伦理片/成人内容（用于内容过滤）
 function isEthicsContent(name?: string): boolean {
@@ -43,7 +44,11 @@ const CACHE_TTL = {
 };
 
 // 构建完整URL（根据设置决定是否添加代理）
+// 桌面版（Bismuth Desktop）：内置本地代理自动启用，免配置，一律走同源 /?url= 转发
 function buildUrl(apiUrl: string, proxy?: string): string {
+  if (isDesktopMode()) {
+    return desktopApiUrl(apiUrl);
+  }
   if (!isCorsProxyEnabled()) {
     return apiUrl;
   }
@@ -83,7 +88,8 @@ function safeApiResponse(data: any): ApiResponse {
 // 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
 async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Response> {
   let lastError: Error | null = null;
-  const useProxy = isCorsProxyEnabled();
+  // 桌面版内置代理唯一且常驻，无需轮换（也避免误改用户配置的外部代理列表）
+  const useProxy = !isDesktopMode() && isCorsProxyEnabled();
   let proxyUrl = buildUrl(originalUrl);
 
   for (let i = 0; i <= retries; i++) {
@@ -247,13 +253,41 @@ export async function getVideoList(
   return data;
 }
 
+// 指定影视源已被删除时抛出（详情页/播放器据此渲染专属错误提示）
+export class SourceDeletedError extends Error {
+  sourceId: string;
+  sourceName: string;
+  constructor(sourceId: string, sourceName: string = '') {
+    super('对应影视源被删除');
+    this.name = 'SourceDeletedError';
+    this.sourceId = sourceId;
+    this.sourceName = sourceName;
+  }
+}
+
 // 获取影视详情（带缓存）
-export async function getVideoDetail(id: number): Promise<VideoItem | null> {
-  const source = getCurrentSource();
+// sourceId/sourceName：历史/收藏跨源播放时传入条目标注的源，
+// 从该源拉取数据且不影响当前选中的源；不传则用当前源（老数据兼容）
+export async function getVideoDetail(
+  id: number,
+  sourceId?: string,
+  sourceName?: string
+): Promise<VideoItem | null> {
+  // 解析目标源：优先条目标注的源，找不到说明源已被删除
+  let source: VideoSource | null;
+  if (sourceId) {
+    const found = getSources().find(s => s.id === sourceId);
+    if (!found) {
+      throw new SourceDeletedError(sourceId, sourceName);
+    }
+    source = found;
+  } else {
+    source = getCurrentSource();
+  }
   if (!source) return null;
-  
-  // 生成缓存键
-  const cacheKey = generateCacheKey('videoDetail', { id });
+
+  // 生成缓存键（带源 ID，避免不同源同 ID 影片串缓存）
+  const cacheKey = generateCacheKey('videoDetail', { id, source: source.id });
   
   // 尝试从缓存获取
   const cached = getCache<VideoItem>(cacheKey);

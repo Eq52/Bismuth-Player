@@ -20,6 +20,10 @@ export interface VideoItem {
   vod_content?: string;
   vod_play_url?: string;
   vod_play_from?: string;
+  /** 来源影视源 ID（历史/收藏跨源播放用） */
+  sourceId?: string;
+  /** 来源影视源名称（展示标注用） */
+  sourceName?: string;
 }
 
 // 分类类型（苹果CMS class 字段）
@@ -51,6 +55,10 @@ export interface PlayHistory {
   progress: number;
   timestamp: number;
   sourceId: string;
+  /** 来源影视源名称（展示标注用） */
+  sourceName?: string;
+  /** 对应源被删除后的待清理标记（时间戳，超 30 分钟物理删除） */
+  pendingDeleteAt?: number;
 }
 
 // 播放器模式
@@ -86,4 +94,8 @@ export interface FavoriteItem {
   type_name?: string;
   timestamp: number;
   sourceId: string;
+  /** 来源影视源名称（展示标注用） */
+  sourceName?: string;
+  /** 对应源被删除后的待清理标记（时间戳，超 30 分钟物理删除） */
+  pendingDeleteAt?: number;
 }

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type HlsType from 'hls.js';
 import { toast } from '@/hooks/use-toast';
 import { getPlayerSettings } from '@/services/storage';
+import { isDesktopMode } from '@/services/desktop';
 import {
   Play,
   Pause,
@@ -198,7 +199,17 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        xhrSetup: withCORS ? (xhr) => { xhr.withCredentials = false; } : undefined,
+        xhrSetup: withCORS || isDesktopMode()
+          ? (xhr, url) => {
+              xhr.withCredentials = false;
+              // 桌面版：播放清单里的跨源绝对地址（分片/子清单）也强制走内置本地代理。
+              // 在 xhrSetup 里自行 open 即可改写请求地址（hls.js 检测到已 open 会跳过自身的 open）。
+              if (isDesktopMode() && url && /^https?:\/\//i.test(url)
+                  && !url.startsWith(`${window.location.origin}/`)) {
+                xhr.open('GET', `/${url}`, true);
+              }
+            }
+          : undefined,
       });
       hls.loadSource(src);
       hls.attachMedia(video);

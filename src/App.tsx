@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Home, Search, Settings, Film, Loader2, Shield, AlertTriangle, Heart } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { HomePage } from '@/pages/HomePage';
+import { FilterPage } from '@/pages/FilterPage';
 import { SearchPage } from '@/pages/SearchPage';
 import { FavoritesPage } from '@/pages/FavoritesPage';
 import { HistoryPage } from '@/pages/HistoryPage';
@@ -14,11 +15,12 @@ import { AboutPage } from '@/pages/settings/AboutPage';
 import { DetailPage } from '@/pages/DetailPage';
 import { PlayerPage } from '@/pages/PlayerPage';
 import { isDisclaimerAgreed, setDisclaimerAgreed } from '@/services/storage';
+import { detectDesktopMode } from '@/services/desktop';
 import type { VideoItem } from '@/types';
 import { Toaster } from '@/components/Toaster';
 import './App.css';
 
-type PageType = 'home' | 'search' | 'favorites' | 'history' | 'settings';
+type PageType = 'home' | 'search' | 'filter' | 'favorites' | 'history' | 'settings';
 type ViewType = 'list' | 'detail' | 'player';
 
 // 免责声明弹窗组件
@@ -166,18 +168,31 @@ function App() {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [settingsSubPage, setSettingsSubPage] = useState<SettingsSubPage>('none');
   const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  // 筛选页分类状态（提升到 App 层，返回首页再进入时不丢失选择）
+  const [filterTopCategory, setFilterTopCategory] = useState(0);
+  const [filterCategory, setFilterCategory] = useState('all');
 
   // 初始化
   useEffect(() => {
-    // 模拟短暂启动延迟，显示启动屏幕
-    const timer = setTimeout(() => {
-      // 检查是否已同意免责声明
-      if (!isDisclaimerAgreed()) {
-        setShowDisclaimer(true);
-      }
-      setIsReady(true);
-    }, 800);
-    return () => clearTimeout(timer);
+    // 先探测桌面壳（本地服务 /__desktop_info），再放行页面：
+    // 保证首页首次拉源请求时 buildUrl 已能正确判断是否走内置代理
+    let timer: number | undefined;
+    let cancelled = false;
+    detectDesktopMode().finally(() => {
+      if (cancelled) return;
+      // 模拟短暂启动延迟，显示启动屏幕
+      timer = window.setTimeout(() => {
+        // 检查是否已同意免责声明
+        if (!isDisclaimerAgreed()) {
+          setShowDisclaimer(true);
+        }
+        setIsReady(true);
+      }, 800);
+    });
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   // 同意免责声明
@@ -229,6 +244,11 @@ function App() {
   // 跳转到搜索页
   const handleSearchClick = useCallback(() => {
     setCurrentPage('search');
+  }, []);
+
+  // 跳转到筛选页
+  const handleFilterClick = useCallback(() => {
+    setCurrentPage('filter');
   }, []);
 
   // 跳转到历史页
@@ -289,6 +309,20 @@ function App() {
               </PageTransition>
             );
           
+          case 'filter':
+            return (
+              <PageTransition viewKey="filter" type="list">
+                <FilterPage
+                  onVideoClick={handleVideoClick}
+                  onBack={() => handlePageChange('home')}
+                  topCategory={filterTopCategory}
+                  category={filterCategory}
+                  onTopCategoryChange={setFilterTopCategory}
+                  onCategoryChange={setFilterCategory}
+                />
+              </PageTransition>
+            );
+          
           case 'favorites':
             return (
               <PageTransition viewKey="favorites" type="list">
@@ -302,7 +336,11 @@ function App() {
           case 'history':
             return (
               <PageTransition viewKey="history" type="list">
-                <HistoryPage onVideoClick={handleVideoClick} onContinuePlay={handlePlay} />
+                <HistoryPage
+                  onVideoClick={handleVideoClick}
+                  onContinuePlay={handlePlay}
+                  onBack={() => handlePageChange('home')}
+                />
               </PageTransition>
             );
           
@@ -351,6 +389,7 @@ function App() {
                   onHistoryClick={handleHistoryClick}
                   onAddSourceClick={handleAddSourceClick}
                   onSearchClick={handleSearchClick}
+                  onFilterClick={handleFilterClick}
                   refreshKey={homeRefreshKey}
                 />
               </PageTransition>

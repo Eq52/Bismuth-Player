@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCorsProxyList, setCorsProxyList, addCorsProxy, removeCorsProxy, isCorsProxyEnabled, setCorsProxyEnabled } from '@/services/storage';
+import { isDesktopMode } from '@/services/desktop';
 
 interface CorsProxyPageProps {
   onBack: () => void;
@@ -84,6 +85,14 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
       {/* 内容 */}
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
+          {isDesktopMode() && (
+            <div className="mb-4 rounded-xl border border-green-500/20 bg-green-500/10 p-4">
+              <p className="text-green-400 text-sm font-medium">桌面版已内置本地代理，免配置</p>
+              <p className="text-gray-400 text-xs mt-1">
+                Bismuth Desktop 已在本机（127.0.0.1）启动内置 CORS 代理并自动启用：影视源接口与视频流均经本机转发，无需添加或修改下方任何代理设置。以下配置仅在浏览器网页版使用。
+              </p>
+            </div>
+          )}
           <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
             {/* 开关 */}
             <div className="flex items-center justify-between">

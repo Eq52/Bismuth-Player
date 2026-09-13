@@ -1,20 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Play, Film } from 'lucide-react';
+import { Trash2, Play, Film, ArrowLeft, CloudOff } from 'lucide-react';
 import { getPlayHistory, clearPlayHistory, removePlayHistory } from '@/services/storage';
+import { getSources } from '@/services/api';
 import type { PlayHistory, VideoItem } from '@/types';
 
 interface HistoryPageProps {
   onVideoClick: (video: VideoItem) => void;
   onContinuePlay: (video: VideoItem, episode: number) => void;
+  onBack: () => void;
 }
 
-export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) {
+export function HistoryPage({ onVideoClick, onContinuePlay, onBack }: HistoryPageProps) {
   const [history, setHistory] = useState<PlayHistory[]>([]);
+  const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
 
   // 加载历史记录
   useEffect(() => {
     setHistory(getPlayHistory());
+    // 源名反查表（老数据无 sourceName 时 fallback 显示）
+    const map = new Map<string, string>();
+    getSources().forEach(s => map.set(s.id, s.name));
+    setSourceNames(map);
   }, []);
+
+  // 条目的来源源名称：优先条目自带的 sourceName，老数据反查源列表
+  const resolveSourceName = (item: PlayHistory) =>
+    item.sourceName || sourceNames.get(item.sourceId) || '未知源';
 
   // 清除所有历史
   const handleClearAll = () => {
@@ -24,9 +35,9 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
     }
   };
 
-  // 删除单条历史
-  const handleRemove = (vodId: number) => {
-    removePlayHistory(vodId);
+  // 删除单条历史（按 vod_id + sourceId，避免误删其他源的同 ID 条目）
+  const handleRemove = (vodId: number, sourceId: string) => {
+    removePlayHistory(vodId, sourceId);
     setHistory(getPlayHistory());
   };
 
@@ -53,18 +64,27 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
     }
   };
 
-  // 转换为VideoItem
+  // 转换为VideoItem（携带来源信息，供详情/播放器跨源拉取）
   const toVideoItem = (h: PlayHistory): VideoItem => ({
     vod_id: h.vod_id,
     vod_name: h.vod_name,
     vod_pic: h.vod_pic,
+    sourceId: h.sourceId,
+    sourceName: h.sourceName || sourceNames.get(h.sourceId) || '',
   });
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a] border-b border-white/5">
-        <h1 className="text-white text-lg md:text-xl font-bold">播放历史</h1>
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
+          title="返回"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-white text-lg md:text-xl font-bold flex-1">播放历史</h1>
         {history.length > 0 && (
           <button
             onClick={handleClearAll}
@@ -74,6 +94,12 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
             <span className="text-sm">清空</span>
           </button>
         )}
+        <button
+          onClick={onBack}
+          className="hidden md:block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+        >
+          返回首页
+        </button>
       </header>
 
       {/* 历史列表 */}
@@ -88,7 +114,7 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {history.map((item) => (
               <div
-                key={item.vod_id}
+                key={`${item.sourceId || 'legacy'}-${item.vod_id}`}
                 className="flex bg-[#141414] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors"
               >
                 {/* 封面 */}
@@ -121,6 +147,19 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
                     <p className="text-gray-500 text-sm mt-1">
                       看到: <span className="text-purple-400">{item.episodeName}</span>
                     </p>
+                    {/* 来源标注 */}
+                    <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                      <span className="inline-flex items-center text-[10px] text-gray-400 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded max-w-full">
+                        <Film size={9} className="mr-1 flex-shrink-0" />
+                        <span className="truncate">{resolveSourceName(item)}</span>
+                      </span>
+                      {item.pendingDeleteAt && (
+                        <span className="inline-flex items-center text-[10px] text-red-400/80 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded">
+                          <CloudOff size={9} className="mr-1 flex-shrink-0" />
+                          源已删除·即将清理
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -136,7 +175,7 @@ export function HistoryPage({ onVideoClick, onContinuePlay }: HistoryPageProps) 
                         继续
                       </button>
                       <button
-                        onClick={() => handleRemove(item.vod_id)}
+                        onClick={() => handleRemove(item.vod_id, item.sourceId)}
                         className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Trash2 size={14} />

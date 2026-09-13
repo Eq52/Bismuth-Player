@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2, Heart } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls, getCurrentSource } from '@/services/api';
+import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { addPlayHistory, isFavorite, toggleFavorite } from '@/services/storage';
+import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
 import type { VideoItem } from '@/types';
 
 interface DetailPageProps {
@@ -16,36 +17,46 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [coverLoaded, setCoverLoaded] = useState(false);
   const [favorited, setFavorited] = useState(false);
+  // 来源源被删除时的错误态
+  const [deletedSource, setDeletedSource] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     setCoverLoaded(false);
     const loadDetail = async () => {
       setLoading(true);
+      setDeletedSource(null);
       try {
-        const data = await getVideoDetail(video.vod_id);
+        // 跨源播放：优先用条目标注的源拉详情（老数据无 sourceId 则用当前源）
+        const data = await getVideoDetail(video.vod_id, video.sourceId, video.sourceName);
         if (data) {
           setDetail(data);
           const eps = parsePlayUrls(data.vod_play_url, data.vod_play_from);
           setEpisodes(eps);
         }
       } catch (error) {
-        console.error('加载详情失败:', error);
+        if (error instanceof SourceDeletedError) {
+          setDeletedSource({ id: error.sourceId, name: error.sourceName });
+        } else {
+          console.error('加载详情失败:', error);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadDetail();
-  }, [video.vod_id]);
+  }, [video.vod_id, video.sourceId, video.sourceName]);
 
-  // 检查收藏状态
+  // 检查收藏状态（身份键 vod_id + sourceId：不同源同 ID 影片互不干扰）
   useEffect(() => {
-    setFavorited(isFavorite(video.vod_id));
-  }, [video.vod_id]);
+    const effectiveSourceId = video.sourceId || getCurrentSource()?.id || '';
+    setFavorited(isFavorite(video.vod_id, effectiveSourceId));
+  }, [video.vod_id, video.sourceId]);
 
   // 切换收藏状态
   const handleToggleFavorite = () => {
     const data = detail || video;
+    const source = getCurrentSource();
     const newState = toggleFavorite({
       vod_id: data.vod_id,
       vod_name: data.vod_name,
@@ -53,7 +64,8 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
       vod_remarks: data.vod_remarks,
       type_name: data.type_name,
       timestamp: Date.now(),
-      sourceId: getCurrentSource()?.id || ''
+      sourceId: video.sourceId || source?.id || '',
+      sourceName: video.sourceName || source?.name || ''
     });
     setFavorited(newState);
   };
@@ -62,7 +74,11 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const handlePlay = (episodeIndex: number) => {
     const ep = episodes[episodeIndex];
     if (ep && detail) {
-      // 添加到历史记录
+      // 本次实际使用的源：优先条目标注源，兼容老数据用当前源
+      const source = getCurrentSource();
+      const sourceId = video.sourceId || source?.id || '';
+      const sourceName = video.sourceName || source?.name || '';
+      // 添加到历史记录（标注本次实际使用的源）
       addPlayHistory({
         vod_id: detail.vod_id,
         vod_name: detail.vod_name,
@@ -71,10 +87,13 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
         episodeName: ep.name,
         progress: 0,
         timestamp: Date.now(),
-        sourceId: getCurrentSource()?.id || ''
+        sourceId,
+        sourceName
       });
       
-      onPlay(detail, episodeIndex);
+      // 关键：把标注源随 VideoItem 传给播放器，
+      // 否则播放器拿到的 API 原始 detail 不带 sourceId，会退回用当前源拉详情
+      onPlay({ ...detail, sourceId, sourceName }, episodeIndex);
     }
   };
 
@@ -111,6 +130,8 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
             <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
             <p className="text-gray-400 text-sm mt-3">加载中...</p>
           </div>
+        ) : deletedSource ? (
+          <SourceDeletedNotice sourceId={deletedSource.id} sourceName={deletedSource.name} />
         ) : (
           <>
             {/* 封面和信息 */}

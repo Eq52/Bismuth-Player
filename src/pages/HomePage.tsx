@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Film, Search, History } from 'lucide-react';
+import { Plus, Film, Search, History, SlidersHorizontal } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
-import { getVideoList, getCategories, getCurrentSource, getSources } from '@/services/api';
-import type { CategoryItem } from '@/services/api';
+import { getVideoList, getCurrentSource, getSources } from '@/services/api';
 import type { VideoItem, VideoSource } from '@/types';
 
 interface HomePageProps {
@@ -10,15 +9,14 @@ interface HomePageProps {
   onHistoryClick: () => void;
   onAddSourceClick: () => void;
   onSearchClick: () => void;
-  /** 递增计数器，每次从设置页返回首页时更新，触发分类和影视源列表刷新 */
+  /** 打开筛选页 */
+  onFilterClick: () => void;
+  /** 递增计数器，每次从设置页返回首页时更新，触发影视源列表刷新 */
   refreshKey: number;
 }
 
-export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSearchClick, refreshKey }: HomePageProps) {
+export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSearchClick, onFilterClick, refreshKey }: HomePageProps) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
-  const [currentCategory, setCurrentCategory] = useState('all');
-  const [currentTopCategory, setCurrentTopCategory] = useState(0); // 0=全部，其他=顶级分类 type_id
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -29,25 +27,11 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
   const loadingRef = useRef(loading);
   loadingRef.current = loading;
 
-  // 加载分类和检查影视源（refreshKey 变化时重新加载，例如从设置页返回）
+  // 检查影视源（refreshKey 变化时重新加载，例如从设置页返回）
   useEffect(() => {
     const sources = getSources();
     setHasSources(sources.length > 0);
     setCurrentSourceState(getCurrentSource());
-    
-    if (sources.length > 0) {
-      getCategories().then((cats) => {
-        setCategories(cats);
-        // 自动选中第一个顶级分类下的第一个子分类
-        // （苹果CMS顶级分类下没有直接内容，必须选子分类才有数据）
-        const firstTop = cats.find(c => c.type_pid === 0);
-        if (firstTop) {
-          setCurrentTopCategory(firstTop.type_id);
-          const firstSub = cats.find(c => c.type_pid === firstTop.type_id);
-          setCurrentCategory(firstSub ? firstSub.id : firstTop.id);
-        }
-      });
-    }
   }, [refreshKey]);
 
   // 加载影视列表
@@ -56,7 +40,7 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
     setLoading(true);
     
     try {
-      const response = await getVideoList(targetPage, 18, currentCategory);
+      const response = await getVideoList(targetPage, 18);
       
       if (reset) {
         setVideos(response.list);
@@ -74,15 +58,15 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
     } finally {
       setLoading(false);
     }
-  }, [currentCategory]);
+  }, []);
 
-  // 切换分类时重置并加载
+  // 首页默认展示全部内容
   useEffect(() => {
     if (hasSources) {
       setPage(1);
       loadVideos(1, true);
     }
-  }, [currentCategory, hasSources, loadVideos]);
+  }, [hasSources, loadVideos]);
 
   // 滚动加载更多
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -159,74 +143,24 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
         </button>
       </header>
 
-      {/* 搜索框 */}
-      <div className="px-5 py-2 md:px-8">
+      {/* 搜索框 + 筛选入口 */}
+      <div className="px-5 py-2 md:px-8 flex items-center gap-2">
         <div 
           onClick={onSearchClick}
-          className="bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all max-w-md"
+          className="flex-1 max-w-md bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all"
         >
-          <Search className="w-5 h-5 mr-3" />
+          <Search className="w-5 h-5 mr-3 flex-shrink-0" />
           <span className="text-sm">搜索影片...</span>
         </div>
-      </div>
-
-      {/* 分类标签 - 顶级分类 */}
-      <div className="flex overflow-x-auto px-5 pt-3 pb-1 md:px-8 gap-2 scrollbar-hide">
         <button
-          onClick={() => {
-            setCurrentTopCategory(0);
-            setCurrentCategory('all');
-          }}
-          className={`px-4 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
-            currentTopCategory === 0
-              ? 'bg-white text-black font-medium'
-              : 'bg-[#141414] text-gray-400 hover:bg-[#1a1a1a]'
-          }`}
+          onClick={onFilterClick}
+          className="flex items-center gap-1.5 bg-[#141414] border border-white/5 rounded-xl px-3.5 py-3 text-gray-400 hover:text-white hover:bg-[#1a1a1a] hover:border-white/10 transition-all flex-shrink-0"
+          title="分类筛选"
         >
-          全部
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="text-sm">筛选</span>
         </button>
-        {categories.filter(c => c.type_pid === 0).map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => {
-              setCurrentTopCategory(cat.type_id);
-              // 自动选中第一个子分类（苹果CMS顶级分类下无直接内容）
-              const firstSub = categories.find(c => c.type_pid === cat.type_id);
-              setCurrentCategory(firstSub ? firstSub.id : cat.id);
-            }}
-            className={`px-4 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
-              currentTopCategory === cat.type_id
-                ? 'bg-white text-black font-medium'
-                : 'bg-[#141414] text-gray-400 hover:bg-[#1a1a1a]'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
       </div>
-
-      {/* 分类标签 - 子分类（仅当选中顶级分类且有子分类时显示） */}
-      {currentTopCategory > 0 && categories.some(c => c.type_pid === currentTopCategory) && (
-        <div className="flex overflow-x-auto px-5 py-2 md:px-8 gap-2 scrollbar-hide border-b border-white/5">
-          {categories.filter(c => c.type_pid === currentTopCategory).map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                if (cat.id !== currentCategory) {
-                  setCurrentCategory(cat.id);
-                }
-              }}
-              className={`px-3 py-1 rounded-md text-xs whitespace-nowrap transition-all ${
-                currentCategory === cat.id
-                  ? 'bg-purple-500/20 text-purple-300 font-medium border border-purple-500/30'
-                  : 'bg-white/5 text-gray-500 hover:bg-white/10'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* 影视网格 */}
       <div 

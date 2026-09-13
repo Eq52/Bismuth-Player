@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls, getCurrentSource } from '@/services/api';
+import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
+import { isDesktopMode, desktopMediaUrl } from '@/services/desktop';
+import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
 import type { VideoItem, PlayerSettings } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
 
@@ -16,6 +18,8 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
   const [currentEpisode, setCurrentEpisode] = useState(initialEpisode);
   const [loading, setLoading] = useState(true);
+  // 来源源被删除时的错误态（历史/收藏「继续播放」直接进播放器的兜底）
+  const [deletedSource, setDeletedSource] = useState<{ id: string; name: string } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [playerSettings] = useState<PlayerSettings>(getPlayerSettings);
 
@@ -23,22 +27,28 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     setCurrentEpisode(initialEpisode);
     const loadDetail = async () => {
       setLoading(true);
+      setDeletedSource(null);
       try {
-        const data = await getVideoDetail(video.vod_id);
+        // 跨源播放：优先用条目标注的源拉详情（老数据无 sourceId 则用当前源）
+        const data = await getVideoDetail(video.vod_id, video.sourceId, video.sourceName);
         if (data) {
           setDetail(data);
           const eps = parsePlayUrls(data.vod_play_url, data.vod_play_from);
           setEpisodes(eps);
         }
       } catch (error) {
-        console.error('加载详情失败:', error);
+        if (error instanceof SourceDeletedError) {
+          setDeletedSource({ id: error.sourceId, name: error.sourceName });
+        } else {
+          console.error('加载详情失败:', error);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadDetail();
-  }, [video.vod_id, initialEpisode]);
+  }, [video.vod_id, video.sourceId, video.sourceName, initialEpisode]);
 
   // 获取当前播放地址（原始视频 URL）
   const getCurrentPlayUrl = () => {
@@ -65,6 +75,8 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
       setCurrentEpisode(index);
       
       if (detail) {
+        // 历史标注沿用本次实际使用的源：优先条目标注源，兼容老数据用当前源
+        const source = getCurrentSource();
         addPlayHistory({
           vod_id: detail.vod_id,
           vod_name: detail.vod_name,
@@ -73,7 +85,8 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
           episodeName: episodes[index].name,
           progress: 0,
           timestamp: Date.now(),
-          sourceId: getCurrentSource()?.id || ''
+          sourceId: video.sourceId || source?.id || '',
+          sourceName: video.sourceName || source?.name || ''
         });
       }
     }
@@ -86,6 +99,8 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   const currentEp = episodes[currentEpisode];
   const useBuiltinPlayer = playerSettings.playerMode === 'builtin';
   const currentPlayUrl = getCurrentPlayUrl();
+  // 桌面版：内置代理以路径式包装媒体地址（m3u8 相对分片自动跟随代理；mp4 Range 透传）
+  const currentMediaUrl = isDesktopMode() ? desktopMediaUrl(currentPlayUrl) : currentPlayUrl;
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
@@ -118,11 +133,15 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>
+          ) : deletedSource ? (
+            <div className="absolute inset-0 overflow-y-auto bg-[#0a0a0a] flex items-center justify-center">
+              <SourceDeletedNotice sourceId={deletedSource.id} sourceName={deletedSource.name} />
+            </div>
           ) : currentPlayUrl ? (
             useBuiltinPlayer ? (
               <SimPlayer
                 key={currentPlayUrl}
-                src={currentPlayUrl}
+                src={currentMediaUrl}
                 title={`${displayData.vod_name} - ${currentEp?.name || ''}`}
                 poster={displayData.vod_pic}
                 fillContainer

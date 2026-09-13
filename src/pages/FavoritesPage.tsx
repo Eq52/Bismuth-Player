@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Play, Heart } from 'lucide-react';
+import { Trash2, Play, Heart, Film, CloudOff } from 'lucide-react';
 import { getFavorites, clearFavorites, removeFavorite } from '@/services/storage';
+import { getSources } from '@/services/api';
 import type { FavoriteItem, VideoItem } from '@/types';
 
 interface FavoritesPageProps {
@@ -10,11 +11,20 @@ interface FavoritesPageProps {
 
 export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPageProps) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
 
   // 加载收藏列表
   useEffect(() => {
     setFavorites(getFavorites());
+    // 源名反查表（老数据无 sourceName 时 fallback 显示）
+    const map = new Map<string, string>();
+    getSources().forEach(s => map.set(s.id, s.name));
+    setSourceNames(map);
   }, []);
+
+  // 条目的来源源名称：优先条目自带的 sourceName，老数据反查源列表
+  const resolveSourceName = (item: FavoriteItem) =>
+    item.sourceName || sourceNames.get(item.sourceId) || '未知源';
 
   // 清除所有收藏
   const handleClearAll = () => {
@@ -24,9 +34,9 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
     }
   };
 
-  // 删除单个收藏
-  const handleRemove = (vodId: number) => {
-    removeFavorite(vodId);
+  // 删除单个收藏（按 vod_id + sourceId，避免误删其他源的同 ID 条目）
+  const handleRemove = (vodId: number, sourceId: string) => {
+    removeFavorite(vodId, sourceId);
     setFavorites(getFavorites());
   };
 
@@ -53,13 +63,15 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
     }
   };
 
-  // 转换为VideoItem
+  // 转换为VideoItem（携带来源信息，供详情/播放器跨源拉取）
   const toVideoItem = (f: FavoriteItem): VideoItem => ({
     vod_id: f.vod_id,
     vod_name: f.vod_name,
     vod_pic: f.vod_pic,
     vod_remarks: f.vod_remarks,
     type_name: f.type_name,
+    sourceId: f.sourceId,
+    sourceName: f.sourceName || sourceNames.get(f.sourceId) || '',
   });
 
   return (
@@ -96,7 +108,7 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {favorites.map((item) => (
               <div
-                key={item.vod_id}
+                key={`${item.sourceId || 'legacy'}-${item.vod_id}`}
                 className="flex bg-[#141414] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors"
               >
                 {/* 封面 */}
@@ -140,6 +152,19 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                         {item.vod_remarks}
                       </p>
                     )}
+                    {/* 来源标注 */}
+                    <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                      <span className="inline-flex items-center text-[10px] text-gray-400 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded max-w-full">
+                        <Film size={9} className="mr-1 flex-shrink-0" />
+                        <span className="truncate">{resolveSourceName(item)}</span>
+                      </span>
+                      {item.pendingDeleteAt && (
+                        <span className="inline-flex items-center text-[10px] text-red-400/80 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded">
+                          <CloudOff size={9} className="mr-1 flex-shrink-0" />
+                          源已删除·即将清理
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -155,7 +180,7 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                         播放
                       </button>
                       <button
-                        onClick={() => handleRemove(item.vod_id)}
+                        onClick={() => handleRemove(item.vod_id, item.sourceId)}
                         className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                         title="取消收藏"
                       >

@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.6.0] - 2026-09-13
+
+### ✨ New Features
+
+- ✨ Added standalone Filter page — the homepage no longer shows category tabs and loads the full video list by default; a "筛选" button next to the search box opens a dedicated filter page with top-level / sub-category rows, an infinite-scroll grid, and filter state preserved across navigation
+- ✨ Added source annotation for history & favorites — every card now shows which video source the item came from; entries keep their original annotation even after the user switches sources
+- ✨ Added cross-source playback — opening an item from history/favorites fetches details and plays from the annotated source instead of the currently selected one, without switching the global source (legacy entries without a recorded source fall back to the current source)
+- ✨ Added deleted-source fallback — when the annotated source no longer exists, detail/player pages show a dedicated error notice ("没了 o(TヘTo) / 对应影视源被删除 / 影视源信息-ID/名称"); orphaned entries are kept for a 30-minute grace window (marked "源已删除·即将清理") before being purged, and re-adding a source with the same ID restores them
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed cross-source handoff losing the annotated source — DetailPage passed the raw API detail object (without `sourceId`) to the player, so the player silently fell back to the current source; the annotated source now travels with the video item through the detail → player handoff
+- 🐛 Fixed stale pending-cleanup markers — re-adding a deleted source left entries marked "源已删除" forever, and a stale timestamp would skip the 30-minute grace window on a second deletion; markers are now cleared as soon as the source is alive again
+- 🐛 Fixed history/favorites identity key — entries were keyed by `vod_id` alone, so different sources sharing a numeric ID overwrote each other's records, mislit the favorite star, and let deletion remove another source's entry; identity is now `vod_id + sourceId`
+
+### 🖥️ Desktop & Branding
+
+- 🖥️ Desktop-shell adaptation (Bismuth Desktop) — when running inside the desktop shell the app auto-detects the built-in local CORS proxy via `/__desktop_info`, routes every source API call and video stream through it, and the CORS settings page shows a "已内置本地代理，免配置" banner — zero manual proxy setup
+- 🏷️ Unified product name **Bismuth** — the page `<title>` and the desktop window title now read "Bismuth"
+- 🔧 Completed project metadata — `package.json` now declares description / author / license / homepage / repository, and the desktop build embeds a full Windows version resource (product name, author, copyright)
+
 ## [9.5.1] - 2026-09-07
 
 ### 🐛 Bug Fixes

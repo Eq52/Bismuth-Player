@@ -1,7 +1,16 @@
 {
   "name": "bismuth-player",
   "private": true,
-  "version": "9.5.1",
+  "version": "9.6.0",
+  "description": "Bismuth — 基于苹果CMS的纯前端影视播放器（React + Vite + hls.js），配套桌面壳 Bismuth Desktop 免配置 CORS",
+  "author": "Eq52",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/Eq52/Bismuth-Player#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eq52/Bismuth-Player.git"
+  },
+  "keywords": ["bismuth", "maccms", "video-player", "hls", "react"],
   "engines": {
     "node": ">=20.19.0"
   },

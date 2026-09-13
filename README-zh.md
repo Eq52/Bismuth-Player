@@ -18,7 +18,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.5.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.6.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -264,6 +264,12 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.6.0
+- ✨ 独立筛选页 — 首页默认全量展示，搜索框旁「筛选」按钮进入独立筛选页（两级分类联动 + 无限滚动）
+- ✨ 历史/收藏源标注 — 每张卡片标注来源影视源；跨源播放从标注源拉取信息，不影响当前选中源
+- ✨ 删源兜底 — 标注源被删除时详情/播放页显示专属错误提示；条目保留 30 分钟宽限窗口（同 ID 重新添加源即可恢复），到期自动清理
+- 🐛 修复历史/收藏身份键（vod_id + sourceId）— 不同源同 ID 条目不再互相覆盖/误删
 
 ### V9.5.1
 - 🐛 修复 favicon 404 — `index.html` 引用了不存在的 `/vite.svg`（Vite 模板残留），改为真实应用图标

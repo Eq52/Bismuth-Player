@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.5.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.6.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -261,6 +261,12 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.6.0
+- ✨ Standalone Filter page — homepage shows all content by default; a "筛选" button next to the search box opens a dedicated page with two-level category rows & infinite scroll
+- ✨ History & Favorites source annotation — every card shows its origin source; cross-source playback fetches from the annotated source without switching the global one
+- ✨ Deleted-source fallback — dedicated error notice when the annotated source is gone; entries get a 30-minute grace window (re-adding the same source ID restores them) before auto-cleanup
+- 🐛 Fixed identity key for history/favorites (`vod_id + sourceId`) so entries from different sources with the same numeric ID no longer collide
 
 ### V9.5.1
 - 🐛 Fixed favicon 404 — `index.html` referenced the non-existent `/vite.svg` (Vite template leftover); now points to real app icons

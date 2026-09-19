@@ -529,8 +529,8 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
 
       {/* 信任确认弹窗 */}
       {pendingPack && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPendingPack(null)}>
-          <div className="bg-surface border border-white/10 rounded-2xl max-w-sm w-full p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bi-glass-overlay p-4" onClick={() => setPendingPack(null)}>
+          <div className="bi-glass-panel rounded-2xl max-w-sm w-full p-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-3">
               <ShieldAlert className="w-6 h-6 text-yellow-500" />
               <h3 className="text-white font-bold">信任此外部资源？</h3>

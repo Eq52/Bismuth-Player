@@ -118,7 +118,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                   添加
                 </button>
               </DialogTrigger>
-              <DialogContent className="bg-surface border-white/10 text-white max-w-sm">
+              <DialogContent className="text-white max-w-sm">
                 <DialogHeader>
                   <DialogTitle className="text-white">添加影视源</DialogTitle>
                   <DialogDescription className="text-gray-400 text-sm">

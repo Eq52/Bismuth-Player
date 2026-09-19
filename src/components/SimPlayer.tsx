@@ -648,7 +648,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       {/* Resume Prompt */}
       {showResumePrompt && (
         <div className="absolute bottom-16 right-3 z-40 animate-fade-in">
-          <div className="bg-black/70 backdrop-blur-md rounded-xl border border-white/10 px-3 py-2.5 shadow-xl">
+          <div className="bi-glass-pop rounded-xl px-3 py-2.5">
             <p className="text-white/80 text-[11px] mb-2 whitespace-nowrap">跳转至上次播放位置 {formatTime(savedProgressTime)}？</p>
             <div className="flex gap-2">
               <button onClick={handleResumeYes} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[11px] px-3 py-1 rounded-lg hover:opacity-90 transition-opacity">是</button>
@@ -691,7 +691,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
                   <span className="text-[10px] sm:text-xs font-medium">{playbackRate}x</span><ChevronDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
                 {showSpeedMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-elevated/95 backdrop-blur-md rounded-xl py-1 min-w-[72px] sm:min-w-[80px] shadow-xl border border-white/10">
+                  <div className="absolute bottom-full right-0 mb-2 bi-glass-pop rounded-xl py-1 min-w-[72px] sm:min-w-[80px]">
                     {PLAYBACK_SPEEDS.map((speed) => (
                       <button key={speed} onClick={() => { setPlaybackRate(speed); setShowSpeedMenu(false); }}
                         className={`w-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-left hover:bg-white/10 transition-colors ${playbackRate === speed ? 'text-purple-400 font-medium' : 'text-white'}`}>
@@ -716,7 +716,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
         <div data-context-menu className="fixed z-[60] animate-context-menu-in" style={{ left: contextMenu.x, top: contextMenu.y }} onClick={(e) => e.stopPropagation()} onContextMenu={(e) => e.stopPropagation()}
           onMouseEnter={() => { if (contextMenuTimerRef.current) { clearTimeout(contextMenuTimerRef.current); contextMenuTimerRef.current = null; } }}
           onMouseLeave={() => { if (contextMenuTimerRef.current) clearTimeout(contextMenuTimerRef.current); contextMenuTimerRef.current = setTimeout(dismissContextMenu, 2000); }}>
-          <div className="bg-black/50 backdrop-blur-xl rounded-xl border border-white/8 shadow-2xl py-1 min-w-[180px] overflow-hidden">
+          <div className="bi-glass-pop rounded-xl py-1 min-w-[180px] overflow-hidden">
             <button onClick={() => { dismissContextMenu(); handleScreenshot(); }} className="w-full flex items-center gap-2.5 px-3 py-[7px] hover:bg-white/10 transition-colors text-left">
               <Camera className="w-3.5 h-3.5 text-purple-400 shrink-0" /><span className="text-white/90 text-[13px]">截取当前画面</span>
             </button>
@@ -738,8 +738,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
 
       {/* Video Params Dialog */}
       {showParamsDialog && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowParamsDialog(false)}>
-          <div className="bg-surface/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute inset-0 z-50 flex items-center justify-center bi-glass-overlay animate-fade-in" onClick={() => setShowParamsDialog(false)}>
+          <div className="bi-glass-panel rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-medium text-sm flex items-center gap-2"><Info className="w-4 h-4 text-purple-400" />视频参数</h3>
               <button onClick={() => setShowParamsDialog(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
@@ -765,8 +765,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
 
       {/* Shortcuts Dialog */}
       {showShortcutsDialog && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowShortcutsDialog(false)}>
-          <div className="bg-surface/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute inset-0 z-50 flex items-center justify-center bi-glass-overlay animate-fade-in" onClick={() => setShowShortcutsDialog(false)}>
+          <div className="bi-glass-panel rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-medium text-sm flex items-center gap-2"><Keyboard className="w-4 h-4 text-purple-400" />快捷键</h3>
               <button onClick={() => setShowShortcutsDialog(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>

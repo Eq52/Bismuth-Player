@@ -8,7 +8,7 @@ export function Toaster() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="pointer-events-auto animate-in slide-in-from-top-2 fade-in-0 duration-300 max-w-xs w-full bg-elevated border border-white/10 rounded-xl p-3 shadow-2xl shadow-black/40"
+          className="pointer-events-auto animate-in slide-in-from-top-2 fade-in-0 duration-300 max-w-xs w-full bi-glass-pop rounded-xl p-3"
         >
           {t.title && (
             <p className="text-white text-sm font-medium leading-snug">{t.title}</p>

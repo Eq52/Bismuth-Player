@@ -19,6 +19,12 @@
     --bi-purple-400: 192 132 252; /* #c084fc */
     --bi-purple-500: 168 85 247;  /* #a855f7 */
     --bi-page-alpha: 1;           /* 壁纸开启时置 0，让页面底色透出壁纸 */
+    /* 玻璃拟态派生变量：theme.ts 按面板亮度写入（浅色面板→黑描边/亮高光，深色面板→白描边/弱高光），
+       此处为暗夜默认值；变量不进主题包 schema，由运行时自动派生 */
+    --bi-glass-line: 255 255 255;  /* 玻璃描边/分隔基色 */
+    --bi-glass-line-a: 0.1;        /* 描边透明度 */
+    --bi-glass-glow: 255 255 255;  /* 顶部内高光基色 */
+    --bi-glass-glow-a: 0.08;       /* 内高光透明度 */
     --bi-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 
     --background: 0 0% 100%;
@@ -136,5 +142,52 @@
       rgb(var(--bi-logo-via, 168 85 247) / 0.2) 50%,
       rgb(var(--bi-logo-to, 236 72 153) / 0.2) 100%
     );
+  }
+
+  /* ── 玻璃拟态体系：模态/浮层/通知/导航统一质感 ──
+     用法：挂玻璃类的同时必须删掉元素上旧的 bg-*、border、shadow-*、backdrop-blur-* 工具类，
+     utilities 层优先级高于 components 层，残留旧类会盖掉玻璃底。 */
+
+  /* 模态遮罩：压暗 + 轻模糊（浅深主题统一用黑纱，接近日历/iOS 弹窗观感） */
+  .bi-glass-overlay {
+    background: rgb(0 0 0 / 0.45);
+    backdrop-filter: blur(10px) saturate(1.2);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  }
+
+  /* 模态面板：厚玻璃（弹窗主体），顶部内高光 + 三层环境影 */
+  .bi-glass-panel {
+    background: rgb(var(--bi-bg-elevated) / 0.72);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    border: 1px solid rgb(var(--bi-glass-line) / var(--bi-glass-line-a, 0.1));
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--bi-glass-glow, 255 255 255) / var(--bi-glass-glow-a, 0.08)),
+      0 2px 4px -2px rgb(0 0 0 / 0.2),
+      0 12px 28px -8px rgb(0 0 0 / 0.35),
+      0 28px 56px -16px rgb(0 0 0 / 0.45);
+  }
+
+  /* 浮层：薄玻璃（右键菜单/倍速菜单/Toast/悬浮提示），更透更轻 */
+  .bi-glass-pop {
+    background: rgb(var(--bi-bg-elevated) / 0.62);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid rgb(var(--bi-glass-line) / var(--bi-glass-line-a, 0.1));
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--bi-glass-glow, 255 255 255) / var(--bi-glass-glow-a, 0.08)),
+      0 8px 24px -6px rgb(0 0 0 / 0.35);
+  }
+
+  /* 导航条玻璃（底栏/侧栏/顶栏）：透出壁纸但保住可读性 */
+  .bi-glass-bar {
+    background: rgb(var(--bi-bg-base) / 0.72);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  }
+
+  /* 玻璃描边单边（导航条边界线，随主题明暗自动换色） */
+  .bi-glass-line-t {
+    border-top: 1px solid rgb(var(--bi-glass-line) / var(--bi-glass-line-a, 0.1));
   }
 }

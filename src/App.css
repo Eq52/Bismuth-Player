@@ -338,8 +338,11 @@ button, a {
     top: 0;
     bottom: 0;
     width: 72px;
-    background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    /* 玻璃侧栏：透出壁纸，描边随主题明暗自适应（--bi-glass-*，见 index.css） */
+    background: rgb(var(--bi-bg-base) / 0.78);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-right: 1px solid rgb(var(--bi-glass-line) / var(--bi-glass-line-a, 0.1));
     display: flex;
     flex-direction: column;
     align-items: center;

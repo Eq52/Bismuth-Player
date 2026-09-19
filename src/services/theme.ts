@@ -333,6 +333,20 @@ function setVars(vars: ThemeVars): void {
   }
   if (full.font) root.setProperty('--bi-font', full.font);
   else root.removeProperty('--bi-font');
+
+  /* 玻璃拟态派生：描边/高光随面板亮度自适应（浅色面板→黑描边+亮高光，深色面板→白描边+弱高光），
+     以 bgElevated（玻璃底色源）亮度判定，自定义主题无需额外字段即获得正确观感 */
+  const tint = full.bgElevated ? hexToRgbTriplet(full.bgElevated) : null;
+  if (tint) {
+    const [r, g, b] = tint.split(' ').map(Number);
+    const light = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+    root.setProperty('--bi-glass-line', light ? '0 0 0' : '255 255 255');
+    root.setProperty('--bi-glass-line-a', light ? '0.12' : '0.10');
+    root.setProperty('--bi-glass-glow', '255 255 255');
+    root.setProperty('--bi-glass-glow-a', light ? '0.55' : '0.08');
+  } else {
+    ['--bi-glass-line', '--bi-glass-line-a', '--bi-glass-glow', '--bi-glass-glow-a'].forEach((k) => root.removeProperty(k));
+  }
 }
 
 /** 清除全部主题变量（恢复默认暗夜外观） */
@@ -342,6 +356,7 @@ export function clearThemeStyles(): void {
     '--bi-gray-300', '--bi-gray-400', '--bi-gray-500', '--bi-gray-600',
     '--bi-purple-200', '--bi-purple-300', '--bi-purple-400', '--bi-purple-500',
     '--bi-logo-from', '--bi-logo-via', '--bi-logo-to', '--bi-logo-icon',
+    '--bi-glass-line', '--bi-glass-line-a', '--bi-glass-glow', '--bi-glass-glow-a',
     '--bi-font', '--bi-page-alpha',
   ].forEach((k) => root.removeProperty(k));
   removeStyle(STYLE_INLINE_ID);

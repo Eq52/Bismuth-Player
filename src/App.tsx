@@ -28,8 +28,8 @@ type ViewType = 'list' | 'detail' | 'player';
 // 免责声明弹窗组件
 function DisclaimerModal({ onAgree }: { onAgree: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-surface border border-white/10 rounded-2xl max-w-sm w-full shadow-2xl scale-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bi-glass-overlay p-4">
+      <div className="bi-glass-panel rounded-2xl max-w-sm w-full scale-in">
         {/* 头部 */}
         <div className="p-5 border-b border-white/5">
           <div className="flex items-center gap-3">

@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✨ Added three-way import/export — theme file (.json), base64 theme code (`BI2` prefix) and URL import; packs are validated against a strict field whitelist
 - ✨ Added IndexedDB asset storage (`bismuth` database: wallpapers / logos / remote CSS) so large resources load instantly on repeat visits; small settings stay in localStorage, with an in-memory fallback when IndexedDB is unavailable
 - ✨ Added safety hatches — `?safe=1` URL flag skips all theme rendering, and "重置外观" (reset appearance) is always one tap away
+- ✨ Added a themeable brand LOGO — gradient colors exposed as `--bi-logo-from/via/to` with per-theme palettes (纯白 gets a black & white LOGO), the icon foreground decoupled via `--bi-logo-icon`; custom logo image and app name are now wired into the top bar, splash and welcome screens
+- ✨ Added a unified glassmorphism system — four reusable glass styles (`bi-glass-overlay` / `bi-glass-panel` / `bi-glass-pop` / `bi-glass-bar`) with border & highlight auto-derived from panel brightness, applied across 10 surfaces (dialogs, speed & context menus, resume prompt, toasts, mobile bottom nav, desktop sidebar) so wallpapers shine through the glass
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed workshop drafts silently vanishing when a large uploaded wallpaper exceeded the 5 MB localStorage quota — draft assets (wallpaper / logo data URLs) now spill into IndexedDB and only a slim reference stays in localStorage
+- 🐛 Fixed the wallpaper disappearing after switching themes — the wallpaper is now an independent global setting (user wallpaper takes priority over the theme-pack wallpaper) that survives theme switches
+- 🐛 Fixed leftover CSS variables when switching back to a theme without explicit values — the 暗夜 LOGO gradient and custom font now restore correctly (unset variables are removed instead of skipped)
 
 ### 🔧 Maintenance
 

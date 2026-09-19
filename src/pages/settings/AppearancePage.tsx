@@ -61,7 +61,7 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
   const {
     activeId, switchTheme, importAndSave, deleteById,
     draft, updateDraft, clearDraft, previewDraft, resetAppearance,
-    refreshUserThemes, userThemes, safeMode, activeName,
+    refreshUserThemes, userThemes, safeMode, activeName, wallpaper,
   } = useTheme();
 
   const [tab, setTab] = useState<'themes' | 'studio'>('themes');
@@ -98,6 +98,7 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
         name: '我的主题',
         dark: activePack ? activePack.dark : true,
         vars: activePack?.vars ? { ...activePack.vars } : {},
+        wallpaper: wallpaper ?? undefined, // 继承当前生效壁纸（用户壁纸/主题包壁纸），保持工坊显示与实际一致
       };
     }
     const next: DraftTheme = { ...base, ...patch };

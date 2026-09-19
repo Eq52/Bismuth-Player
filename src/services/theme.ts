@@ -329,8 +329,10 @@ function setVars(vars: ThemeVars): void {
   for (const [k, hex] of Object.entries(map)) {
     const triplet = hex ? hexToRgbTriplet(hex) : null;
     if (triplet) root.setProperty(k, triplet);
+    else root.removeProperty(k); // 切到无此变量的主题（如暗夜无 logo*）时清除残留，恢复 CSS 默认（紫粉）
   }
   if (full.font) root.setProperty('--bi-font', full.font);
+  else root.removeProperty('--bi-font');
 }
 
 /** 清除全部主题变量（恢复默认暗夜外观） */
@@ -376,6 +378,9 @@ function applyWallpaperStyle(wp: Wallpaper): void {
   injectStyle(WALLPAPER_STYLE_ID, css);
   document.documentElement.style.setProperty('--bi-page-alpha', '0');
 }
+
+/** 壁纸样式统一入口：ThemeContext 按用户壁纸/主题包壁纸优先级归一后调用 */
+export { applyWallpaperStyle };
 
 async function fetchRemoteCss(url: string): Promise<string> {
   // 桌面壳内走内置代理免 CORS；网页端直连（外链皮肤通常开 CORS，失败则提示用文件导入）
@@ -458,6 +463,48 @@ export async function applyThemePack(pack: ThemePack): Promise<ApplyResult> {
   }
 
   return { ok: true };
+}
+
+/* ── 用户壁纸：独立于主题的全局装饰（切主题不丢）──
+ * 元数据存 localStorage，data dataURL 拆 IDB（同草稿策略防配额爆）。
+ * 优先级：用户壁纸 > 主题包自带壁纸。 */
+const LS_USER_WP = 'bismuth_user_wallpaper';
+const IDB_USER_WP = 'user:wallpaper';
+
+/** 读取用户壁纸；data 类型从 IDB 还原 dataURL */
+export async function getUserWallpaper(): Promise<Wallpaper | null> {
+  try {
+    const raw = localStorage.getItem(LS_USER_WP);
+    if (!raw) return null;
+    const wp = JSON.parse(raw) as Wallpaper;
+    if (wp.type === 'data' && wp.value?.startsWith('idb:')) {
+      const data = await getAsset<string>(wp.value.slice(4));
+      if (!data) return null; // IDB 资产丢失：视为无壁纸，而非渲染坏引用
+      wp.value = data;
+    }
+    return wp.type === 'none' || !wp.value ? null : wp;
+  } catch {
+    return null;
+  }
+}
+
+/** 保存用户壁纸；传 null / type:none 清除 */
+export async function setUserWallpaper(wp: Wallpaper | null): Promise<void> {
+  try {
+    if (!wp || wp.type === 'none' || !wp.value) {
+      localStorage.removeItem(LS_USER_WP);
+      await deleteAsset(IDB_USER_WP);
+      return;
+    }
+    const slim: Wallpaper = { ...wp };
+    if (slim.type === 'data' && slim.value) {
+      await putAsset(IDB_USER_WP, slim.value);
+      slim.value = `idb:${IDB_USER_WP}`;
+    }
+    localStorage.setItem(LS_USER_WP, JSON.stringify(slim));
+  } catch (e) {
+    console.warn('[theme] 用户壁纸保存失败:', e);
+  }
 }
 
 /* ── 存储：激活主题 / 草稿 ── */

@@ -1,7 +1,7 @@
 {
   "name": "bismuth-player",
   "private": true,
-  "version": "9.6.0",
+  "version": "9.6.1",
   "description": "Bismuth — 基于苹果CMS的纯前端影视播放器（React + Vite + hls.js），配套桌面壳 Bismuth Desktop 免配置 CORS",
   "author": "Eq52",
   "license": "Apache-2.0",

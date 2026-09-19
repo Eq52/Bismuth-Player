@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.6.1] - 2026-09-19
+
+### ✨ New Features
+
+- ✨ Added back navigation to the Favorites page — a mobile back arrow and a desktop "返回首页" button, consistent with the History page
+- ✨ Added resume progress on favorites — favorite cards now show "上次看到: <episode>" read from the play history (matched by `vod_id + sourceId`), and the play button becomes "继续" to resume the last watched episode
+- ✨ Added favorite resume state fallback — entries without history start from episode 1 as before
+
+### 🧹 Refinements
+
+- 🧹 Replaced the emoji label on the "屏蔽伦理片" setting with a shield icon for a consistent look
+- 🧹 Removed emoji markers from source comments; refreshed the Favorites empty-state copy
+
+### 🔧 Maintenance
+
+- 🔧 Version metadata bumped to 9.6.1 across `package.json`, `package-lock.json`, in-app about/settings fallbacks, and the README version badge; the README download link now points to the v9.6.0 Android APK
+
 ## [9.6.0] - 2026-09-13
 
 ### ✨ New Features

@@ -16,6 +16,8 @@ import { DetailPage } from '@/pages/DetailPage';
 import { PlayerPage } from '@/pages/PlayerPage';
 import { isDisclaimerAgreed, setDisclaimerAgreed } from '@/services/storage';
 import { detectDesktopMode } from '@/services/desktop';
+import { WallpaperLayer } from '@/services/ThemeContext';
+import { AppearancePage } from '@/pages/settings/AppearancePage';
 import type { VideoItem } from '@/types';
 import { Toaster } from '@/components/Toaster';
 import './App.css';
@@ -27,7 +29,7 @@ type ViewType = 'list' | 'detail' | 'player';
 function DisclaimerModal({ onAgree }: { onAgree: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#141414] border border-white/10 rounded-2xl max-w-sm w-full shadow-2xl scale-in">
+      <div className="bg-surface border border-white/10 rounded-2xl max-w-sm w-full shadow-2xl scale-in">
         {/* 头部 */}
         <div className="p-5 border-b border-white/5">
           <div className="flex items-center gap-3">
@@ -74,7 +76,7 @@ function DisclaimerModal({ onAgree }: { onAgree: () => void }) {
 // 启动加载屏幕组件
 function StartupScreen() {
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center bg-[#0a0a0a]">
+    <div className="h-full w-full flex flex-col items-center justify-center bg-base">
       <div className="startup-loader">
         <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/30">
           <Film className="w-10 h-10 text-white" />
@@ -351,6 +353,8 @@ function App() {
               const subPageKey = `settings-${settingsSubPage}`;
               const renderSubPage = () => {
                 switch (settingsSubPage) {
+                  case 'appearance':
+                    return <AppearancePage onBack={handleBackToSettings} />;
                   case 'source':
                     return <VideoSourcePage onBack={handleBackToSettings} />;
                   case 'player':
@@ -400,7 +404,8 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#0a0a0a] text-white overflow-hidden">
+    <div className="h-screen w-screen bg-base text-white overflow-hidden">
+      <WallpaperLayer />
       {/* Toast 通知 */}
       <Toaster />
 

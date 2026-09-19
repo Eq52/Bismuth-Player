@@ -103,9 +103,9 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   const currentMediaUrl = isDesktopMode() ? desktopMediaUrl(currentPlayUrl) : currentPlayUrl;
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button 
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -134,7 +134,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : deletedSource ? (
-            <div className="absolute inset-0 overflow-y-auto bg-[#0a0a0a] flex items-center justify-center">
+            <div className="absolute inset-0 overflow-y-auto bg-base flex items-center justify-center">
               <SourceDeletedNotice sourceId={deletedSource.id} sourceName={deletedSource.name} />
             </div>
           ) : currentPlayUrl ? (
@@ -164,9 +164,9 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
 
         {/* 右侧面板：控制栏 + 选集 */}
         {episodes.length > 0 && (
-          <div className="lg:w-72 xl:w-80 shrink-0 lg:shrink-0 flex-1 lg:flex-none max-h-[45vh] lg:max-h-none border-l border-white/5 bg-[#0a0a0a] flex flex-col min-h-0">
+          <div className="lg:w-72 xl:w-80 shrink-0 lg:shrink-0 flex-1 lg:flex-none max-h-[45vh] lg:max-h-none border-l border-white/5 bg-base flex flex-col min-h-0">
             {/* 控制栏 */}
-            <div className="bg-[#141414] border-b border-white/5 px-5 py-3 flex items-center justify-between shrink-0">
+            <div className="bg-surface border-b border-white/5 px-5 py-3 flex items-center justify-between shrink-0">
               <button
                 onClick={prevEpisode}
                 disabled={currentEpisode === 0}
@@ -203,7 +203,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
                     className={`text-xs py-2.5 px-1 rounded-xl transition-all truncate ${
                       index === currentEpisode
                         ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium episode-current'
-                        : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] border border-white/5'
+                        : 'bg-elevated text-gray-400 hover:bg-elevated border border-white/5'
                     }`}
                   >
                     {ep.name}

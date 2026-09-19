@@ -79,9 +79,9 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
   // 空状态 - 无影视源
   if (!hasSources) {
     return (
-      <div className="h-full flex flex-col bg-[#0a0a0a]">
+      <div className="h-full flex flex-col bg-base">
         {/* 头部 */}
-        <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a]">
+        <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-base">
           <div className="flex items-center">
             <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
               <Film className="w-5 h-5 text-white" />
@@ -122,9 +122,9 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a]">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-base">
         <div className="flex items-center">
           <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
             <Film className="w-5 h-5 text-white" />
@@ -147,14 +147,14 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
       <div className="px-5 py-2 md:px-8 flex items-center gap-2">
         <div 
           onClick={onSearchClick}
-          className="flex-1 max-w-md bg-[#141414] border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-[#1a1a1a] hover:border-white/10 transition-all"
+          className="flex-1 max-w-md bg-surface border border-white/5 rounded-xl px-4 py-3 flex items-center text-gray-500 cursor-pointer hover:bg-elevated hover:border-white/10 transition-all"
         >
           <Search className="w-5 h-5 mr-3 flex-shrink-0" />
           <span className="text-sm">搜索影片...</span>
         </div>
         <button
           onClick={onFilterClick}
-          className="flex items-center gap-1.5 bg-[#141414] border border-white/5 rounded-xl px-3.5 py-3 text-gray-400 hover:text-white hover:bg-[#1a1a1a] hover:border-white/10 transition-all flex-shrink-0"
+          className="flex items-center gap-1.5 bg-surface border border-white/5 rounded-xl px-3.5 py-3 text-gray-400 hover:text-white hover:bg-elevated hover:border-white/10 transition-all flex-shrink-0"
           title="分类筛选"
         >
           <SlidersHorizontal className="w-4 h-4" />

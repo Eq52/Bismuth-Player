@@ -69,9 +69,9 @@ export function FavoritesPage({ onVideoClick, onContinuePlay, onBack }: Favorite
   });
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
@@ -118,7 +118,7 @@ export function FavoritesPage({ onVideoClick, onContinuePlay, onBack }: Favorite
               return (
               <div
                 key={`${item.sourceId || 'legacy'}-${item.vod_id}`}
-                className="flex bg-[#141414] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors"
+                className="flex bg-surface border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors"
               >
                 {/* 封面 */}
                 <div 

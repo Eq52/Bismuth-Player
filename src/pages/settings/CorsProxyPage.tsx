@@ -67,9 +67,9 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -93,7 +93,7 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
               </p>
             </div>
           )}
-          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
+          <div className="bg-surface border border-white/5 rounded-xl p-4 space-y-4">
             {/* 开关 */}
             <div className="flex items-center justify-between">
               <div>
@@ -163,7 +163,7 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
                     value={newProxyInput}
                     onChange={(e) => setNewProxyInput(e.target.value)}
                     placeholder="输入代理地址，如 https://..."
-                    className="flex-1 bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                    className="flex-1 bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddProxy(); }}
                   />
                   <Button onClick={handleAddProxy} size="sm" className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90">

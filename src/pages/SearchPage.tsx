@@ -69,9 +69,9 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部搜索栏 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-base border-b border-white/5">
         <button 
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
@@ -85,7 +85,7 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch(keyword)}
             placeholder="搜索影片..."
-            className="w-full bg-[#141414] border border-white/5 text-white rounded-xl px-4 py-2.5 pl-11 pr-10 outline-none focus:border-purple-500/50 transition-colors text-sm"
+            className="w-full bg-surface border border-white/5 text-white rounded-xl px-4 py-2.5 pl-11 pr-10 outline-none focus:border-purple-500/50 transition-colors text-sm"
             autoFocus
           />
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -129,7 +129,7 @@ export function SearchPage({ onVideoClick, onBack }: SearchPageProps) {
                 {searchHistory.map((item) => (
                   <div
                     key={item}
-                    className="flex items-center bg-[#141414] border border-white/5 rounded-xl px-3 py-2"
+                    className="flex items-center bg-surface border border-white/5 rounded-xl px-3 py-2"
                   >
                     <button
                       onClick={() => {

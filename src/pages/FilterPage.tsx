@@ -86,9 +86,9 @@ export function FilterPage({ onVideoClick, onBack, topCategory, category, onTopC
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
@@ -112,7 +112,7 @@ export function FilterPage({ onVideoClick, onBack, topCategory, category, onTopC
           className={`px-4 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
             topCategory === 0
               ? 'bg-white text-black font-medium'
-              : 'bg-[#141414] text-gray-400 hover:bg-[#1a1a1a]'
+              : 'bg-surface text-gray-400 hover:bg-elevated'
           }`}
         >
           全部
@@ -124,7 +124,7 @@ export function FilterPage({ onVideoClick, onBack, topCategory, category, onTopC
             className={`px-4 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
               topCategory === cat.type_id
                 ? 'bg-white text-black font-medium'
-                : 'bg-[#141414] text-gray-400 hover:bg-[#1a1a1a]'
+                : 'bg-surface text-gray-400 hover:bg-elevated'
             }`}
           >
             {cat.name}

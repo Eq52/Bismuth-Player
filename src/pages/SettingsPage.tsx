@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive } from 'lucide-react';
+import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette } from 'lucide-react';
 import { getCorsProxyList, isCorsProxyEnabled } from '@/services/storage';
 import { getCacheStats } from '@/services/cache';
 
@@ -7,7 +7,7 @@ import { getCacheStats } from '@/services/cache';
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.6.1';
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
-export type SettingsSubPage = 'none' | 'source' | 'player' | 'cors' | 'cache' | 'about';
+export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'cors' | 'cache' | 'about';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -34,9 +34,9 @@ export function SettingsPage({ onBack, subPage = 'none', onSubPageChange }: Sett
 
   // 设置首页
   const renderSettingsHome = () => (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         {onBack && (
           <button
             onClick={onBack}
@@ -54,7 +54,7 @@ export function SettingsPage({ onBack, subPage = 'none', onSubPageChange }: Sett
       {/* 菜单列表 */}
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-[#141414] border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5">
+          <div className="bg-surface border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5">
             {/* 影视源 */}
             <button
               onClick={() => handleSubPage('source')}
@@ -67,6 +67,23 @@ export function SettingsPage({ onBack, subPage = 'none', onSubPageChange }: Sett
                 <div className="min-w-0">
                   <p className="text-white text-sm">影视源</p>
                   <p className="text-gray-500 text-xs">管理影视内容来源</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />
+            </button>
+
+            {/* 外观 */}
+            <button
+              onClick={() => handleSubPage('appearance')}
+              className="w-full flex items-center px-4 py-3.5 hover:bg-white/[0.02] transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center flex-shrink-0">
+                  <Palette size={16} className="text-pink-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-sm">外观</p>
+                  <p className="text-gray-500 text-xs">主题 / 调色盘 / 壁纸 / 自定义CSS</p>
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />

@@ -100,9 +100,9 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const displayData = detail || video;
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button 
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -138,7 +138,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
             <div className="px-5 py-5 md:px-8 md:py-6">
               <div className="flex gap-4 md:gap-6 max-w-4xl">
                 {/* 封面 */}
-                <div className="w-28 md:w-36 aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 shadow-xl shadow-purple-500/10 bg-[#1a1a2e] relative">
+                <div className="w-28 md:w-36 aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 shadow-xl shadow-purple-500/10 bg-elevated relative">
                   {/* 骨架屏 */}
                   {!coverLoaded && (
                     <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#252547] to-[#1a1a2e] animate-pulse flex items-center justify-center">
@@ -229,7 +229,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
                     <button
                       key={index}
                       onClick={() => handlePlay(index)}
-                      className="bg-[#141414] border border-white/5 hover:border-purple-500/50 hover:bg-purple-500/10 text-white text-xs py-2.5 px-2 rounded-xl transition-all truncate"
+                      className="bg-surface border border-white/5 hover:border-purple-500/50 hover:bg-purple-500/10 text-white text-xs py-2.5 px-2 rounded-xl transition-all truncate"
                     >
                       {ep.name}
                     </button>

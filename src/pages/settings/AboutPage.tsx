@@ -6,7 +6,7 @@ interface AboutPageProps {
 }
 
 // 从 Vite define 注入的版本号（类型声明见 env.d.ts）
-const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.6.1';
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.7.0';
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
 // 比较语义版本号，返回 >0 表示 a 更新
@@ -54,9 +54,9 @@ export function AboutPage({ onBack }: AboutPageProps) {
   }, []);
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -73,7 +73,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
           {/* 应用信息 */}
-          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-3">
+          <div className="bg-surface border border-white/5 rounded-xl p-4 space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm">版本</span>
               <span className="text-white text-sm">{APP_DISPLAY_VERSION} ({APP_VERSION})</span>
@@ -140,7 +140,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
           </div>
 
           {/* 免责声明 */}
-          <div className="mt-4 bg-[#141414] border border-white/5 rounded-xl p-4">
+          <div className="mt-4 bg-surface border border-white/5 rounded-xl p-4">
             <p className="text-gray-500 text-xs text-center leading-relaxed">
               Bismuth Player 仅为播放工具<br />
               内容来源于用户配置的第三方源

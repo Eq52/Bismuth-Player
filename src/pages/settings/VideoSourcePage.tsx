@@ -91,9 +91,9 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -118,7 +118,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                   添加
                 </button>
               </DialogTrigger>
-              <DialogContent className="bg-[#141414] border-white/10 text-white max-w-sm">
+              <DialogContent className="bg-surface border-white/10 text-white max-w-sm">
                 <DialogHeader>
                   <DialogTitle className="text-white">添加影视源</DialogTitle>
                   <DialogDescription className="text-gray-400 text-sm">
@@ -140,7 +140,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                       value={newSource.id}
                       onChange={(e) => setNewSource({ ...newSource, id: e.target.value })}
                       placeholder="如: mysource"
-                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                      className="bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                     />
                   </div>
                   <div>
@@ -149,7 +149,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                       value={newSource.name}
                       onChange={(e) => setNewSource({ ...newSource, name: e.target.value })}
                       placeholder="如: 我的源"
-                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                      className="bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                     />
                   </div>
                   <div>
@@ -161,7 +161,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                         setTestResult(null);
                       }}
                       placeholder="https://..."
-                      className="bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                      className="bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                     />
                   </div>
 
@@ -198,7 +198,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
 
           {/* 影视源列表 */}
           {sources.length === 0 ? (
-            <div className="bg-[#141414] border border-white/5 rounded-xl p-8 text-center">
+            <div className="bg-surface border border-white/5 rounded-xl p-8 text-center">
               <Monitor className="w-12 h-12 mx-auto mb-3 text-gray-600" />
               <p className="text-gray-500 text-sm">暂无影视源</p>
               <p className="text-gray-600 text-xs mt-1">点击上方添加按钮添加</p>
@@ -212,7 +212,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                   className={`flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all ${
                     currentSourceId === source.id
                       ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-purple-500/30'
-                      : 'bg-[#141414] border border-white/5 hover:border-white/10'
+                      : 'bg-surface border border-white/5 hover:border-white/10'
                   }`}
                 >
                   <div className="flex items-center min-w-0">
@@ -241,7 +241,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
           )}
 
           {/* 内容过滤设置 */}
-          <div className="mt-6 bg-[#141414] border border-white/5 rounded-xl p-4">
+          <div className="mt-6 bg-surface border border-white/5 rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-sm flex items-center gap-1.5">

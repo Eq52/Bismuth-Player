@@ -13,7 +13,7 @@ export function SourceDeletedNotice({ sourceId, sourceName }: SourceDeletedNotic
         <CloudOff className="w-10 h-10 text-red-400" />
       </div>
       <h2 className="text-white text-lg font-bold mb-3">没了 o(TヘTo)</h2>
-      <div className="bg-[#141414] border border-white/5 rounded-xl px-5 py-4 text-sm space-y-1.5 max-w-xs">
+      <div className="bg-surface border border-white/5 rounded-xl px-5 py-4 text-sm space-y-1.5 max-w-xs">
         <p className="text-gray-300">对应影视源被删除</p>
         <p className="text-gray-400 break-all">
           影视源信息-ID:<span className="text-purple-400">{sourceId || '未知'}</span>

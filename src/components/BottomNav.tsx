@@ -14,7 +14,7 @@ export function BottomNav({ currentPage, onPageChange }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/5 z-50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 bg-base/95 backdrop-blur-xl border-t border-white/5 z-50 safe-area-pb">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
           const Icon = item.icon;

@@ -36,9 +36,9 @@ export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -55,7 +55,7 @@ export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
           {/* 缓存开关 */}
-          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
+          <div className="bg-surface border border-white/5 rounded-xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-sm">启用缓存</p>
@@ -86,7 +86,7 @@ export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
           </div>
 
           {/* 缓存策略详情 */}
-          <div className="mt-4 bg-[#141414] border border-white/5 rounded-xl p-4">
+          <div className="mt-4 bg-surface border border-white/5 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <HardDrive size={16} className="text-gray-500" />
               <p className="text-gray-400 text-sm font-medium">缓存策略</p>

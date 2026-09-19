@@ -5,6 +5,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // ── Bismuth 主题令牌：全部映射到 CSS 变量，主题包运行时改写 :root 即换皮 ──
+        base: "rgb(var(--bi-bg-base) / var(--bi-page-alpha, 1))",
+        surface: "rgb(var(--bi-bg-surface) / <alpha-value>)",
+        elevated: "rgb(var(--bi-bg-elevated) / <alpha-value>)",
+        white: "rgb(var(--bi-white) / <alpha-value>)",
+        black: "rgb(var(--bi-black) / <alpha-value>)",
+        gray: {
+          300: "rgb(var(--bi-gray-300) / <alpha-value>)",
+          400: "rgb(var(--bi-gray-400) / <alpha-value>)",
+          500: "rgb(var(--bi-gray-500) / <alpha-value>)",
+          600: "rgb(var(--bi-gray-600) / <alpha-value>)",
+        },
+        purple: {
+          200: "rgb(var(--bi-purple-200) / <alpha-value>)",
+          300: "rgb(var(--bi-purple-300) / <alpha-value>)",
+          400: "rgb(var(--bi-purple-400) / <alpha-value>)",
+          500: "rgb(var(--bi-purple-500) / <alpha-value>)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

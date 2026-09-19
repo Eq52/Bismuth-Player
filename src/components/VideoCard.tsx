@@ -107,9 +107,9 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group relative bg-[#141414] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10"
+      className="group relative bg-surface rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10"
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#1a1a2e]">
+      <div className="relative aspect-[3/4] overflow-hidden bg-elevated">
         {/* 加载中的骨架屏动画 */}
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#252547] to-[#1a1a2e] animate-pulse">

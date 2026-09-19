@@ -4,6 +4,23 @@
 
 @layer base {
   :root {
+    /* ── Bismuth 主题令牌默认值（RGB 三元组，便于透明度修饰符）── */
+    --bi-bg-base: 10 10 10;      /* #0a0a0a */
+    --bi-bg-surface: 20 20 20;   /* #141414 */
+    --bi-bg-elevated: 26 26 26;  /* #1a1a1a */
+    --bi-white: 255 255 255;
+    --bi-black: 0 0 0;
+    --bi-gray-300: 209 213 219;  /* #d1d5db */
+    --bi-gray-400: 156 163 175;  /* #9ca3af */
+    --bi-gray-500: 107 114 128;  /* #6b7280 */
+    --bi-gray-600: 75 85 99;     /* #4b5563 */
+    --bi-purple-200: 233 213 255; /* #e9d5ff */
+    --bi-purple-300: 216 180 254; /* #d8b4fe */
+    --bi-purple-400: 192 132 252; /* #c084fc */
+    --bi-purple-500: 168 85 247;  /* #a855f7 */
+    --bi-page-alpha: 1;           /* 壁纸开启时置 0，让页面底色透出壁纸 */
+    --bi-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -71,5 +88,16 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+@layer base {
+  html {
+    font-family: var(--bi-font);
+  }
+  body {
+    background: transparent;
+  }
+  #root {
+    background: rgb(var(--bi-bg-base) / var(--bi-page-alpha, 1));
   }
 }

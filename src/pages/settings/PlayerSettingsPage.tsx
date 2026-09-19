@@ -35,9 +35,9 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-[#0a0a0a] border-b border-white/5">
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
         <button
           onClick={onBack}
           className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all mr-3"
@@ -56,7 +56,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
       {/* 内容 */}
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-[#141414] border border-white/5 rounded-xl p-4 space-y-4">
+          <div className="bg-surface border border-white/5 rounded-xl p-4 space-y-4">
             {/* 播放器模式选择 */}
             <div className="flex items-center justify-between">
               <div>
@@ -70,7 +70,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
                 className={`flex-1 p-3 rounded-xl border text-left transition-all ${
                   playerSettings.playerMode === 'builtin'
                     ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-purple-500/30'
-                    : 'bg-[#1a1a1a] border-white/5 hover:border-white/10'
+                    : 'bg-elevated border-white/5 hover:border-white/10'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -86,7 +86,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
                 className={`flex-1 p-3 rounded-xl border text-left transition-all ${
                   playerSettings.playerMode === 'external'
                     ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-purple-500/30'
-                    : 'bg-[#1a1a1a] border-white/5 hover:border-white/10'
+                    : 'bg-elevated border-white/5 hover:border-white/10'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -108,7 +108,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
                     value={playerSettings.playerUrl}
                     onChange={(e) => setPlayerSettings({ ...playerSettings, playerUrl: e.target.value })}
                     placeholder="https://..."
-                    className="flex-1 bg-[#1a1a1a] border-white/10 text-white text-sm focus:border-purple-500"
+                    className="flex-1 bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                   />
                   <Button
                     onClick={handleSavePlayerSettings}

@@ -691,7 +691,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
                   <span className="text-[10px] sm:text-xs font-medium">{playbackRate}x</span><ChevronDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </button>
                 {showSpeedMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a]/95 backdrop-blur-md rounded-xl py-1 min-w-[72px] sm:min-w-[80px] shadow-xl border border-white/10">
+                  <div className="absolute bottom-full right-0 mb-2 bg-elevated/95 backdrop-blur-md rounded-xl py-1 min-w-[72px] sm:min-w-[80px] shadow-xl border border-white/10">
                     {PLAYBACK_SPEEDS.map((speed) => (
                       <button key={speed} onClick={() => { setPlaybackRate(speed); setShowSpeedMenu(false); }}
                         className={`w-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-left hover:bg-white/10 transition-colors ${playbackRate === speed ? 'text-purple-400 font-medium' : 'text-white'}`}>
@@ -739,7 +739,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       {/* Video Params Dialog */}
       {showParamsDialog && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowParamsDialog(false)}>
-          <div className="bg-[#141414]/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-medium text-sm flex items-center gap-2"><Info className="w-4 h-4 text-purple-400" />视频参数</h3>
               <button onClick={() => setShowParamsDialog(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
@@ -766,7 +766,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
       {/* Shortcuts Dialog */}
       {showShortcutsDialog && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowShortcutsDialog(false)}>
-          <div className="bg-[#141414]/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface/95 backdrop-blur-md border border-white/10 rounded-2xl p-5 max-w-xs w-full mx-4 animate-dialog-in shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-medium text-sm flex items-center gap-2"><Keyboard className="w-4 h-4 text-purple-400" />快捷键</h3>
               <button onClick={() => setShowShortcutsDialog(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-4 h-4" /></button>

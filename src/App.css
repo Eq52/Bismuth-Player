@@ -3,17 +3,28 @@
   box-sizing: border-box;
 }
 
-html, body {
+html {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* 画布兜底色：仅在 React 挂载前可见；body 必须保持透明，
+     否则 body 盒背景会盖住壁纸层（负 z-index 固定定位元素） */
   background-color: #0a0a0a;
   color: #fff;
   font-family: 'SimSun', '宋体', 'Songti SC', 'Noto Serif SC', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
 }
 
 #root {

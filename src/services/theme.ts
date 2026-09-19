@@ -35,6 +35,7 @@ export interface ThemeVars {
   white?: string; black?: string;
   gray300?: string; gray400?: string; gray500?: string; gray600?: string;
   purple200?: string; purple300?: string; purple400?: string; purple500?: string;
+  logoFrom?: string; logoVia?: string; logoTo?: string;   // LOGO 渐变三色（默认紫粉）
   font?: string;
 }
 
@@ -124,6 +125,7 @@ export const BUILT_IN_THEMES: ThemePack[] = [
       white: '#17171c', black: '#ffffff',
       gray300: '#5c5c66', gray400: '#71717c', gray500: '#8a8a95', gray600: '#a5a5ae',
       purple200: '#6d28d9', purple300: '#7c3aed', purple400: '#8b5cf6', purple500: '#7c3aed',
+      logoFrom: '#17171c', logoVia: '#3d3d46', logoTo: '#71717c',   // 亮色下 LOGO 黑白灰
     },
     wallpaper: { type: 'none' },
   },
@@ -134,6 +136,7 @@ export const BUILT_IN_THEMES: ThemePack[] = [
       white: '#25402c', black: '#eef7ef',
       gray300: '#4d6b54', gray400: '#5d7a64', gray500: '#6f8a76', gray600: '#88998c',
       purple200: '#3a7d4d', purple300: '#418f58', purple400: '#4a9c62', purple500: '#3f8a54',
+      logoFrom: '#2f6b40', logoVia: '#3f8a54', logoTo: '#62ab77',
     },
   },
   {
@@ -143,6 +146,7 @@ export const BUILT_IN_THEMES: ThemePack[] = [
       white: '#f5e9d8', black: '#120e0a',
       gray300: '#c9b394', gray400: '#a8906f', gray500: '#87704f', gray600: '#6b5a42',
       purple200: '#fbbf24', purple300: '#f59e0b', purple400: '#d97706', purple500: '#b45309',
+      logoFrom: '#92400e', logoVia: '#b45309', logoTo: '#d97706',
     },
   },
   {
@@ -152,6 +156,7 @@ export const BUILT_IN_THEMES: ThemePack[] = [
       white: '#eef2ff', black: '#050509',
       gray300: '#b6b9d4', gray400: '#8e92b3', gray500: '#6b6f93', gray600: '#545876',
       purple200: '#fda4af', purple300: '#fb7185', purple400: '#f43f5e', purple500: '#e11d48',
+      logoFrom: '#be123c', logoVia: '#e11d48', logoTo: '#fb7185',
     },
   },
 ];
@@ -315,6 +320,9 @@ function setVars(vars: ThemeVars): void {
     '--bi-purple-300': full.purple300,
     '--bi-purple-400': full.purple400,
     '--bi-purple-500': full.purple500,
+    '--bi-logo-from': full.logoFrom,
+    '--bi-logo-via': full.logoVia,
+    '--bi-logo-to': full.logoTo,
   };
   for (const [k, hex] of Object.entries(map)) {
     const triplet = hex ? hexToRgbTriplet(hex) : null;
@@ -329,6 +337,7 @@ export function clearThemeStyles(): void {
   ['--bi-bg-base', '--bi-bg-surface', '--bi-bg-elevated', '--bi-white', '--bi-black',
     '--bi-gray-300', '--bi-gray-400', '--bi-gray-500', '--bi-gray-600',
     '--bi-purple-200', '--bi-purple-300', '--bi-purple-400', '--bi-purple-500',
+    '--bi-logo-from', '--bi-logo-via', '--bi-logo-to',
     '--bi-font', '--bi-page-alpha',
   ].forEach((k) => root.removeProperty(k));
   removeStyle(STYLE_INLINE_ID);
@@ -469,6 +478,26 @@ export interface DraftTheme {
   wallpaper?: Wallpaper;
   brand?: { appName?: string; logo?: string };
   css?: string;
+  cssUrl?: string;
+  cssMode?: 'override' | 'replace';
+  trustRemote?: boolean;
+}
+
+/** 草稿 → 可应用的主题包（启动恢复与实时预览共用） */
+export function draftToPreviewPack(d: DraftTheme): ThemePack {
+  return {
+    format: THEME_FORMAT,
+    id: 'custom-draft',
+    name: d.name,
+    dark: d.dark,
+    vars: d.vars,
+    wallpaper: d.wallpaper,
+    brand: d.brand,
+    css: d.css,
+    cssUrl: d.cssUrl,
+    cssMode: d.cssMode,
+    trustRemote: d.trustRemote,
+  };
 }
 
 export function getDraft(): DraftTheme | null {
@@ -481,8 +510,13 @@ export function getDraft(): DraftTheme | null {
 }
 
 export function setDraft(d: DraftTheme | null): void {
-  if (d === null) localStorage.removeItem(LS_DRAFT);
-  else localStorage.setItem(LS_DRAFT, JSON.stringify(d));
+  try {
+    if (d === null) localStorage.removeItem(LS_DRAFT);
+    else localStorage.setItem(LS_DRAFT, JSON.stringify(d));
+  } catch (e) {
+    // 壁纸 dataURL 过大超出 localStorage 配额：改动仍在本会话生效，但不阻塞 UI
+    console.warn('[theme] 草稿保存失败（可能超出 localStorage 配额）:', e);
+  }
 }
 
 /** 保存主题包（导入或另存），大字段落 IDB */

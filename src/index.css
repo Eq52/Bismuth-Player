@@ -101,3 +101,27 @@
     background: rgb(var(--bi-bg-base) / var(--bi-page-alpha, 1));
   }
 }
+
+@layer components {
+  /* 品牌 LOGO 标记块：渐变三色随主题（--bi-logo-*），默认紫粉与历史版本一致 */
+  .bi-logo-mark {
+    background: linear-gradient(
+      135deg,
+      rgb(var(--bi-logo-from, 99 102 241)) 0%,
+      rgb(var(--bi-logo-via, 168 85 247)) 50%,
+      rgb(var(--bi-logo-to, 236 72 153)) 100%
+    );
+    box-shadow: 0 10px 15px -3px rgb(var(--bi-logo-via, 168 85 247) / 0.2),
+      0 4px 6px -4px rgb(var(--bi-logo-via, 168 85 247) / 0.2);
+  }
+
+  /* 欢迎屏大号 LOGO：同渐变的 20% 透明形态 */
+  .bi-logo-mark-soft {
+    background: linear-gradient(
+      135deg,
+      rgb(var(--bi-logo-from, 99 102 241) / 0.2) 0%,
+      rgb(var(--bi-logo-via, 168 85 247) / 0.2) 50%,
+      rgb(var(--bi-logo-to, 236 72 153) / 0.2) 100%
+    );
+  }
+}

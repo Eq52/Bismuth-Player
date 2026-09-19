@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Film, Search, History, SlidersHorizontal } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
 import { getVideoList, getCurrentSource, getSources } from '@/services/api';
+import { useTheme, BrandLogo } from '@/services/ThemeContext';
 import type { VideoItem, VideoSource } from '@/types';
 
 interface HomePageProps {
@@ -16,6 +17,7 @@ interface HomePageProps {
 }
 
 export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSearchClick, onFilterClick, refreshKey }: HomePageProps) {
+  const { appName } = useTheme();
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -83,11 +85,11 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
         {/* 头部 */}
         <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-base">
           <div className="flex items-center">
-            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
-              <Film className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 md:w-10 md:h-10 bi-logo-mark rounded-xl flex items-center justify-center mr-3 overflow-hidden">
+              <BrandLogo fallback={<Film className="w-5 h-5 text-white" />} />
             </div>
             <div>
-              <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">Bismuth Player</h1>
+              <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">{appName === 'Bismuth' ? 'Bismuth Player' : appName}</h1>
               <p className="text-gray-500 text-xs">如"秘"般美丽</p>
             </div>
           </div>
@@ -102,7 +104,7 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
 
         {/* 空状态 */}
         <div className="flex-1 flex flex-col items-center justify-center px-8">
-          <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl flex items-center justify-center mb-6">
+          <div className="w-24 h-24 bi-logo-mark-soft rounded-3xl flex items-center justify-center mb-6">
             <Film className="w-12 h-12 text-gray-400" />
           </div>
           <h2 className="text-white text-xl font-semibold mb-2">欢迎使用 Bismuth Player</h2>
@@ -126,11 +128,11 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
       {/* 头部 */}
       <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-base">
         <div className="flex items-center">
-          <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
-            <Film className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 md:w-10 md:h-10 bi-logo-mark rounded-xl flex items-center justify-center mr-3 overflow-hidden">
+            <BrandLogo fallback={<Film className="w-5 h-5 text-white" />} />
           </div>
           <div>
-            <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">Bismuth Player</h1>
+            <h1 className="text-white text-lg md:text-xl font-bold tracking-tight">{appName === 'Bismuth' ? 'Bismuth Player' : appName}</h1>
             <p className="text-gray-500 text-xs">{currentSource?.name || '未选择源'}</p>
           </div>
         </div>

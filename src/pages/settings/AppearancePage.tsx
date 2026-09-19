@@ -8,15 +8,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  BUILT_IN_THEMES, THEME_FORMAT, validateThemePack, decodeThemeCode, encodeThemeCode,
+  deriveVars, getActiveThemeId, loadTheme, type ThemePack, type ThemeVars, type DraftTheme,
+} from '@/services/theme';
+import {
   ArrowLeft, Palette, Check, Upload, Download, RotateCcw,
   Image as ImageIcon, Type, Code2, Link2, FileJson, ClipboardPaste,
   ShieldAlert, Wand2, X,
 } from 'lucide-react';
 import { useTheme } from '@/services/ThemeContext';
-import {
-  BUILT_IN_THEMES, THEME_FORMAT, validateThemePack, decodeThemeCode, encodeThemeCode,
-  deriveVars, type ThemePack, type ThemeVars, type DraftTheme,
-} from '@/services/theme';
 import { toast } from '@/hooks/use-toast';
 
 interface AppearancePageProps {
@@ -65,6 +65,7 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
   } = useTheme();
 
   const [tab, setTab] = useState<'themes' | 'studio'>('themes');
+  const [activePack, setActivePack] = useState<ThemePack | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [pasteCode, setPasteCode] = useState('');
   const [importUrl, setImportUrl] = useState('');
@@ -78,12 +79,31 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
     refreshUserThemes();
   }, [refreshUserThemes]);
 
-  /* ── 调色盘草稿：patch + 实时预览 ── */
-  const commitDraft = (patch: Partial<DraftTheme>) => {
-    const base: DraftTheme = draft || { id: 'custom-draft', name: '我的主题', dark: true, vars: {} };
+  // 激活主题缓存：工坊调色盘基线 + 草稿创建快照用
+  useEffect(() => {
+    (async () => {
+      const id = getActiveThemeId();
+      setActivePack(id ? await loadTheme(id) : null);
+    })();
+  }, [activeId]);
+
+  /* ── 调色盘草稿：patch + 实时预览 ──
+   * 草稿创建时快照当前激活主题的 vars/dark，保证后续持久化恢复时
+   * 不会退回暗夜默认色（比如在纯白主题下改壁纸，刷新后仍是纯白+壁纸） */
+  const commitDraft = async (patch: Partial<DraftTheme>) => {
+    let base = draft;
+    if (!base) {
+      base = {
+        id: 'custom-draft',
+        name: '我的主题',
+        dark: activePack ? activePack.dark : true,
+        vars: activePack?.vars ? { ...activePack.vars } : {},
+      };
+    }
     const next: DraftTheme = { ...base, ...patch };
+    if (!draft) updateDraft(base);   // 先落基线，再落本次改动（updateDraft 内部函数式合并）
     updateDraft(patch);
-    previewDraft(next);
+    await previewDraft(next);
   };
 
   const stopPreview = async () => {
@@ -350,11 +370,11 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
               <section className="rounded-xl bg-surface border border-white/5 p-4">
                 <h2 className="text-white text-sm font-medium flex items-center gap-2 mb-3">
                   <Wand2 size={15} className="text-purple-400" /> 调色盘
-                  <span className="text-gray-600 text-xs font-normal">改动即时预览，满意后「另存为主题」</span>
+                  <span className="text-gray-600 text-xs font-normal">改动即时预览并自动保存，刷新后保留；也可「另存为主题」固化</span>
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {COLOR_FIELDS.map(({ key, label }) => {
-                    const val = draft?.vars?.[key] || DEFAULT_VARS[key] || '#000000';
+                    const val = draft?.vars?.[key] || activePack?.vars?.[key as keyof ThemeVars] || DEFAULT_VARS[key] || '#000000';
                     return (
                       <label key={key} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-elevated cursor-pointer">
                         <input

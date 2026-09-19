@@ -16,7 +16,7 @@ import { DetailPage } from '@/pages/DetailPage';
 import { PlayerPage } from '@/pages/PlayerPage';
 import { isDisclaimerAgreed, setDisclaimerAgreed } from '@/services/storage';
 import { detectDesktopMode } from '@/services/desktop';
-import { WallpaperLayer } from '@/services/ThemeContext';
+import { WallpaperLayer, BrandLogo, useTheme } from '@/services/ThemeContext';
 import { AppearancePage } from '@/pages/settings/AppearancePage';
 import type { VideoItem } from '@/types';
 import { Toaster } from '@/components/Toaster';
@@ -75,14 +75,15 @@ function DisclaimerModal({ onAgree }: { onAgree: () => void }) {
 
 // 启动加载屏幕组件
 function StartupScreen() {
+  const { appName } = useTheme();
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-base">
       <div className="startup-loader">
-        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/30">
-          <Film className="w-10 h-10 text-white" />
+        <div className="w-20 h-20 bi-logo-mark rounded-2xl flex items-center justify-center overflow-hidden">
+          <BrandLogo fallback={<Film className="w-10 h-10 text-white" />} />
         </div>
       </div>
-      <h1 className="text-white text-xl font-bold mt-6 tracking-tight">Bismuth Player</h1>
+      <h1 className="text-white text-xl font-bold mt-6 tracking-tight">{appName === 'Bismuth' ? 'Bismuth Player' : appName}</h1>
       <p className="text-gray-500 text-sm mt-1">如"秘"般美丽</p>
       <div className="flex items-center gap-2 mt-8">
         <Loader2 className="w-4 h-4 text-purple-500 animate-spin" />
@@ -104,8 +105,8 @@ function DesktopSidebar({ currentPage, onPageChange }: { currentPage: string; on
   return (
     <aside className="desktop-sidebar">
       {/* Logo */}
-      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-8 shadow-lg shadow-purple-500/20">
-        <Film className="w-5 h-5 text-white" />
+      <div className="w-10 h-10 bi-logo-mark rounded-xl flex items-center justify-center mb-8 overflow-hidden">
+        <BrandLogo fallback={<Film className="w-5 h-5 text-white" />} />
       </div>
       
       {/* 导航项 */}

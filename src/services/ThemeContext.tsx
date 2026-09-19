@@ -9,8 +9,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   BUILT_IN_THEMES, applyThemePack, clearThemeStyles, getActiveThemeId,
   setActiveThemeId, getDraft, setDraft as persistDraft, saveTheme, loadTheme,
-  listUserThemes, removeUserTheme, isSafeMode, type ThemePack, type DraftTheme,
-  type Wallpaper,
+  listUserThemes, removeUserTheme, isSafeMode, draftToPreviewPack,
+  type ThemePack, type DraftTheme, type Wallpaper,
 } from './theme';
 
 interface ThemeCtx {
@@ -61,24 +61,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setUserThemes(await listUserThemes());
   }, []);
 
-  // 初始化：恢复激活主题 + 调色盘草稿
+  // 初始化：工坊草稿优先（壁纸/品牌/CSS 等改动自动持久化），否则恢复激活主题
   useEffect(() => {
     (async () => {
       if (safeMode) return;
-      const id = getActiveThemeId();
-      if (id) {
-        const pack = await loadTheme(id);
-        if (pack) {
-          setActiveIdState(id);
-          await apply(pack);
+      const d = getDraft();
+      if (d) {
+        setDraftState(d);
+        await apply(draftToPreviewPack(d));
+      } else {
+        const id = getActiveThemeId();
+        if (id) {
+          const pack = await loadTheme(id);
+          if (pack) {
+            setActiveIdState(id);
+            await apply(pack);
+          }
         }
       }
-      setDraftState(getDraft());
       await refreshUserThemes();
     })();
   }, [safeMode, apply, refreshUserThemes]);
 
   const switchTheme = useCallback(async (id: string | null) => {
+    // 切换主题 = 明确放弃工坊未另存的草稿，避免下次刷新被鬼草稿覆盖
+    persistDraft(null);
+    setDraftState(null);
     setActiveThemeId(id);
     setActiveIdState(id);
     if (id === null) {
@@ -121,7 +129,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     persistDraft(null);
   }, []);
 
-  // 调色盘实时预览：不落盘激活态，只渲染
+  // 调色盘实时预览：不落盘激活态，只渲染（草稿本身已在 updateDraft 时持久化）
   const previewDraft = useCallback(async (d: DraftTheme | null) => {
     if (!d) {
       const id = getActiveThemeId();
@@ -129,16 +137,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       await apply(pack);
       return;
     }
-    await apply({
-      format: '2.1',
-      id: 'custom-draft',
-      name: d.name,
-      dark: d.dark,
-      vars: d.vars,
-      wallpaper: d.wallpaper,
-      brand: d.brand,
-      css: d.css,
-    } as ThemePack);
+    await apply(draftToPreviewPack(d));
   }, [apply]);
 
   const resetAppearance = useCallback(async () => {
@@ -172,11 +171,11 @@ export function WallpaperLayer() {
   return <div id="bi-theme-wallpaper" aria-hidden />;
 }
 
-/** 品牌 Logo：有自定义 Logo 用图，否则回退 Film 图标 */
-export function BrandLogo({ iconClassName }: { iconClassName?: string }) {
+/** 品牌 Logo：有自定义 Logo 用图，否则渲染 fallback（如 Film 图标） */
+export function BrandLogo({ iconClassName, fallback }: { iconClassName?: string; fallback?: React.ReactNode }) {
   const { logo, appName } = useTheme();
   if (logo) {
     return <img src={logo} alt={appName} className={iconClassName || 'w-full h-full object-cover'} draggable={false} />;
   }
-  return null;
+  return <>{fallback ?? null}</>;
 }

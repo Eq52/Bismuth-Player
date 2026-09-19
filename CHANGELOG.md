@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.7.0] - 2026-09-19
+
+### ✨ New Features
+
+- ✨ Added a full theme plugin system with a new **Settings → 外观 (Appearance)** page
+- ✨ Added a theme gallery with 5 built-in themes — 暗夜 (default dark), 纯白 (true light theme via inverted gray scale), 护眼豆沙 (eye-care beige), 琥珀复古 (amber retro) and 霓虹都市 (neon city); one-tap switching with persistence across reloads
+- ✨ Added the Theme Workshop — a 6-color palette editor (backgrounds / accent / accent-soft) with live preview and "另存为主题" (save as custom theme), plus font, radius and density controls
+- ✨ Added wallpaper support — URL or local upload with adjustable blur and mask (overlay opacity) sliders
+- ✨ Added branding customization — configurable app name and logo
+- ✨ Added a custom CSS editor and remote CSS skins by URL with two modes: **override** (default, layered on top of built-in styles) and **replace** (expert mode, full replacement with automatic fallback chain replace → override → built-in if the skin is incomplete, never a blank screen); remote assets require a one-time trust confirmation and are sanitized (`@import` / `url()` stripped)
+- ✨ Added three-way import/export — theme file (.json), base64 theme code (`BI2` prefix) and URL import; packs are validated against a strict field whitelist
+- ✨ Added IndexedDB asset storage (`bismuth` database: wallpapers / logos / remote CSS) so large resources load instantly on repeat visits; small settings stay in localStorage, with an in-memory fallback when IndexedDB is unavailable
+- ✨ Added safety hatches — `?safe=1` URL flag skips all theme rendering, and "重置外观" (reset appearance) is always one tap away
+
+### 🔧 Maintenance
+
+- 🔧 Theming groundwork — Tailwind palette remapped to `--bi-*` CSS variables and ~75 hardcoded background colors replaced, pixel-identical under the default theme
+- 🔧 Version metadata bumped to 9.7.0 across `package.json`, `package-lock.json`, in-app about fallback and the README version badge
+
 ## [9.6.1] - 2026-09-19
 
 ### ✨ New Features

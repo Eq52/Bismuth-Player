@@ -115,6 +115,19 @@
       0 4px 6px -4px rgb(var(--bi-logo-via, 168 85 247) / 0.2);
   }
 
+  /*
+   * 块内图标色独立于前景色：规则在 layer 外（未分层优先于 utilities），
+   * 否则 utilities 层的 .text-white（已重映射为 rgb(var(--bi-white))）
+   * 在浅色主题下会把图标染黑、在深色渐变底上失去对比。
+   */
+}
+
+.bi-logo-mark svg {
+  color: rgb(var(--bi-logo-icon, 255 255 255));
+}
+
+@layer components {
+
   /* 欢迎屏大号 LOGO：同渐变的 20% 透明形态 */
   .bi-logo-mark-soft {
     background: linear-gradient(

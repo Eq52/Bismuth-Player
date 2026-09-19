@@ -36,6 +36,7 @@ export interface ThemeVars {
   gray300?: string; gray400?: string; gray500?: string; gray600?: string;
   purple200?: string; purple300?: string; purple400?: string; purple500?: string;
   logoFrom?: string; logoVia?: string; logoTo?: string;   // LOGO 渐变三色（默认紫粉）
+  logoIcon?: string;                                       // LOGO 块内图标色（默认白；浅色渐变底可设黑）
   font?: string;
 }
 
@@ -323,6 +324,7 @@ function setVars(vars: ThemeVars): void {
     '--bi-logo-from': full.logoFrom,
     '--bi-logo-via': full.logoVia,
     '--bi-logo-to': full.logoTo,
+    '--bi-logo-icon': full.logoIcon,
   };
   for (const [k, hex] of Object.entries(map)) {
     const triplet = hex ? hexToRgbTriplet(hex) : null;
@@ -337,7 +339,7 @@ export function clearThemeStyles(): void {
   ['--bi-bg-base', '--bi-bg-surface', '--bi-bg-elevated', '--bi-white', '--bi-black',
     '--bi-gray-300', '--bi-gray-400', '--bi-gray-500', '--bi-gray-600',
     '--bi-purple-200', '--bi-purple-300', '--bi-purple-400', '--bi-purple-500',
-    '--bi-logo-from', '--bi-logo-via', '--bi-logo-to',
+    '--bi-logo-from', '--bi-logo-via', '--bi-logo-to', '--bi-logo-icon',
     '--bi-font', '--bi-page-alpha',
   ].forEach((k) => root.removeProperty(k));
   removeStyle(STYLE_INLINE_ID);
@@ -460,6 +462,11 @@ export async function applyThemePack(pack: ThemePack): Promise<ApplyResult> {
 
 /* ── 存储：激活主题 / 草稿 ── */
 
+// 工坊草稿大资产的 IDB key：壁纸/Logo dataURL 动辄 1-3MB，localStorage 只有 ~5MB
+// 全站配额，直塞会 QuotaExceeded 且被 try-catch 静默吞掉（刷新丢设置）——拆进 IDB。
+const DRAFT_WP_KEY = 'draft:wallpaper';
+const DRAFT_LOGO_KEY = 'draft:logo';
+
 export function getActiveThemeId(): string | null {
   return localStorage.getItem(LS_ACTIVE);
 }
@@ -500,22 +507,48 @@ export function draftToPreviewPack(d: DraftTheme): ThemePack {
   };
 }
 
-export function getDraft(): DraftTheme | null {
+/** 读取草稿；把 idb: 引用还原成 dataURL（异步：大资产在 IndexedDB） */
+export async function getDraft(): Promise<DraftTheme | null> {
   try {
     const raw = localStorage.getItem(LS_DRAFT);
-    return raw ? (JSON.parse(raw) as DraftTheme) : null;
+    if (!raw) return null;
+    const d = JSON.parse(raw) as DraftTheme;
+    if (d.wallpaper?.value?.startsWith('idb:')) {
+      const data = await getAsset<string>(d.wallpaper.value.slice(4));
+      d.wallpaper = data ? { ...d.wallpaper, type: 'data', value: data } : { type: 'none' };
+    }
+    if (d.brand?.logo?.startsWith('idb:')) {
+      const data = await getAsset<string>(d.brand.logo.slice(4));
+      d.brand = { ...d.brand, logo: data || undefined };
+    }
+    return d;
   } catch {
     return null;
   }
 }
 
-export function setDraft(d: DraftTheme | null): void {
+/** 保存草稿；壁纸/大 Logo 拆进 IDB，localStorage 只存瘦身引用（防 5MB 配额静默丢设置） */
+export async function setDraft(d: DraftTheme | null): Promise<void> {
   try {
-    if (d === null) localStorage.removeItem(LS_DRAFT);
-    else localStorage.setItem(LS_DRAFT, JSON.stringify(d));
+    if (d === null) {
+      localStorage.removeItem(LS_DRAFT);
+      await deleteAsset(DRAFT_WP_KEY);
+      await deleteAsset(DRAFT_LOGO_KEY);
+      return;
+    }
+    const slim: DraftTheme = { ...d };
+    if (slim.wallpaper?.type === 'data' && slim.wallpaper.value) {
+      await putAsset(DRAFT_WP_KEY, slim.wallpaper.value);
+      slim.wallpaper = { ...slim.wallpaper, value: `idb:${DRAFT_WP_KEY}` };
+    }
+    if (slim.brand?.logo && slim.brand.logo.length > 2048) {
+      await putAsset(DRAFT_LOGO_KEY, slim.brand.logo);
+      slim.brand = { ...slim.brand, logo: `idb:${DRAFT_LOGO_KEY}` };
+    }
+    localStorage.setItem(LS_DRAFT, JSON.stringify(slim));
   } catch (e) {
-    // 壁纸 dataURL 过大超出 localStorage 配额：改动仍在本会话生效，但不阻塞 UI
-    console.warn('[theme] 草稿保存失败（可能超出 localStorage 配额）:', e);
+    // IDB 降级内存 Map 时会话内仍可还原；仅 localStorage 本身异常才真丢
+    console.warn('[theme] 草稿保存失败:', e);
   }
 }
 

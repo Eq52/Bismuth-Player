@@ -5,7 +5,7 @@
  * WallpaperLayer 负责壁纸渲染；BrandLogo 统一处理 Logo 替换。
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BUILT_IN_THEMES, applyThemePack, clearThemeStyles, getActiveThemeId,
   setActiveThemeId, getDraft, setDraft as persistDraft, saveTheme, loadTheme,
@@ -65,7 +65,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       if (safeMode) return;
-      const d = getDraft();
+      const d = await getDraft(); // 异步：草稿大资产（壁纸 dataURL）需从 IDB 还原
       if (d) {
         setDraftState(d);
         await apply(draftToPreviewPack(d));
@@ -85,7 +85,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const switchTheme = useCallback(async (id: string | null) => {
     // 切换主题 = 明确放弃工坊未另存的草稿，避免下次刷新被鬼草稿覆盖
-    persistDraft(null);
+    void persistDraft(null);
     setDraftState(null);
     setActiveThemeId(id);
     setActiveIdState(id);
@@ -109,6 +109,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (getActiveThemeId() === id) await switchTheme(null);
   }, [refreshUserThemes, switchTheme]);
 
+  // 草稿落盘延迟到 effect：updater 必须保持纯函数，且 IDB 写入异步；
+  // 连续快速改动（拖滑块）合并提交时只持久化最终值
+  const pendingDraftRef = useRef<DraftTheme | null>(null);
+
   const updateDraft = useCallback((patch: Partial<DraftTheme>) => {
     setDraftState((prev) => {
       const next: DraftTheme = {
@@ -119,14 +123,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         ...(prev || {}),
         ...patch,
       };
-      persistDraft(next);
+      pendingDraftRef.current = next;
       return next;
     });
   }, []);
 
+  useEffect(() => {
+    const d = pendingDraftRef.current;
+    if (!d) return;
+    pendingDraftRef.current = null;
+    void persistDraft(d);
+  }, [draft]);
+
   const clearDraft = useCallback(() => {
     setDraftState(null);
-    persistDraft(null);
+    void persistDraft(null);
   }, []);
 
   // 调色盘实时预览：不落盘激活态，只渲染（草稿本身已在 updateDraft 时持久化）
@@ -141,7 +152,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [apply]);
 
   const resetAppearance = useCallback(async () => {
-    persistDraft(null);
+    void persistDraft(null);
     setDraftState(null);
     await switchTheme(null);
   }, [switchTheme]);

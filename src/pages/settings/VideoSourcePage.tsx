@@ -240,12 +240,12 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
             </div>
           )}
 
-          {/* 🔞 内容过滤设置 */}
+          {/* 内容过滤设置 */}
           <div className="mt-6 bg-[#141414] border border-white/5 rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-sm flex items-center gap-1.5">
-                  <span className="text-red-400">🔞</span> 屏蔽伦理片
+                  <Shield size={14} className="text-red-400" /> 屏蔽伦理片
                 </p>
                 <p className="text-gray-500 text-xs mt-1">开启后首页不显示伦理片分类，列表过滤伦理片内容</p>
               </div>

@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Play, Heart, Film, CloudOff } from 'lucide-react';
-import { getFavorites, clearFavorites, removeFavorite } from '@/services/storage';
+import { Trash2, Play, Heart, Film, CloudOff, ArrowLeft } from 'lucide-react';
+import { getFavorites, getPlayHistory, clearFavorites, removeFavorite } from '@/services/storage';
 import { getSources } from '@/services/api';
-import type { FavoriteItem, VideoItem } from '@/types';
+import type { FavoriteItem, PlayHistory, VideoItem } from '@/types';
 
 interface FavoritesPageProps {
   onVideoClick: (video: VideoItem) => void;
   onContinuePlay: (video: VideoItem, episode: number) => void;
+  onBack: () => void;
 }
 
-export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPageProps) {
+export function FavoritesPage({ onVideoClick, onContinuePlay, onBack }: FavoritesPageProps) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
+  // 播放进度映射（身份键 vod_id + sourceId → 历史记录），收藏续播用
+  const [historyMap, setHistoryMap] = useState<Map<string, PlayHistory>>(new Map());
 
   // 加载收藏列表
   useEffect(() => {
     setFavorites(getFavorites());
+    // 收藏续播：从播放历史中取同源同 ID 的进度
+    const histMap = new Map<string, PlayHistory>();
+    getPlayHistory().forEach(h => histMap.set(`${h.sourceId || 'legacy'}::${h.vod_id}`, h));
+    setHistoryMap(histMap);
     // 源名反查表（老数据无 sourceName 时 fallback 显示）
     const map = new Map<string, string>();
     getSources().forEach(s => map.set(s.id, s.name));
@@ -40,27 +47,14 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
     setFavorites(getFavorites());
   };
 
-  // 格式化时间
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = Math.max(0, now.getTime() - date.getTime());
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) {
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      if (hours === 0) {
-        const minutes = Math.floor(diff / (1000 * 60));
-        return minutes === 0 ? '刚刚' : `${minutes}分钟前`;
-      }
-      return `${hours}小时前`;
-    } else if (days === 1) {
-      return '昨天';
-    } else if (days < 7) {
-      return `${days}天前`;
-    } else {
-      return date.toLocaleDateString('zh-CN');
-    }
+  // 收藏对应的播放进度（同源同 ID），无进度记录则返回 undefined
+  const resumeOf = (item: FavoriteItem): PlayHistory | undefined =>
+    historyMap.get(`${item.sourceId || 'legacy'}::${item.vod_id}`);
+
+  // 播放/续播：有历史进度则从上次集数继续，否则从头播放
+  const handleContinue = (item: FavoriteItem) => {
+    const h = resumeOf(item);
+    onContinuePlay(toVideoItem(item), h ? h.episode : 0);
   };
 
   // 转换为VideoItem（携带来源信息，供详情/播放器跨源拉取）
@@ -77,9 +71,16 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* 头部 */}
-      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center justify-between bg-[#0a0a0a] border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <Heart size={20} className="text-red-500 fill-red-500" />
+      <header className="px-5 py-4 md:px-8 md:py-5 flex items-center gap-3 bg-[#0a0a0a] border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all md:hidden"
+          title="返回"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div className="flex items-center gap-2 flex-1">
+          <Heart size={20} className="text-red-500" />
           <h1 className="text-white text-lg md:text-xl font-bold">我的收藏</h1>
           {favorites.length > 0 && (
             <span className="text-gray-500 text-sm">({favorites.length})</span>
@@ -94,6 +95,12 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
             <span className="text-sm">清空</span>
           </button>
         )}
+        <button
+          onClick={onBack}
+          className="hidden md:block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+        >
+          返回首页
+        </button>
       </header>
 
       {/* 收藏列表 */}
@@ -101,12 +108,14 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
         {favorites.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <Heart className="w-16 h-16 mb-4 opacity-20" />
-            <p>暂无收藏</p>
-            <p className="text-sm mt-1">在影片详情页点击 ❤️ 收藏影片</p>
+            <p>还没有收藏的影片</p>
+            <p className="text-sm mt-1">在影片详情页收藏喜欢的影片</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-            {favorites.map((item) => (
+            {favorites.map((item) => {
+              const resume = resumeOf(item);
+              return (
               <div
                 key={`${item.sourceId || 'legacy'}-${item.vod_id}`}
                 className="flex bg-[#141414] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-colors"
@@ -127,9 +136,9 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Play className="w-6 h-6 text-white" fill="white" />
                   </div>
-                  {/* 收藏标记 */}
+                  {/* 收藏标记（描边爱心，非 emoji 实心样式） */}
                   <div className="absolute top-1 right-1">
-                    <Heart size={14} className="text-red-500 fill-red-500 drop-shadow-lg" />
+                    <Heart size={14} className="text-red-500 drop-shadow-lg" />
                   </div>
                 </div>
                 
@@ -152,6 +161,12 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                         {item.vod_remarks}
                       </p>
                     )}
+                    {/* 续播进度（片单侧：上次看到哪集，从历史记录读取） */}
+                    {resume && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        上次看到: <span className="text-purple-400">{resume.episodeName}</span>
+                      </p>
+                    )}
                     {/* 来源标注 */}
                     <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                       <span className="inline-flex items-center text-[10px] text-gray-400 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded max-w-full">
@@ -167,17 +182,13 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600 text-xs">
-                      {formatTime(item.timestamp)}
-                    </span>
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => onContinuePlay(toVideoItem(item), 0)}
+                        onClick={() => handleContinue(item)}
                         className="flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-medium rounded-lg hover:opacity-90 transition-opacity"
                       >
                         <Play size={12} className="mr-1" />
-                        播放
+                        {resume ? '继续' : '播放'}
                       </button>
                       <button
                         onClick={() => handleRemove(item.vod_id, item.sourceId)}
@@ -186,11 +197,11 @@ export function FavoritesPage({ onVideoClick, onContinuePlay }: FavoritesPagePro
                       >
                         <Trash2 size={14} />
                       </button>
-                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -329,6 +329,7 @@ function App() {
                 <FavoritesPage
                   onVideoClick={handleVideoClick}
                   onContinuePlay={handlePlay}
+                  onBack={() => handlePageChange('home')}
                 />
               </PageTransition>
             );

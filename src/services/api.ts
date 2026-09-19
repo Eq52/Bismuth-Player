@@ -234,7 +234,7 @@ export async function getVideoList(
   const response = await fetchWithRetry(url);
   const data = safeApiResponse(await response.json());
   
-  // 🔞 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片视频
+  // 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片视频
   const settings = getPlayerSettings();
   if (settings.blockEthics && data.list && data.list.length > 0) {
     data.list = data.list.filter(v => !isEthicsContent(v.type_name));
@@ -375,7 +375,7 @@ export async function getCategories(): Promise<CategoryItem[]> {
       ];
     }
     
-    // 🔞 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片分类
+    // 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片分类
     const settings = getPlayerSettings();
     if (settings.blockEthics) {
       const ethicsIds = new Set<number>();

@@ -161,7 +161,7 @@ function collectCandidateObjects(data: unknown): { items: Record<string, unknown
     for (const key of ['sources', 'sites', 'data', 'list', 'items', 'configs']) {
       const v = data[key];
       if (Array.isArray(v)) {
-        const format = key === 'sites' ? 'TVBox 配置' : 'JSON';
+        const format = key === 'sites' ? '聚合站点配置' : 'JSON';
         return { items: v.map((x) => (typeof x === 'string' ? { url: x } : x)).filter(isObj), format };
       }
     }

@@ -121,15 +121,17 @@ export function generateSourceId(url: string, taken: Set<string>): string {
 
 /**
  * 将任意第三方源对象规范化为 ParsedSource。
- * URL 缺失/非法、或明确标记为不兼容类型（如 TVBox type 3/4 的 jar 爬虫源）时返回 null。
+ * source 为 null 表示不可导入：incompatible=true 表示因类型不兼容被跳过（如 TVBox type 3/4 的 jar 爬虫源），
+ * 否则为 URL 缺失/非法等原因。
  */
-function normalizeSourceObject(obj: Record<string, unknown>, taken: Set<string>): ParsedSource | null {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
-  const url = normalizeSourceUrl(pickString(obj, URL_KEYS));
-  if (!url) return null;
-  // TVBox：type 0=苹果CMS JSON、1=XML；其余（3/4 爬虫、jar 扩展）本应用不支持
+function normalizeSourceObject(obj: Record<string, unknown>, taken: Set<string>): { source: ParsedSource | null; incompatible?: boolean } {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return { source: null };
+  // TVBox：type 0=苹果CMS JSON、1=XML；其余（3/4 爬虫、jar 扩展）本应用不支持。
+  // 类型检查先于 URL 校验——爬虫源的 api 是 csp_XXX 标识而非 http 链接，需先按类型判定不兼容
   const type = (obj as { type?: unknown }).type;
-  if (typeof type === 'number' && type !== 0 && type !== 1) return null;
+  if (typeof type === 'number' && type !== 0 && type !== 1) return { source: null, incompatible: true };
+  const url = normalizeSourceUrl(pickString(obj, URL_KEYS));
+  if (!url) return { source: null };
 
   const name = (pickString(obj, NAME_KEYS) || deriveNameFromUrl(url)).slice(0, 50);
   const pickedId = pickString(obj, ID_KEYS);
@@ -138,7 +140,7 @@ function normalizeSourceObject(obj: Record<string, unknown>, taken: Set<string>)
       ? pickedId
       : generateSourceId(url, taken);
   taken.add(id);
-  return { id, name, url };
+  return { source: { id, name, url } };
 }
 
 /** 从 JSON 数据中收集候选源对象（支持数组与常见包裹键） */
@@ -204,6 +206,9 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
   const sources: ParsedSource[] = [];
   let format = '';
   let invalidCount = 0;
+  // JSON 解析识别出的候选条目数与其中因类型不兼容（如 TVBox 爬虫源）被跳过的数量
+  let jsonCandidateCount = 0;
+  let incompatibleCount = 0;
 
   // ---- 尝试 JSON 解析 ----
   if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
@@ -211,18 +216,30 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
       const data = JSON.parse(cleaned);
       const { items, format: fmt } = collectCandidateObjects(data);
       format = fmt;
+      jsonCandidateCount = items.length;
       for (const item of items) {
-        const s = normalizeSourceObject(item, taken);
-        if (s) sources.push(s);
-        else invalidCount++;
+        const r = normalizeSourceObject(item, taken);
+        if (r.source) {
+          sources.push(r.source);
+        } else {
+          invalidCount++;
+          if (r.incompatible) incompatibleCount++;
+        }
       }
     } catch {
       // JSON 解析失败（如 JSON Lines / 混排文本），落入下方逐行文本解析
     }
   }
 
-  // ---- 逐行文本解析 ----
-  if (sources.length === 0) {
+  // JSON 已识别出候选条目但全部因类型不兼容被过滤时（如 TVBox 全爬虫源），
+  // 保留结构化格式结论并明确提示，不回退逐行文本解析——
+  // 否则会把配置里的直播源 / EPG / 网盘等无关 URL 误报为影视源
+  if (sources.length === 0 && jsonCandidateCount > 0 && incompatibleCount === jsonCandidateCount) {
+    format += '（爬虫源不兼容）';
+  }
+
+  // ---- 逐行文本解析（仅当 JSON 未识别出任何候选条目时才回退） ----
+  if (sources.length === 0 && jsonCandidateCount === 0) {
     format = '文本链接';
     for (const rawLine of cleaned.split(/\r?\n/)) {
       const line = rawLine.trim();
@@ -234,9 +251,9 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
           const { items } = collectCandidateObjects(JSON.parse(line));
           let added = 0;
           for (const item of items) {
-            const s = normalizeSourceObject(item, taken);
-            if (s) {
-              sources.push(s);
+            const r = normalizeSourceObject(item, taken);
+            if (r.source) {
+              sources.push(r.source);
               added++;
             }
           }

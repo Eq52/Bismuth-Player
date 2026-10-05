@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🔧 Hardened source URL query building — API requests now use `URLSearchParams` (same-name params overwritten) instead of naive `?`-concatenation, so imported sources that already carry a query string (e.g. `?token=xxx`) no longer produce broken double-`?` URLs; app-managed params (`ac`/`pg`/`wd`/`ids`/`limit`/`t`) are stripped from imported URLs while third-party params like tokens are preserved
 - 🔧 `getCategories()` now strips managed params from the source URL so category data (`class`) loads correctly for imported sources
+- 🐛 Fixed TVBox configs whose `sites` are **all** spider/jar sources (type 3/4) wrongly falling back to plain-text link parsing — such configs (e.g. `top98.json`) now report "TVBox 配置（爬虫源不兼容）" with 0 importable sources instead of polluting the import list with live-stream / EPG / drive URLs scraped from the JSON text; the incompatible-type check now runs before URL validation since spider sources carry `csp_*` identifiers rather than http URLs
 - 🔧 Version metadata bumped to 9.7.1 across `package.json`, `package-lock.json`, in-app about/settings fallbacks and the README version badges
 
 ## [9.7.0] - 2026-09-19

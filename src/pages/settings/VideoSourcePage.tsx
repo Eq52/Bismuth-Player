@@ -411,7 +411,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
             <Monitor className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
             <p className="text-gray-500 text-xs leading-relaxed">
               影视源决定了您观看的内容来源。您可以添加多个影视源并随时切换，点击影视源即可将其设为当前使用的源。
-              支持「导出」将源列表备份为 JSON 文件；「导入」支持 Bismuth 导出文件、TVBox 配置以及含 https 影视源链接的第三方文件，也可直接粘贴远程配置链接拉取导入。
+              支持「导出」将源列表备份为 JSON 文件；「导入」支持 Bismuth 导出文件、通用 JSON 以及含 https 影视源链接的第三方文件，也可直接粘贴远程配置链接拉取导入。
             </p>
           </div>
         </div>
@@ -483,7 +483,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
                 />
                 <FileText className="w-7 h-7 mx-auto mb-2 text-gray-500" />
                 <p className="text-gray-400 text-sm truncate px-2">{fileName || '点击选择或拖入文件'}</p>
-                <p className="text-gray-600 text-xs mt-1">支持 .json / .txt（Bismuth 导出、TVBox 配置、链接列表）</p>
+                <p className="text-gray-600 text-xs mt-1">支持 .json / .txt（Bismuth 导出、通用 JSON、链接列表）</p>
               </div>
             )}
 

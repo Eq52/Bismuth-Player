@@ -1,7 +1,7 @@
 // 影视源配置解析器（纯函数，无运行时依赖）
 // 支持解析第三方影视源文件：
 // 1. Bismuth 导出文件（{ app, sources: [...] }）
-// 2. TVBox 配置（{ sites: [{ key, name, api, type }] }）
+// 2. 第三方聚合配置（{ sites: [{ key, name, api, type }] }）
 // 3. 通用 JSON（数组或 { sources / sites / data / list / items } 包裹，字段名别名自动映射）
 // 4. 纯文本链接列表（每行一个 https:// 链接，支持「名称,链接」「名称|链接」等混排格式）
 
@@ -121,12 +121,12 @@ export function generateSourceId(url: string, taken: Set<string>): string {
 
 /**
  * 将任意第三方源对象规范化为 ParsedSource。
- * source 为 null 表示不可导入：incompatible=true 表示因类型不兼容被跳过（如 TVBox type 3/4 的 jar 爬虫源），
+ * source 为 null 表示不可导入：incompatible=true 表示因类型不兼容被跳过（如 type 3/4 的 jar 爬虫源），
  * 否则为 URL 缺失/非法等原因。
  */
 function normalizeSourceObject(obj: Record<string, unknown>, taken: Set<string>): { source: ParsedSource | null; incompatible?: boolean } {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return { source: null };
-  // TVBox：type 0=苹果CMS JSON、1=XML；其余（3/4 爬虫、jar 扩展）本应用不支持。
+  // type 0=苹果CMS JSON、1=XML；其余（3/4 爬虫、jar 扩展）本应用不支持。
   // 类型检查先于 URL 校验——爬虫源的 api 是 csp_XXX 标识而非 http 链接，需先按类型判定不兼容
   const type = (obj as { type?: unknown }).type;
   if (typeof type === 'number' && type !== 0 && type !== 1) return { source: null, incompatible: true };
@@ -206,7 +206,7 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
   const sources: ParsedSource[] = [];
   let format = '';
   let invalidCount = 0;
-  // JSON 解析识别出的候选条目数与其中因类型不兼容（如 TVBox 爬虫源）被跳过的数量
+  // JSON 解析识别出的候选条目数与其中因类型不兼容（如爬虫源）被跳过的数量
   let jsonCandidateCount = 0;
   let incompatibleCount = 0;
 
@@ -231,7 +231,7 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
     }
   }
 
-  // JSON 已识别出候选条目但全部因类型不兼容被过滤时（如 TVBox 全爬虫源），
+  // JSON 已识别出候选条目但全部因类型不兼容被过滤时（如全部为爬虫源的第三方配置），
   // 保留结构化格式结论并明确提示，不回退逐行文本解析——
   // 否则会把配置里的直播源 / EPG / 网盘等无关 URL 误报为影视源
   if (sources.length === 0 && jsonCandidateCount > 0 && incompatibleCount === jsonCandidateCount) {

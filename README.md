@@ -100,7 +100,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 
 ### 🎬 Core Functionality
 - **Custom Video Sources** - Support for multiple Apple CMS API sources (JSON format)
-- **Source Import/Export** - One-tap export of the source list as a JSON backup file; import third-party source files carrying https links (Bismuth exports, TVBox configs, generic JSON, plain-text link lists) or fetch them from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
+- **Source Import/Export** - One-tap export of the source list as a JSON backup file; import third-party source files carrying https links (Bismuth exports, generic JSON, plain-text link lists) or fetch them from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
 - **Built-in Player ([SimPlayer](https://github.com/Eq52/Sim-Player))** - Integrated lightweight player supporting MP4/WebM/HLS with screenshot, PiP, speed control, and progress memory
 - **External Player Support** - Fallback iframe-based player for custom player URLs
 - **Two-level Category Navigation** — Dynamic categories loaded from API with top-level tabs and sub-category chips (leveraging Apple CMS `type_pid` hierarchy)
@@ -264,7 +264,7 @@ Bismuth-Player/
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
 
 ### V9.7.1
-- ✨ Source import & export — one-tap JSON backup of the source list; import third-party source files carrying https links (Bismuth exports, TVBox configs, generic JSON, plain-text link lists) or fetch from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
+- ✨ Source import & export — one-tap JSON backup of the source list; import third-party source files carrying https links (Bismuth exports, generic JSON, plain-text link lists) or fetch from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
 - 🔧 Hardened source URL query building — `URLSearchParams`-based merging keeps third-party params (e.g. tokens) intact without broken double-`?` URLs; app-managed params are stripped on import
 
 ### V9.6.0

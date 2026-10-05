@@ -103,7 +103,7 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 
 ### 🎬 核心功能
 - **自定义影视源** - 支持添加多个苹果CMS API源 (json格式)
-- **影视源导入/导出** - 一键将源列表导出为 JSON 备份文件；支持导入携带 https 链接的第三方影视源文件（Bismuth 导出文件、TVBox 配置、通用 JSON、纯文本链接列表），也可粘贴远程 https 配置链接拉取导入，提供重复高亮预览与合并（去重）/替换两种模式
+- **影视源导入/导出** - 一键将源列表导出为 JSON 备份文件；支持导入携带 https 链接的第三方影视源文件（Bismuth 导出文件、通用 JSON、纯文本链接列表），也可粘贴远程 https 配置链接拉取导入，提供重复高亮预览与合并（去重）/替换两种模式
 - **内置播放器 ([SimPlayer](https://github.com/Eq52/Sim-Player))** - 集成轻量播放器，支持MP4/WebM/HLS，含截图、画中画、倍速播放、进度记忆
 - **外部播放器支持** - 支持自定义播放器URL，以iframe方式嵌入
 - **两级分类导航** - 从API动态加载分类，顶级分类Tab + 子分类标签（利用苹果CMS `type_pid` 层级结构）
@@ -267,7 +267,7 @@ Bismuth-Player/
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
 
 ### V9.7.1
-- ✨ 影视源导入/导出 — 一键将源列表导出为 JSON 备份文件；支持导入携带 https 链接的第三方影视源文件（Bismuth 导出文件、TVBox 配置、通用 JSON、纯文本链接列表），也可粘贴远程 https 配置链接拉取导入，提供重复高亮预览与合并（去重）/替换两种模式
+- ✨ 影视源导入/导出 — 一键将源列表导出为 JSON 备份文件；支持导入携带 https 链接的第三方影视源文件（Bismuth 导出文件、通用 JSON、纯文本链接列表），也可粘贴远程 https 配置链接拉取导入，提供重复高亮预览与合并（去重）/替换两种模式
 - 🔧 影视源 URL 查询参数加固 — 基于 `URLSearchParams` 合并参数，携带 token 等第三方参数的源不再产生双 `?` 断链；导入时自动剥离应用受管参数
 
 ### V9.6.0

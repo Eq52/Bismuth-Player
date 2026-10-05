@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.7.1] - 2026-10-04
+
+### ✨ New Features
+
+- ✨ Added video source **import & export** — export the full source list as a Bismuth JSON file (`bismuth-sources-*.json`) with one tap; import back later or share with other devices/players
+- ✨ Added third-party source file import supporting files that carry `https://` video source links — Bismuth export files, TVBox `sites` configs (spider/jar sources are skipped automatically), generic JSON arrays with field aliases (`url`/`api`/`siteUrl`/…, `name`/`title`/`label`/…), string-URL arrays, JSON Lines and plain-text link lists (`URL per line`, `name,url`, `name|url` mixed lines with comments ignored)
+- ✨ Added **remote URL import** — paste an `https://` link pointing to a source config and the app fetches & parses it through the unified CORS-proxy channel (with retry / proxy rotation)
+- ✨ Added an import preview dialog — detected format badge, parsed source list with duplicate highlighting (same ID or same normalized URL), ignored-entry count, and two import modes: **merge** (skip duplicates, keep existing) or **replace all**
+- ✨ Added smart ID handling — IDs are preserved when possible, otherwise deterministically generated from the host name + URL hash and guaranteed collision-free against existing sources
+- ✨ Import UI supports both file picker and drag-and-drop (`.json` / `.txt`, 5 MB limit), with toast feedback for every outcome
+
+### 🔧 Maintenance
+
+- 🔧 Hardened source URL query building — API requests now use `URLSearchParams` (same-name params overwritten) instead of naive `?`-concatenation, so imported sources that already carry a query string (e.g. `?token=xxx`) no longer produce broken double-`?` URLs; app-managed params (`ac`/`pg`/`wd`/`ids`/`limit`/`t`) are stripped from imported URLs while third-party params like tokens are preserved
+- 🔧 `getCategories()` now strips managed params from the source URL so category data (`class`) loads correctly for imported sources
+- 🔧 Version metadata bumped to 9.7.1 across `package.json`, `package-lock.json`, in-app about/settings fallbacks and the README version badges
+
 ## [9.7.0] - 2026-09-19
 
 ### ✨ New Features

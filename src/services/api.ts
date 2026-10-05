@@ -2,6 +2,7 @@ import type { VideoItem, ApiResponse, VideoSource } from '@/types';
 import { getCache, setCache } from './cache';
 import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettings } from './storage';
 import { isDesktopMode, desktopApiUrl } from './desktop';
+import { stripManagedParams } from './sourceParse';
 
 // 判断是否为伦理片/成人内容（用于内容过滤）
 function isEthicsContent(name?: string): boolean {
@@ -54,6 +55,25 @@ function buildUrl(apiUrl: string, proxy?: string): string {
   }
   const p = proxy || getCorsProxyList()[0];
   return `${p}${encodeURIComponent(apiUrl)}`;
+}
+
+// 向影视源 URL 追加查询参数（URLSearchParams，同名参数自动覆盖）
+// 兼容导入的第三方源自带 query（如 token），避免出现「?ac=...?ac=...」双重问号拼接错误
+function buildSourceUrl(base: string, params: Record<string, string | number | undefined>): string {
+  try {
+    const u = new URL(base);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== '') u.searchParams.set(k, String(v));
+    }
+    return u.toString();
+  } catch {
+    // 非法 URL 兜底：按原样拼接
+    const qs = Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== '')
+      .map(([k, v]) => `${k}=${String(v)}`)
+      .join('&');
+    return qs ? `${base}?${qs}` : base;
+  }
 }
 
 // 轮换代理：将列表第一个移到末尾，并持久化
@@ -206,11 +226,12 @@ export async function getVideoList(
   
   // 搜索请求不使用缓存，每次都获取最新结果
   if (wd && wd.trim() !== '') {
-    let url = `${source.url}?ac=videolist&wd=${encodeURIComponent(wd)}&limit=${limit}`;
-    if (page > 1) {
-      url += `&pg=${page}`;
-    }
-    
+    const url = buildSourceUrl(source.url, {
+      ac: 'videolist',
+      wd,
+      limit,
+      ...(page > 1 ? { pg: page } : {}),
+    });
     const response = await fetchWithRetry(url);
     return safeApiResponse(await response.json());
   }
@@ -225,11 +246,12 @@ export async function getVideoList(
     return cached;
   }
   
-  let url = `${source.url}?ac=videolist&pg=${page}&limit=${limit}`;
-  
-  if (type && type !== 'all') {
-    url += `&t=${type}`;
-  }
+  const url = buildSourceUrl(source.url, {
+    ac: 'videolist',
+    pg: page,
+    limit,
+    ...(type && type !== 'all' ? { t: type } : {}),
+  });
 
   const response = await fetchWithRetry(url);
   const data = safeApiResponse(await response.json());
@@ -296,7 +318,7 @@ export async function getVideoDetail(
     return cached;
   }
   
-  const url = `${source.url}?ac=detail&ids=${id}`;
+  const url = buildSourceUrl(source.url, { ac: 'detail', ids: id });
   
   const response = await fetchWithRetry(url);
   const data = safeApiResponse(await response.json());
@@ -342,7 +364,8 @@ export async function getCategories(): Promise<CategoryItem[]> {
   }
   
   // 苹果CMS不带参数时返回 list + class；带 ?ac=videolist 时不返回 class
-  const url = source.url;
+  // 剥离受管参数（ac/pg/…），兼容导入的自带 query 的源，同时保证能拿到 class 分类数据
+  const url = stripManagedParams(source.url);
   
   try {
     const response = await fetchWithRetry(url);
@@ -429,10 +452,16 @@ export function parsePlayUrls(vod_play_url?: string, _vod_play_from?: string): {
   return episodes;
 }
 
+// 走统一网络通道拉取远程文本（影视源导入远程配置用；自动重试/代理轮换）
+export async function fetchTextViaProxy(url: string): Promise<string> {
+  const response = await fetchWithRetry(url);
+  return response.text();
+}
+
 // 测试影视源是否可用
 export async function testSource(url: string): Promise<boolean> {
   try {
-    const testUrl = `${url}?ac=videolist&limit=1`;
+    const testUrl = buildSourceUrl(url, { ac: 'videolist', limit: 1 });
     const response = await fetchWithRetry(testUrl);
     const data = await response.json();
     return data && (data.code === 1 || data.code === 200);

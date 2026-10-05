@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.7.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.7.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -100,6 +100,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 
 ### 🎬 Core Functionality
 - **Custom Video Sources** - Support for multiple Apple CMS API sources (JSON format)
+- **Source Import/Export** - One-tap export of the source list as a JSON backup file; import third-party source files carrying https links (Bismuth exports, TVBox configs, generic JSON, plain-text link lists) or fetch them from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
 - **Built-in Player ([SimPlayer](https://github.com/Eq52/Sim-Player))** - Integrated lightweight player supporting MP4/WebM/HLS with screenshot, PiP, speed control, and progress memory
 - **External Player Support** - Fallback iframe-based player for custom player URLs
 - **Two-level Category Navigation** — Dynamic categories loaded from API with top-level tabs and sub-category chips (leveraging Apple CMS `type_pid` hierarchy)
@@ -261,6 +262,10 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.7.1
+- ✨ Source import & export — one-tap JSON backup of the source list; import third-party source files carrying https links (Bismuth exports, TVBox configs, generic JSON, plain-text link lists) or fetch from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview
+- 🔧 Hardened source URL query building — `URLSearchParams`-based merging keeps third-party params (e.g. tokens) intact without broken double-`?` URLs; app-managed params are stripped on import
 
 ### V9.6.0
 - ✨ Standalone Filter page — homepage shows all content by default; a "筛选" button next to the search box opens a dedicated page with two-level category rows & infinite scroll

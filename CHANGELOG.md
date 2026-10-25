@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.7.3] - 2026-10-25
+
+### ✨ New Features
+
+- ✨ Added **auto-play next episode** — a new toggle in Player Settings (default off); when the current episode finishes the player counts down 3 seconds and automatically switches to the next one (the last episode never auto-plays), with an episode-switch toast shown on every switch
+- ✨ Added **container-level fullscreen** for the built-in player — the fullscreen button / double-tap / F-key now fullscreens the outer player container instead of the internal one, keeping the toasts visible and **not exiting fullscreen when the player remounts on episode switch**; implemented via a new optional `externalFullscreenRef` prop on `SimPlayer` (backward compatible, behavior unchanged when omitted), which also removed the duplicate top-right fullscreen button
+- ✨ Homepage: added **pull-to-refresh** (native touch gesture with `overscroll-contain`) that forces a cache-bypass reload, plus a **skeleton card stream** (12 first-screen cards + 4 on load-more) and card press feedback (`active:scale`)
+
+### 🧹 Refinements
+
+- 🧹 Detail page: long synopses now fold with an expand/collapse toggle instead of overflowing
+- 🧹 Toast bubbles (episode hint / auto-next countdown) gained subtle enter/exit animations
+
+### 🔧 Maintenance
+
+- 🔧 Version metadata bumped to 9.7.3 across `package.json`, `package-lock.json`, in-app about/settings fallbacks and the README version badges
+
 ## [9.7.1] - 2026-10-04
 
 ### ✨ New Features

@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.7.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.7.3-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -109,6 +109,7 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 - **Search Function** - Quickly find the content you want
 - **Playback History** - Automatically tracks viewing progress with one-click continue (accessible via homepage top-right button)
 - **Episode Selection** - Clear episode selection interface with scrollable episode grid and current episode pulse highlight
+- **Auto-Play Next Episode** — Optional toggle in Player Settings; when an episode ends it counts down 3 seconds and switches to the next one (last episode never auto-plays), with an episode-switch toast that stays visible even in fullscreen
 
 ### 🚀 Performance Optimization
 - **API Caching** - Intelligent caching of API responses to reduce network requests
@@ -262,6 +263,12 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.7.3
+- ✨ Auto-play next episode — Player Settings toggle (default off); when an episode ends it counts down 3s and switches to the next one (last episode never auto-plays), with an episode-switch toast visible even in fullscreen
+- ✨ Container-level fullscreen for the built-in player — fullscreen now targets the outer player container (new optional `externalFullscreenRef` on `SimPlayer`, backward compatible), so toasts stay visible and switching episodes no longer exits fullscreen; duplicate top-right button removed
+- ✨ Homepage pull-to-refresh (forces a cache-bypass reload) + skeleton card stream + card press feedback
+- 🧹 Detail page long synopsis folds with a toggle; toast bubbles gain enter/exit animations
 
 ### V9.7.1
 - ✨ Source import & export — one-tap JSON backup of the source list; import third-party source files carrying https links (Bismuth exports, generic JSON, plain-text link lists) or fetch from a remote https URL, with merge (dedup) / replace modes and a duplicate-highlighting preview

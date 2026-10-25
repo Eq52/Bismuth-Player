@@ -18,7 +18,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.7.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.7.3-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -112,6 +112,7 @@ Material Design version created by `Minimax Agent` : [前往查看](https://agen
 - **搜索功能** - 快速搜索你想要的内容
 - **播放历史** - 自动记录观看进度，支持一键继续播放（首页右上角按钮进入）
 - **选集播放** - 清晰的剧集选择界面，可滚动剧集网格，当前集数脉冲高亮
+- **自动连播** - 播放器设置可选开关；一集播完倒计时 3 秒自动切换下一集（最后一集不自动播放），切换时弹出集数提示气泡（全屏下也可见）
 
 ### 🚀 性能优化
 - **API缓存** - 智能缓存API响应，减少网络请求
@@ -265,6 +266,12 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.7.3
+- ✨ 自动连播 — 播放器设置新增开关（默认关闭）；当前集播完后倒计时 3 秒自动切换下一集（最后一集不自动播放），切换时弹出集数提示气泡（全屏下也可见）
+- ✨ 内置播放器容器级全屏 — 全屏按钮/双击/F 键改为全屏外层播放器容器（`SimPlayer` 新增可选 `externalFullscreenRef`，向后兼容），气泡在全屏下保持可见、切换集数不再退出全屏；移除右上角重复的全屏按钮
+- ✨ 首页下拉刷新（绕过缓存强制拉新）+ 骨架卡片流 + 卡片按压反馈
+- 🧹 详情页超长简介折叠展开；提示气泡增加入场/出场动效
 
 ### V9.7.1
 - ✨ 影视源导入/导出 — 一键将源列表导出为 JSON 备份文件；支持导入携带 https 链接的第三方影视源文件（Bismuth 导出文件、通用 JSON、纯文本链接列表），也可粘贴远程 https 配置链接拉取导入，提供重复高亮预览与合并（去重）/替换两种模式

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2, Heart } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { addPlayHistory, isFavorite, toggleFavorite } from '@/services/storage';
@@ -19,6 +19,10 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [favorited, setFavorited] = useState(false);
   // 来源源被删除时的错误态
   const [deletedSource, setDeletedSource] = useState<{ id: string; name: string } | null>(null);
+  // 简介折叠：超 3 行时显示"展开/收起"
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [descOverflow, setDescOverflow] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     setCoverLoaded(false);
@@ -52,6 +56,12 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
     const effectiveSourceId = video.sourceId || getCurrentSource()?.id || '';
     setFavorited(isFavorite(video.vod_id, effectiveSourceId));
   }, [video.vod_id, video.sourceId]);
+
+  // 简介是否超长（内容超过 3 行才显示"展开"按钮）
+  useEffect(() => {
+    const el = descRef.current;
+    if (el) setDescOverflow(el.scrollHeight > el.clientHeight + 2);
+  }, [detail?.vod_content, video.vod_content]);
 
   // 切换收藏状态
   const handleToggleFavorite = () => {
@@ -209,13 +219,24 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
                 </div>
               </div>
               
-              {/* 简介 */}
+              {/* 简介（超长折叠） */}
               {displayData.vod_content && (
                 <div className="mt-5">
                   <h3 className="text-white font-medium mb-2 text-sm">简介</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
+                  <p
+                    ref={descRef}
+                    className={`text-gray-400 text-sm leading-relaxed ${descExpanded ? '' : 'line-clamp-3'}`}
+                  >
                     {displayData.vod_content.replace(/<[^>]+>/g, '')}
                   </p>
+                  {descOverflow && (
+                    <button
+                      onClick={() => setDescExpanded((v) => !v)}
+                      className="mt-1.5 text-purple-400 text-xs hover:text-purple-300 transition-colors"
+                    >
+                      {descExpanded ? '收起' : '展开'}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

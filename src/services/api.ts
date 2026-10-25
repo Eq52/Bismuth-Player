@@ -217,7 +217,8 @@ export async function getVideoList(
   page: number = 1,
   limit: number = 18,
   type?: string,
-  wd?: string
+  wd?: string,
+  forceRefresh: boolean = false
 ): Promise<ApiResponse> {
   const source = getCurrentSource();
   if (!source) {
@@ -239,11 +240,13 @@ export async function getVideoList(
   // 普通列表请求使用缓存
   const cacheKey = generateCacheKey('videoList', { page, limit, type: type || 'all' });
   
-  // 尝试从缓存获取
-  const cached = getCache<ApiResponse>(cacheKey);
-  if (cached) {
-    console.log('[Cache] 命中列表缓存:', cacheKey);
-    return cached;
+  // 尝试从缓存获取（下拉刷新 forceRefresh=true 时跳过缓存读取，强制拉最新）
+  if (!forceRefresh) {
+    const cached = getCache<ApiResponse>(cacheKey);
+    if (cached) {
+      console.log('[Cache] 命中列表缓存:', cacheKey);
+      return cached;
+    }
   }
   
   const url = buildSourceUrl(source.url, {

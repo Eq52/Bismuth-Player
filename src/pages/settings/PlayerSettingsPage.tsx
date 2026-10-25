@@ -15,6 +15,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
     playerMode: 'builtin',
     playerUrl: '',
     autoResume: true,
+    autoNext: false,
     blockEthics: false,
   });
 
@@ -147,6 +148,18 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
               <Switch
                 checked={playerSettings.autoResume}
                 onCheckedChange={(checked) => updatePlayerSettings({ ...playerSettings, autoResume: checked })}
+              />
+            </div>
+
+            {/* 自动连播 */}
+            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+              <div>
+                <p className="text-white text-sm">自动连播</p>
+                <p className="text-gray-500 text-xs">一集播放完毕后，3 秒后自动播放下一集（仅内置播放器）</p>
+              </div>
+              <Switch
+                checked={playerSettings.autoNext === true}
+                onCheckedChange={(checked) => updatePlayerSettings({ ...playerSettings, autoNext: checked })}
               />
             </div>
           </div>

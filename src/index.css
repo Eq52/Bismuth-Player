@@ -191,3 +191,15 @@
     border-top: 1px solid rgb(var(--bi-glass-line) / var(--bi-glass-line-a, 0.1));
   }
 }
+
+/* 提示气泡通用动效（入场/出场）：定位用 left-1/2，translateX(-50%) 由 keyframes 统一控制 */
+@keyframes bi-toast-in {
+  from { opacity: 0; transform: translate(-50%, 14px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes bi-toast-out {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to { opacity: 0; transform: translate(-50%, -10px); }
+}
+.bi-toast-in { animation: bi-toast-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.bi-toast-out { animation: bi-toast-out 0.22s ease forwards; }

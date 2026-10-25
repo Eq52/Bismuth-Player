@@ -134,7 +134,8 @@ export function getPlayerSettings(): PlayerSettings {
   const stored = localStorage.getItem(PLAYER_SETTINGS_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      // 合并默认值：兼容旧数据缺失新增字段（如 autoNext）
+      return { ...getDefaultPlayerSettings(), ...JSON.parse(stored) };
     } catch {
       return getDefaultPlayerSettings();
     }
@@ -148,6 +149,7 @@ function getDefaultPlayerSettings(): PlayerSettings {
     playerMode: 'builtin',
     playerUrl: 'https://ericq521.web.app/ckplayer/?v=',
     autoResume: true,
+    autoNext: false,
     blockEthics: false,
   };
 }

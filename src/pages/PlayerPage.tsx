@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
@@ -21,7 +21,82 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   // 来源源被删除时的错误态（历史/收藏「继续播放」直接进播放器的兜底）
   const [deletedSource, setDeletedSource] = useState<{ id: string; name: string } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const [playerSettings] = useState<PlayerSettings>(getPlayerSettings);
+
+  // 自动连播：一集播放完毕（内置 SimPlayer 的 video ended 冒泡捕获）后 3 秒自动切下一集。
+  // 不改动 SimPlayer；外部 iframe 播放器无法跨域检测 ended，自动连播仅内置模式生效。
+  const [autoNextCountdown, setAutoNextCountdown] = useState<number | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoNextRef = useRef(playerSettings.autoNext === true);
+  autoNextRef.current = playerSettings.autoNext === true;
+  const episodeCountRef = useRef(episodes.length);
+  episodeCountRef.current = episodes.length;
+  const currentEpisodeRef = useRef(currentEpisode);
+  currentEpisodeRef.current = currentEpisode;
+  // changeEpisode 的稳定引用，供 ended 回调使用（赋值见 changeEpisode 定义后）
+  const changeEpisodeRef = useRef<(index: number) => void>(() => {});
+
+  // 清除连播倒计时（手动切换/取消/组件卸载时调用）
+  const clearAutoNextTimer = useCallback(() => {
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    setAutoNextCountdown(null);
+  }, []);
+
+  // 切换集数提示气泡（手动切换与自动连播共用，带入场/出场动效）
+  const [episodeHint, setEpisodeHint] = useState<string | null>(null);
+  const [episodeHintOut, setEpisodeHintOut] = useState(false);
+  const episodeHintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showEpisodeHint = useCallback((text: string) => {
+    setEpisodeHintOut(false);
+    setEpisodeHint(text);
+    if (episodeHintTimerRef.current) clearTimeout(episodeHintTimerRef.current);
+    episodeHintTimerRef.current = setTimeout(() => {
+      setEpisodeHintOut(true); // 出场动画后再移除
+      window.setTimeout(() => setEpisodeHint(null), 240);
+    }, 1800);
+  }, []);
+
+  // 卸载时清理提示定时器
+  useEffect(() => () => {
+    if (episodeHintTimerRef.current) clearTimeout(episodeHintTimerRef.current);
+  }, []);
+
+  // 一集播放完毕：开启 3 秒倒计时自动连播（最后一集不连播）
+  const handleVideoEnded = useCallback(() => {
+    if (!autoNextRef.current) return;
+    if (currentEpisodeRef.current >= episodeCountRef.current - 1) return;
+    clearAutoNextTimer();
+    let remain = 3;
+    setAutoNextCountdown(3);
+    countdownTimerRef.current = setInterval(() => {
+      remain -= 1;
+      if (remain <= 0) {
+        clearAutoNextTimer();
+        changeEpisodeRef.current(currentEpisodeRef.current + 1);
+      } else {
+        setAutoNextCountdown(remain);
+      }
+    }, 1000);
+  }, [clearAutoNextTimer]);
+
+  // 监听内置播放器视频播放完毕（ended 冒泡 + capture 捕获，不依赖 SimPlayer 改动）
+  useEffect(() => {
+    const el = playerContainerRef.current;
+    if (!el) return;
+    const onEnded = (e: Event) => {
+      if (e.target instanceof HTMLVideoElement) handleVideoEnded();
+    };
+    el.addEventListener('ended', onEnded, true);
+    return () => {
+      el.removeEventListener('ended', onEnded, true);
+      clearAutoNextTimer();
+    };
+  }, [handleVideoEnded, clearAutoNextTimer]);
 
   useEffect(() => {
     setCurrentEpisode(initialEpisode);
@@ -72,6 +147,8 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
   // 切换集数
   const changeEpisode = (index: number) => {
     if (index >= 0 && index < episodes.length) {
+      clearAutoNextTimer(); // 手动切换集数时取消连播倒计时
+      showEpisodeHint(`正在播放：第${index + 1}集${episodes[index]?.name ? ' · ' + episodes[index].name : ''}`);
       setCurrentEpisode(index);
       
       if (detail) {
@@ -91,6 +168,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
       }
     }
   };
+  changeEpisodeRef.current = changeEpisode;
 
   const prevEpisode = () => changeEpisode(currentEpisode - 1);
   const nextEpisode = () => changeEpisode(currentEpisode + 1);
@@ -128,7 +206,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
       {/* 播放器 + 选集 */}
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
         {/* 视频区域 */}
-        <div className="relative bg-black aspect-video shrink-0 lg:aspect-auto lg:shrink lg:flex-1 lg:max-h-[calc(100vh-12rem)] min-w-0 overflow-hidden">
+        <div ref={playerContainerRef} className="relative bg-black aspect-video shrink-0 lg:aspect-auto lg:shrink lg:flex-1 lg:max-h-[calc(100vh-12rem)] min-w-0 overflow-hidden">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -145,6 +223,7 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
                 title={`${displayData.vod_name} - ${currentEp?.name || ''}`}
                 poster={displayData.vod_pic}
                 fillContainer
+                externalFullscreenRef={playerContainerRef}
               />
             ) : (
               <iframe
@@ -158,6 +237,30 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <p className="text-gray-500 text-sm">暂无播放地址</p>
+            </div>
+          )}
+
+          {/* 切换集数提示气泡（入场/出场动效） */}
+          {episodeHint && (
+            <div
+              className={`absolute top-3 left-1/2 z-30 ${episodeHintOut ? 'bi-toast-out' : 'bi-toast-in'}`}
+            >
+              <div className="px-4 py-1.5 bg-black/70 backdrop-blur-sm rounded-full">
+                <span className="text-white text-sm whitespace-nowrap max-w-[70vw] truncate block">{episodeHint}</span>
+              </div>
+            </div>
+          )}
+
+          {/* 自动连播倒计时提示 */}
+          {autoNextCountdown !== null && (
+            <div className="absolute bottom-4 left-1/2 z-30 bi-toast-in flex items-center gap-3 bg-black/75 backdrop-blur px-4 py-2 rounded-full whitespace-nowrap">
+              <span className="text-white text-sm">{autoNextCountdown} 秒后自动播放下一集</span>
+              <button
+                onClick={clearAutoNextTimer}
+                className="text-purple-400 text-sm font-medium hover:text-purple-300"
+              >
+                取消
+              </button>
             </div>
           )}
         </div>

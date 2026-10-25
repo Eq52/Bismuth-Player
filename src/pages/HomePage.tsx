@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Film, Search, History, SlidersHorizontal } from 'lucide-react';
+import { Plus, Film, Search, History, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
 import { getVideoList, getCurrentSource, getSources } from '@/services/api';
 import { useTheme, BrandLogo } from '@/services/ThemeContext';
 import type { VideoItem, VideoSource } from '@/types';
+
+// 骨架卡片：模拟 VideoCard 布局的加载占位（首屏与加载更多共用）
+function VideoSkeleton() {
+  return (
+    <div className="bg-surface rounded-xl overflow-hidden">
+      <div className="aspect-[3/4] bg-gradient-to-br from-[#1a1a2e] via-[#252547] to-[#1a1a2e] animate-pulse" />
+      <div className="p-2.5 space-y-2">
+        <div className="h-3 bg-white/10 rounded animate-pulse" />
+        <div className="h-3 w-1/2 bg-white/10 rounded animate-pulse" />
+      </div>
+    </div>
+  );
+}
 
 interface HomePageProps {
   onVideoClick: (video: VideoItem) => void;
@@ -24,7 +37,15 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
   const [hasMore, setHasMore] = useState(true);
   const [currentSource, setCurrentSourceState] = useState<VideoSource | null>(null);
   const [hasSources, setHasSources] = useState(false);
-  
+
+  // 下拉刷新状态与手势相关 ref（触屏在列表顶部继续下拉触发刷新）
+  const [pullDistance, setPullDistance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const pullDistanceRef = useRef(0);
+  const refreshingRef = useRef(false);
+  const pullStartYRef = useRef(0);
+  const pullActiveRef = useRef(false);
+  const listRef = useRef<HTMLDivElement>(null);
   // 使用 ref 来避免闭包问题
   const loadingRef = useRef(loading);
   loadingRef.current = loading;
@@ -37,12 +58,12 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
   }, [refreshKey]);
 
   // 加载影视列表
-  const loadVideos = useCallback(async (targetPage: number, reset: boolean = false) => {
+  const loadVideos = useCallback(async (targetPage: number, reset: boolean = false, forceRefresh: boolean = false) => {
     if (loadingRef.current) return;
     setLoading(true);
     
     try {
-      const response = await getVideoList(targetPage, 18);
+      const response = await getVideoList(targetPage, 18, undefined, undefined, forceRefresh);
       
       if (reset) {
         setVideos(response.list);
@@ -77,6 +98,69 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
       loadVideos(page, false);
     }
   }, [hasMore, page, loadVideos]);
+
+  // 下拉刷新：重新加载第一页
+  const doRefresh = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
+    setRefreshing(true);
+    pullDistanceRef.current = 0;
+    setPullDistance(0);
+    try {
+      await loadVideos(1, true, true); // 下拉刷新：绕过缓存强制拉最新
+    } finally {
+      refreshingRef.current = false;
+      setRefreshing(false);
+    }
+  }, [loadVideos]);
+
+  // 触屏下拉手势（原生监听以便 preventDefault，桌面鼠标不触发）
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const THRESHOLD = 64;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (el.scrollTop <= 0 && !refreshingRef.current) {
+        pullStartYRef.current = e.touches[0].clientY;
+        pullActiveRef.current = true;
+      } else {
+        pullActiveRef.current = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pullActiveRef.current || refreshingRef.current) return;
+      const delta = e.touches[0].clientY - pullStartYRef.current;
+      if (delta > 0 && el.scrollTop <= 0) {
+        e.preventDefault();
+        const d = Math.min(Math.round(delta * 0.5), 88); // 阻尼，限制最大下拉高度
+        pullDistanceRef.current = d;
+        setPullDistance(d);
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (!pullActiveRef.current) return;
+      pullActiveRef.current = false;
+      if (pullDistanceRef.current >= THRESHOLD && !refreshingRef.current) {
+        doRefresh();
+      } else {
+        pullDistanceRef.current = 0;
+        setPullDistance(0);
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+    // 依赖 hasSources：无源分支不渲染滚动容器（ref 为空），添加源后需重新绑定手势
+  }, [doRefresh, hasSources]);
 
   // 空状态 - 无影视源
   if (!hasSources) {
@@ -165,11 +249,33 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
       </div>
 
       {/* 影视网格 */}
-      <div 
-        className="flex-1 overflow-y-auto px-5 py-2 md:px-8"
+      <div
+        ref={listRef}
+        className="flex-1 overflow-y-auto px-5 py-2 md:px-8 overscroll-contain"
         onScroll={handleScroll}
       >
-        {videos.length === 0 && !loading ? (
+        {/* 下拉刷新提示条（高度随下拉距离展开，图标随状态变化） */}
+        <div
+          className="flex items-center justify-center overflow-hidden transition-[height] duration-150"
+          style={{ height: refreshing ? 44 : pullDistance }}
+        >
+          {refreshing ? (
+            <div className="w-5 h-5 border-2 border-purple-500/40 border-t-purple-500 rounded-full animate-spin" />
+          ) : pullDistance >= 64 ? (
+            <RefreshCw className="w-5 h-5 text-purple-300 animate-spin" />
+          ) : pullDistance > 0 ? (
+            <RefreshCw
+              className="w-5 h-5 text-gray-300"
+              style={{ transform: `rotate(${Math.min(pullDistance * 4, 180)}deg)` }}
+            />
+          ) : null}
+        </div>
+
+        {videos.length === 0 && loading ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 md:gap-4 lg:gap-5">
+            {Array.from({ length: 12 }).map((_, i) => <VideoSkeleton key={i} />)}
+          </div>
+        ) : videos.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <Film className="w-16 h-16 mb-4 opacity-20" />
             <p>暂无数据</p>
@@ -186,13 +292,14 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
             ))}
           </div>
         )}
-        
-        {loading && (
-          <div className="flex justify-center py-6">
-            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+
+        {/* 加载更多：底部骨架卡片流 */}
+        {loading && videos.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 md:gap-4 lg:gap-5 mt-3">
+            {Array.from({ length: 4 }).map((_, i) => <VideoSkeleton key={i} />)}
           </div>
         )}
-        
+
         {!hasMore && videos.length > 0 && (
           <div className="text-center py-6 text-gray-600 text-sm">
             没有更多了

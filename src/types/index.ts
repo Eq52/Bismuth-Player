@@ -69,6 +69,7 @@ export interface PlayerSettings {
   playerMode: PlayerMode;
   playerUrl: string;
   autoResume: boolean;
+  autoNext: boolean;
   blockEthics: boolean;
 }
 

@@ -30,6 +30,8 @@ interface SimPlayerProps {
   poster?: string;
   /** 容器是否已控制好尺寸，播放器应 h-full 填充而非依赖 aspect-ratio */
   fillContainer?: boolean;
+  /** 外部容器 ref：提供时全屏作用于该容器（父级接管全屏，气泡可见、切集不退出）；缺省用内部容器，行为不变 */
+  externalFullscreenRef?: React.RefObject<HTMLDivElement | null>;
   onVideoInfo?: (info: { width: number; height: number; duration: number; format: string }) => void;
   onError?: (error: string) => void;
 }
@@ -78,7 +80,7 @@ interface VideoParams {
   buffered: number;
 }
 
-export default function SimPlayer({ src, title, poster, fillContainer, onVideoInfo, onError }: SimPlayerProps) {
+export default function SimPlayer({ src, title, poster, fillContainer, externalFullscreenRef, onVideoInfo, onError }: SimPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<HlsType | null>(null);
@@ -358,7 +360,9 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
-    const c = containerRef.current; const v = videoRef.current; if (!c) return;
+    // 全屏目标：外部容器优先（父级接管时气泡可见、切集不退出全屏），否则用内部容器
+    const c = externalFullscreenRef?.current || containerRef.current;
+    const v = videoRef.current; if (!c) return;
     try {
       if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
         // iOS Safari only supports fullscreen on <video> via webkitEnterFullscreen
@@ -374,7 +378,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, onVideoIn
         else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
       }
     } catch (err) { console.error('Fullscreen error:', err); }
-  }, []);
+  }, [externalFullscreenRef]);
 
   const handleMouseMove = useCallback(() => {
     if (isDraggingRef.current) return; // don't reset timer while dragging

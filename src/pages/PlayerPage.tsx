@@ -1,20 +1,23 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
+import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { getPlayerSettings, addPlayHistory } from '@/services/storage';
 import { isDesktopMode, desktopMediaUrl } from '@/services/desktop';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
-import type { VideoItem, PlayerSettings } from '@/types';
+import type { VideoItem, PlayerSettings, PlaySource } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
 
 interface PlayerPageProps {
   video: VideoItem;
   initialEpisode?: number;
+  initialSourceIndex?: number;
   onBack: () => void;
 }
 
-export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProps) {
+export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, onBack }: PlayerPageProps) {
   const [detail, setDetail] = useState<VideoItem | null>(null);
+  const [sources, setSources] = useState<PlaySource[]>([]);
+  const [activeSourceIndex, setActiveSourceIndex] = useState(0);
   const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
   const [currentEpisode, setCurrentEpisode] = useState(initialEpisode);
   const [loading, setLoading] = useState(true);
@@ -108,8 +111,11 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
         const data = await getVideoDetail(video.vod_id, video.sourceId, video.sourceName);
         if (data) {
           setDetail(data);
-          const eps = parsePlayUrls(data.vod_play_url, data.vod_play_from);
-          setEpisodes(eps);
+          const srcs = parsePlaySources(data.vod_play_url, data.vod_play_from);
+          setSources(srcs);
+          const startSource = Math.min(Math.max(initialSourceIndex, 0), Math.max(srcs.length - 1, 0));
+          setActiveSourceIndex(startSource);
+          setEpisodes(srcs[startSource]?.episodes ?? []);
         }
       } catch (error) {
         if (error instanceof SourceDeletedError) {
@@ -169,6 +175,16 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
     }
   };
   changeEpisodeRef.current = changeEpisode;
+
+  // 切换播放线路（多线路源）：切到该线路的初始集并刷新播放地址
+  const changeSource = (index: number) => {
+    if (index < 0 || index >= sources.length || index === activeSourceIndex) return;
+    setActiveSourceIndex(index);
+    setEpisodes(sources[index]?.episodes ?? []);
+    setCurrentEpisode(initialEpisode);
+    clearAutoNextTimer();
+    showEpisodeHint(`已切换线路：${sources[index]?.name || ''}`);
+  };
 
   const prevEpisode = () => changeEpisode(currentEpisode - 1);
   const nextEpisode = () => changeEpisode(currentEpisode + 1);
@@ -297,6 +313,25 @@ export function PlayerPage({ video, initialEpisode = 0, onBack }: PlayerPageProp
 
             {/* 选集列表（可滚动） */}
             <div className="flex-1 overflow-y-auto px-5 py-4 min-h-0">
+              {/* 播放线路（多线路源，$$$ 分隔时显示） */}
+              {sources.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 border-b border-white/5">
+                  <span className="text-gray-500 text-xs flex-shrink-0">线路</span>
+                  {sources.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => changeSource(i)}
+                      className={`px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-all flex-shrink-0 ${
+                        i === activeSourceIndex
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <h3 className="text-white font-medium mb-3 text-sm">选集 <span className="text-gray-500 font-normal">({episodes.length})</span></h3>
               <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {episodes.map((ep, index) => (

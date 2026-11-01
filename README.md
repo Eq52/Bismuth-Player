@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.7.3-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -263,6 +263,12 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.0
+- ✨ Multi-line playback — `parsePlaySources` parses every `$$$` play source; detail & player pages show a "线路" switcher and carry the selected line through to playback (backup lines no longer dropped)
+- ✨ Customizable blocking keywords — replace the fixed ethics regex with a keyword list; each keyword is **fuzzy** (name contains it) or **exact** (regex match), applied to category & list filtering
+- 🐛 Fixed pagination count after filtering (`total` no longer overwritten) and fixed ethics filter leaking when categories were renamed
+- ⚡ Cache switched to LRU eviction — last-access tracked on hit, size cap (150 items / 3 MB) evicts least-recently-used entries
 
 ### V9.7.3
 - ✨ Auto-play next episode — Player Settings toggle (default off); when an episode ends it counts down 3s and switches to the next one (last episode never auto-plays), with an episode-switch toast visible even in fullscreen

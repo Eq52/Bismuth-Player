@@ -17,6 +17,7 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
     autoResume: true,
     autoNext: false,
     blockEthics: false,
+    blockKeywords: [],
   });
 
   useEffect(() => {

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.0] - 2026-11-01
+
+### ✨ New Features
+
+- ✨ Added **multi-line playback** (multi-source episodes) — `parsePlaySources` now parses every `$$$`-separated play source instead of silently dropping the backup lines; both the detail page and the player show a "线路" switcher to pick any source line, and the selected line carries through to the player
+- ✨ Replaced the hardcoded ethics regex with **customizable blocking keywords** — manage a keyword list (add / remove) with two match modes per keyword: **fuzzy** (name contains the word) and **exact** (word matched as a regex); applied to both category filtering and list filtering
+- ✨ Cache now uses an **LRU eviction strategy** — each entry tracks its last-access time (refreshed on hit, throttled to avoid excessive writes) and the cache enforces a size cap (150 items / ~3 MB) by evicting the least-recently-used entries; the storage-full fallback is LRU too
+
+### 🐛 Bug Fixes
+
+- 🐛 Fixed `parsePlayUrls` only using the first `$$$` play source, silently dropping backup lines (P0#3)
+- 🐛 Fixed pagination count corruption after filtering — `data.total` is no longer overwritten with the filtered page length, so page counts stay correct (blocking only filters the current page)
+- 🐛 Fixed ethics filtering leaking when a category was renamed — the fixed regex is replaced by the user-configurable keyword list
+
+### 🔧 Maintenance
+
+- 🔧 Version metadata bumped to 9.8.0 across `package.json`, `package-lock.json`, in-app about/settings fallbacks and the README version badges
+
 ## [9.7.3] - 2026-10-25
 
 ### ✨ New Features

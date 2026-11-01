@@ -167,6 +167,7 @@ function App() {
   const [currentView, setCurrentView] = useState<ViewType>('list');
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const [initialEpisode, setInitialEpisode] = useState(0);
+  const [initialSourceIndex, setInitialSourceIndex] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [settingsSubPage, setSettingsSubPage] = useState<SettingsSubPage>('none');
@@ -210,10 +211,11 @@ function App() {
     setCurrentView('detail');
   }, []);
 
-  // 处理播放
-  const handlePlay = useCallback((video: VideoItem, episodeIndex: number) => {
+  // 处理播放（sourceIndex：多线路时选中的线路索引，默认 0）
+  const handlePlay = useCallback((video: VideoItem, episodeIndex: number, sourceIndex = 0) => {
     setSelectedVideo(video);
     setInitialEpisode(episodeIndex);
+    setInitialSourceIndex(sourceIndex);
     setCurrentView('player');
   }, []);
 
@@ -294,6 +296,7 @@ function App() {
             <PlayerPage
               video={selectedVideo}
               initialEpisode={initialEpisode}
+              initialSourceIndex={initialSourceIndex}
               onBack={handleBackToDetail}
             />
           </PageTransition>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  ArrowLeft, Plus, Trash2, Monitor, Check, AlertCircle, TestTube, Shield,
+  ArrowLeft, Plus, Trash2, Monitor, Check, AlertCircle, TestTube, Shield, X,
   Upload, Download, Link2, FileText, Loader2, CheckCircle2, ListPlus, RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import {
   MAX_IMPORT_FILE_SIZE, type ImportMode,
 } from '@/services/sourceTransfer';
 import { annotateDuplicates, type ParsedSource } from '@/services/sourceParse';
-import type { VideoSource } from '@/types';
+import type { VideoSource, BlockKeyword, BlockMatchMode } from '@/types';
 
 interface VideoSourcePageProps {
   onBack: () => void;
@@ -29,6 +29,9 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
   const [testingSource, setTestingSource] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
   const [blockEthics, setBlockEthics] = useState(false);
+  const [blockKeywords, setBlockKeywords] = useState<BlockKeyword[]>([]);
+  const [newWord, setNewWord] = useState('');
+  const [newMode, setNewMode] = useState<BlockMatchMode>('fuzzy');
 
   // ========== 导入 / 导出状态 ==========
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -48,13 +51,36 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
     const current = getCurrentSource();
     setCurrentSourceId(current?.id || '');
     setBlockEthics(getPlayerSettings().blockEthics);
+    setBlockKeywords(getPlayerSettings().blockKeywords || []);
   }, []);
 
-  // 切换伦理片屏蔽
+  // 切换关键词屏蔽
   const handleBlockEthicsChange = (checked: boolean) => {
     setBlockEthics(checked);
     const settings = getPlayerSettings();
     savePlayerSettings({ ...settings, blockEthics: checked });
+  };
+
+  // 添加屏蔽关键词
+  const handleAddKeyword = () => {
+    const word = newWord.trim();
+    if (!word) return;
+    if (blockKeywords.some(k => k.word === word)) {
+      toast({ title: '该关键词已存在' });
+      return;
+    }
+    const next = [...blockKeywords, { word, mode: newMode }];
+    setBlockKeywords(next);
+    setNewWord('');
+    savePlayerSettings({ ...getPlayerSettings(), blockEthics, blockKeywords: next });
+    toast({ title: '已添加屏蔽词', description: `${word}（${newMode === 'fuzzy' ? '模糊' : '精确'}）` });
+  };
+
+  // 删除屏蔽关键词
+  const handleRemoveKeyword = (word: string) => {
+    const next = blockKeywords.filter(k => k.word !== word);
+    setBlockKeywords(next);
+    savePlayerSettings({ ...getPlayerSettings(), blockEthics, blockKeywords: next });
   };
 
   // 测试影视源
@@ -390,20 +416,80 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
             </div>
           )}
 
-          {/* 内容过滤设置 */}
-          <div className="mt-6 bg-surface border border-white/5 rounded-xl p-4">
+          {/* 内容过滤设置（自定义屏蔽关键词） */}
+          <div className="mt-6 bg-surface border border-white/5 rounded-xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-sm flex items-center gap-1.5">
-                  <Shield size={14} className="text-red-400" /> 屏蔽伦理片
+                  <Shield size={14} className="text-red-400" /> 屏蔽关键词
                 </p>
-                <p className="text-gray-500 text-xs mt-1">开启后首页不显示伦理片分类，列表过滤伦理片内容</p>
+                <p className="text-gray-500 text-xs mt-1">开启后按关键词过滤分类与列表，命中内容不再显示</p>
               </div>
               <Switch
                 checked={blockEthics}
                 onCheckedChange={handleBlockEthicsChange}
               />
             </div>
+
+            {/* 已添加的关键词 */}
+            {blockKeywords.length > 0 ? (
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                {blockKeywords.map(k => (
+                  <span
+                    key={k.word}
+                    className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full pl-2.5 pr-1 py-1 text-xs"
+                  >
+                    <span className="text-white">{k.word}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${k.mode === 'fuzzy' ? 'bg-purple-500/20 text-purple-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                      {k.mode === 'fuzzy' ? '模糊' : '精确'}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveKeyword(k.word)}
+                      className="p-0.5 text-gray-500 hover:text-red-400 transition-colors"
+                      title="删除"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600 text-xs pt-2 border-t border-white/5">暂无屏蔽关键词</p>
+            )}
+
+            {/* 添加关键词 */}
+            <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+              <Input
+                value={newWord}
+                onChange={e => setNewWord(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddKeyword(); }}
+                placeholder="输入关键词，如：伦理 / 恐怖"
+                className="flex-1 min-w-0"
+              />
+              <div className="flex bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
+                <button
+                  onClick={() => setNewMode('fuzzy')}
+                  className={`px-2.5 py-1.5 text-xs transition-colors ${newMode === 'fuzzy' ? 'bg-purple-500/30 text-purple-300' : 'text-gray-500'}`}
+                  title="模糊：名称包含即匹配"
+                >
+                  模糊
+                </button>
+                <button
+                  onClick={() => setNewMode('exact')}
+                  className={`px-2.5 py-1.5 text-xs transition-colors ${newMode === 'exact' ? 'bg-amber-500/30 text-amber-300' : 'text-gray-500'}`}
+                  title="精确：正则完全匹配"
+                >
+                  精确
+                </button>
+              </div>
+              <Button onClick={handleAddKeyword} size="sm" className="flex-shrink-0">
+                <Plus size={14} className="mr-1" /> 添加
+              </Button>
+            </div>
+
+            <p className="text-gray-600 text-xs leading-relaxed">
+              模糊匹配：名称包含该词即命中（如「伦理」匹配「伦理片」）；精确匹配：该词作为正则匹配名称。默认已内置常用屏蔽词，可自由增删。
+            </p>
           </div>
 
           {/* 说明 */}

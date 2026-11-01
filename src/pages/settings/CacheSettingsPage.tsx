@@ -127,7 +127,7 @@ export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
           <div className="mt-6 flex items-start gap-2 p-3 bg-white/[0.02] border border-white/5 rounded-xl">
             <Database className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
             <p className="text-gray-500 text-xs leading-relaxed">
-              缓存可以显著减少网络请求次数，提升浏览体验。缓存数据存储在浏览器本地，不同类型的请求有不同的缓存有效期。当存储空间不足时，系统会自动清理最旧的 30% 缓存数据。关闭缓存后，所有请求将实时获取最新数据。
+              缓存可以显著减少网络请求次数，提升浏览体验。缓存数据存储在浏览器本地，不同类型的请求有不同的缓存有效期。系统采用最近最少使用（LRU）策略管理缓存：每次读取会刷新该条目的访问时间，当缓存达到上限（约 150 项 / 3 MB）或存储空间不足时，自动清理最久未访问的缓存数据，常用数据优先保留。关闭缓存后，所有请求将实时获取最新数据。
             </p>
           </div>
         </div>

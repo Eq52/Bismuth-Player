@@ -1,14 +1,28 @@
-import type { VideoItem, ApiResponse, VideoSource } from '@/types';
+import type { VideoItem, ApiResponse, VideoSource, PlayerSettings, PlaySource } from '@/types';
 import { getCache, setCache } from './cache';
 import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettings } from './storage';
 import { isDesktopMode, desktopApiUrl } from './desktop';
 import { stripManagedParams } from './sourceParse';
 
-// 判断是否为伦理片/成人内容（用于内容过滤）
-function isEthicsContent(name?: string): boolean {
-  if (!name) return false;
-  // 匹配常见的伦理片分类名和标签
-  return /伦理片|伦理|情色片|情色|成人片|成人|色情|18禁|三级片|三级|午夜|福利片|国产自拍|偷拍|无码|有码/.test(name);
+// 判断内容是否被屏蔽关键词命中（用于内容过滤）：
+// fuzzy = 名称包含关键词即匹配；exact = 关键词按正则完全匹配。
+// 仅当设置里启用屏蔽（blockEthics）时生效。
+function isBlockedContent(name: string | undefined, settings: PlayerSettings): boolean {
+  if (!settings.blockEthics || !name) return false;
+  const words = settings.blockKeywords || [];
+  for (const k of words) {
+    if (!k.word) continue;
+    if (k.mode === 'exact') {
+      try {
+        if (new RegExp(k.word).test(name)) return true;
+      } catch {
+        // 非法正则按不匹配处理
+      }
+    } else {
+      if (name.includes(k.word)) return true;
+    }
+  }
+  return false;
 }
 
 // 默认无影视源 - 用户需自行添加
@@ -259,14 +273,12 @@ export async function getVideoList(
   const response = await fetchWithRetry(url);
   const data = safeApiResponse(await response.json());
   
-  // 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片视频
+  // 关键词屏蔽：如果开启了屏蔽设置，过滤掉命中的视频
   const settings = getPlayerSettings();
   if (settings.blockEthics && data.list && data.list.length > 0) {
-    data.list = data.list.filter(v => !isEthicsContent(v.type_name));
-    // 更新 total（如果存在）
-    if (data.total !== undefined) {
-      data.total = data.list.length;
-    }
+    data.list = data.list.filter(v => !isBlockedContent(v.type_name, settings));
+    // 注意：不改写 total —— total 是服务端全部分页总数，改写为当前页过滤后数量会导致分页数不对。
+    // 屏蔽只影响当前页的展示，分页继续按服务端 total 走（翻到被屏蔽多的页可能不满，属正常副作用）。
   }
   
   // 缓存结果
@@ -401,19 +413,19 @@ export async function getCategories(): Promise<CategoryItem[]> {
       ];
     }
     
-    // 伦理片过滤：如果开启了屏蔽伦理片设置，过滤掉伦理片分类
+    // 关键词屏蔽：如果开启了屏蔽设置，过滤掉命中的分类
     const settings = getPlayerSettings();
     if (settings.blockEthics) {
-      const ethicsIds = new Set<number>();
-      // 先找出所有伦理片顶级分类的 id
+      const blockedIds = new Set<number>();
+      // 先找出所有命中的顶级分类 id
       categories.forEach(c => {
-        if (c.type_pid === 0 && isEthicsContent(c.name)) {
-          ethicsIds.add(c.type_id);
+        if (c.type_pid === 0 && isBlockedContent(c.name, settings)) {
+          blockedIds.add(c.type_id);
         }
       });
-      // 过滤掉伦理片顶级分类及其子分类
+      // 过滤掉命中的顶级分类及其子分类
       categories = categories.filter(c => 
-        c.type_id === 0 || (!ethicsIds.has(c.type_id) && !ethicsIds.has(c.type_pid))
+        c.type_id === 0 || (!blockedIds.has(c.type_id) && !blockedIds.has(c.type_pid))
       );
     }
     
@@ -433,26 +445,28 @@ export async function getCategories(): Promise<CategoryItem[]> {
   }
 }
 
-// 解析播放地址（支持多播放源，以 $$$ 分隔，默认使用第一个源）
-export function parsePlayUrls(vod_play_url?: string, _vod_play_from?: string): { name: string; url: string }[] {
+// 解析全部播放线路（支持多播放源，以 $$$ 分隔，线路名取自 vod_play_from）
+export function parsePlaySources(vod_play_url?: string, vod_play_from?: string): PlaySource[] {
   if (!vod_play_url) return [];
-  
-  const episodes: { name: string; url: string }[] = [];
-  // 多个播放源以 $$$ 分隔，取第一个源（也是大多数 API 的默认行为）
-  const sourceUrl = vod_play_url.split('$$$')[0];
-  const lines = sourceUrl.split('#');
-  
-  for (const line of lines) {
-    const parts = line.split('$');
-    if (parts.length >= 2) {
-      episodes.push({
-        name: parts[0],
-        url: parts[1]
-      });
+
+  const fromList = (vod_play_from || '').split('$$$').map(s => s.trim()).filter(Boolean);
+
+  return vod_play_url.split('$$$').map((sourceUrl, i) => {
+    const episodes: { name: string; url: string }[] = [];
+    const lines = sourceUrl.split('#');
+    for (const line of lines) {
+      const parts = line.split('$');
+      if (parts.length >= 2) {
+        episodes.push({ name: parts[0], url: parts[1] });
+      }
     }
-  }
-  
-  return episodes;
+    return { name: fromList[i] || `线路 ${i + 1}`, episodes };
+  }).filter(s => s.episodes.length > 0);
+}
+
+// 解析播放地址（兼容旧调用：返回第一个线路的剧集，供无需多线路的场景使用）
+export function parsePlayUrls(vod_play_url?: string, vod_play_from?: string): { name: string; url: string }[] {
+  return parsePlaySources(vod_play_url, vod_play_from)[0]?.episodes ?? [];
 }
 
 // 走统一网络通道拉取远程文本（影视源导入远程配置用；自动重试/代理轮换）

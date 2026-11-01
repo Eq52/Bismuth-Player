@@ -151,6 +151,20 @@ function getDefaultPlayerSettings(): PlayerSettings {
     autoResume: true,
     autoNext: false,
     blockEthics: false,
+    // 默认屏蔽词表（模糊匹配）：覆盖常见的伦理/成人分类标签
+    blockKeywords: [
+      { word: '伦理', mode: 'fuzzy' },
+      { word: '情色', mode: 'fuzzy' },
+      { word: '成人', mode: 'fuzzy' },
+      { word: '色情', mode: 'fuzzy' },
+      { word: '18禁', mode: 'fuzzy' },
+      { word: '三级', mode: 'fuzzy' },
+      { word: '午夜', mode: 'fuzzy' },
+      { word: '福利', mode: 'fuzzy' },
+      { word: '偷拍', mode: 'fuzzy' },
+      { word: '无码', mode: 'fuzzy' },
+      { word: '有码', mode: 'fuzzy' },
+    ],
   };
 }
 

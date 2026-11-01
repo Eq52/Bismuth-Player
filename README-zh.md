@@ -18,7 +18,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.7.3-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.0-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -266,6 +266,12 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.0
+- ✨ 多线路播放 — `parsePlaySources` 完整解析所有 `$$$` 播放源；详情页与播放页显示"线路"切换条，选中的线路贯通到播放（备选线路不再被丢弃）
+- ✨ 自定义屏蔽关键词 — 以关键词表取代固定伦理正则；每个词可选**模糊**（名称包含即命中）或**精确**（正则匹配），同时作用于分类与列表过滤
+- 🐛 修复过滤后分页数错乱（不再改写 total）与分类改名后伦理过滤失效
+- ⚡ 缓存改为 LRU 淘汰策略 — 命中刷新访问时间，达上限（150 项 / 约 3MB）自动淘汰最久未访问
 
 ### V9.7.3
 - ✨ 自动连播 — 播放器设置新增开关（默认关闭）；当前集播完后倒计时 3 秒自动切换下一集（最后一集不自动播放），切换时弹出集数提示气泡（全屏下也可见）

@@ -71,6 +71,21 @@ export interface PlayerSettings {
   autoResume: boolean;
   autoNext: boolean;
   blockEthics: boolean;
+  /** 屏蔽关键词表：fuzzy=包含即匹配；exact=正则完全匹配 */
+  blockKeywords: BlockKeyword[];
+}
+
+// 屏蔽关键词：mode 决定匹配方式
+export type BlockMatchMode = 'fuzzy' | 'exact';
+export interface BlockKeyword {
+  word: string;
+  mode: BlockMatchMode;
+}
+
+// 播放线路（多线路源：同一影片的多个播放源，以 $$$ 分隔）
+export interface PlaySource {
+  name: string;
+  episodes: { name: string; url: string }[];
 }
 
 // 缓存设置

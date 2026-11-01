@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Star, Calendar, User, Film, Play, MapPin, Users, Loader2, Heart } from 'lucide-react';
-import { getVideoDetail, parsePlayUrls, getCurrentSource, SourceDeletedError } from '@/services/api';
+import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { addPlayHistory, isFavorite, toggleFavorite } from '@/services/storage';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
-import type { VideoItem } from '@/types';
+import type { VideoItem, PlaySource } from '@/types';
 
 interface DetailPageProps {
   video: VideoItem;
   onBack: () => void;
-  onPlay: (video: VideoItem, episodeIndex: number) => void;
+  onPlay: (video: VideoItem, episodeIndex: number, sourceIndex?: number) => void;
 }
 
 export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   const [detail, setDetail] = useState<VideoItem | null>(null);
+  const [sources, setSources] = useState<PlaySource[]>([]);
+  const [activeSourceIndex, setActiveSourceIndex] = useState(0);
   const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [coverLoaded, setCoverLoaded] = useState(false);
@@ -34,8 +36,10 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
         const data = await getVideoDetail(video.vod_id, video.sourceId, video.sourceName);
         if (data) {
           setDetail(data);
-          const eps = parsePlayUrls(data.vod_play_url, data.vod_play_from);
-          setEpisodes(eps);
+          const srcs = parsePlaySources(data.vod_play_url, data.vod_play_from);
+          setSources(srcs);
+          setActiveSourceIndex(0);
+          setEpisodes(srcs[0]?.episodes ?? []);
         }
       } catch (error) {
         if (error instanceof SourceDeletedError) {
@@ -80,6 +84,13 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
     setFavorited(newState);
   };
 
+  // 切换播放线路（多线路源）：切换后更新当前线路的剧集
+  const handleSourceChange = (index: number) => {
+    if (index < 0 || index >= sources.length) return;
+    setActiveSourceIndex(index);
+    setEpisodes(sources[index]?.episodes ?? []);
+  };
+
   // 处理播放
   const handlePlay = (episodeIndex: number) => {
     const ep = episodes[episodeIndex];
@@ -103,7 +114,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
       
       // 关键：把标注源随 VideoItem 传给播放器，
       // 否则播放器拿到的 API 原始 detail 不带 sourceId，会退回用当前源拉详情
-      onPlay({ ...detail, sourceId, sourceName }, episodeIndex);
+      onPlay({ ...detail, sourceId, sourceName }, episodeIndex, activeSourceIndex);
     }
   };
 
@@ -241,6 +252,28 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
               )}
             </div>
             
+            {/* 播放线路（多线路源，$$$ 分隔时显示） */}
+            {sources.length > 1 && (
+              <div className="px-5 md:px-8 pt-4">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <span className="text-gray-500 text-xs flex-shrink-0">线路</span>
+                  {sources.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSourceChange(i)}
+                      className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-all flex-shrink-0 ${
+                        i === activeSourceIndex
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 选集 */}
             {episodes.length > 0 && (
               <div className="px-5 py-4 md:px-8 border-t border-white/5">

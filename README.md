@@ -266,7 +266,7 @@ Bismuth-Player/
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
 
 ### V9.8.0
-- ✨ Multi-line playback — `parsePlaySources` parses every `$$$` play source; detail & player pages show a "线路" switcher and carry the selected line through to playback (backup lines no longer dropped)
+- ✨ Multi-line playback — `parsePlaySources` parses every `$$$` play source (previously only the first one was used); detail & player pages show a "线路" switcher and carry the selected line through to playback
 - ✨ Customizable blocking keywords — replace the fixed ethics regex with a keyword list; each keyword is **fuzzy** (name contains it) or **exact** (regex match), applied to category & list filtering
 - 🐛 Fixed pagination count after filtering (`total` no longer overwritten) and fixed ethics filter leaking when categories were renamed
 - ⚡ Cache switched to LRU eviction — last-access tracked on hit, size cap (150 items / 3 MB) evicts least-recently-used entries
@@ -326,7 +326,7 @@ Bismuth-Player/
 - 🧹 Removed unused `CACHE_TTL.search` dead code
 
 ### V9.2
-- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator (only the first line was used at the time; full multi-line parsing and line switching landed in V9.8.0)
+- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator
 - 🐛 Fixed iOS Safari HLS event listener memory leak and error handler race condition
 - 🐛 Fixed `DetailPage` skeleton screen not resetting on video switch
 - 🐛 Fixed `PlayerPage` episode not syncing with prop

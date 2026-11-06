@@ -1,3 +1,10 @@
+/**
+ * SimPlayer — 内置播放器组件。
+ * 来源：https://github.com/Eq52/Sim-Player（上游 v2.1.0，2026-05-18）
+ * 本地适配：新增可选 prop `externalFullscreenRef`（v9.7.3），用于把全屏目标指向外层容器，
+ * 使提示气泡在全屏下可见、切换集数不退出全屏。
+ * 同步上游时请留意此差异；若整体替换为上游版本，需重新套回该 prop。
+ */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // 仅作类型使用：运行时改为按需动态加载（见下方 useEffect），首页首包不再包含播放器内核
 import type HlsType from 'hls.js';

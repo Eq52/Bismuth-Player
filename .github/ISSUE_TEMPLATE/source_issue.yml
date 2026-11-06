@@ -44,7 +44,7 @@ body:
       required: true
 
   - type: dropdown
-    id: client
+    id: platform
     attributes:
       label: 客户端
       options:

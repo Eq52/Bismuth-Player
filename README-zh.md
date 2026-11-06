@@ -9,7 +9,7 @@
 > Note:
 > 
 > 我已经有了新的更新计划，学业之余会尽量抽空继续更新。  
-> 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.0/Bismuth_9.8.0_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。  
+> 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.0/Bismuth_9.8.0_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。该 Windows 版本当前停留在 V9.5.0，功能落后于 Web / Android 版。  
 
 ---
 
@@ -330,7 +330,7 @@ Bismuth-Player/
 - 🧹 移除未使用的 `CACHE_TTL.search` 死代码
 
 ### V9.2
-- 🐛 修复 `parsePlayUrls` 不处理多播放源 `$$$` 分隔符的问题
+- 🐛 修复 `parsePlayUrls` 不处理多播放源 `$$$` 分隔符的问题（当时仅解析首个线路，完整多线路解析与线路切换在 V9.8.0 才实现）
 - 🐛 修复 iOS Safari HLS 事件监听器内存泄漏和错误处理器竞态条件
 - 🐛 修复 `DetailPage` 切换视频时骨架屏不重置
 - 🐛 修复 `PlayerPage` 集数不随 prop 同步的问题

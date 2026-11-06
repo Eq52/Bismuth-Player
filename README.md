@@ -7,7 +7,7 @@ English｜[简体中文](README-zh.md)
 ---
 
 > NOTE: 
-> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.0/Bismuth_9.8.0_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). 
+> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.0/Bismuth_9.8.0_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
 
 ---
 
@@ -326,7 +326,7 @@ Bismuth-Player/
 - 🧹 Removed unused `CACHE_TTL.search` dead code
 
 ### V9.2
-- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator
+- 🐛 Fixed `parsePlayUrls` not handling multi-source `$$$` separator (only the first line was used at the time; full multi-line parsing and line switching landed in V9.8.0)
 - 🐛 Fixed iOS Safari HLS event listener memory leak and error handler race condition
 - 🐛 Fixed `DetailPage` skeleton screen not resetting on video switch
 - 🐛 Fixed `PlayerPage` episode not syncing with prop

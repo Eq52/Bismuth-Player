@@ -1,0 +1,71 @@
+name: 播放源问题
+description: 某个影视源不可用、分类数量不对或播放失败
+title: "[源] "
+labels: ["source", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前建议先在浏览器直接打开该源 API（可在地址后加 `?ac=list`），确认源本身是否可用——
+        部分源会关停、限制访问或临时故障，这类问题不是客户端能修复的。
+
+  - type: input
+    id: source_url
+    attributes:
+      label: 源 API 地址
+      placeholder: https://example.com/api.php/provide/vod
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: 问题类型
+      options:
+        - 源完全不可用（搜不到 / 列表为空）
+        - 分类或列表只显示部分内容（如固定 20 条）
+        - 播放失败 / 视频无法加载
+        - 搜索异常
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: 客户端
+      options:
+        - Android APK（CORS 版）
+        - Android APK（普通版）
+        - Web 浏览器
+        - Windows 桌面壳（Bismuth Desktop）
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: api_check
+    attributes:
+      label: 浏览器直接访问源 API 是否正常
+      description: 在浏览器打开 API 地址（可加 ?ac=list），能返回 JSON 数据吗？
+      options:
+        - 能正常返回数据
+        - 打不开 / 报错 / 返回异常
+        - 未测试
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      placeholder: 补充具体情况，例如哪些分类受影响、是否有错误提示等
+    validations:
+      required: true
+
+  - type: input
+    id: screenshot
+    attributes:
+      label: 截图（可选）
+    validations:
+      required: false

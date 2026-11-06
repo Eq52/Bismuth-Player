@@ -1,0 +1,31 @@
+name: 功能建议
+description: 希望 Bismuth 增加或改进的功能
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: 功能描述
+      placeholder: 你希望增加什么功能？
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 使用场景 / 动机
+      description: 这个功能解决什么问题？在什么场景下会用到？
+    validations:
+      required: true
+
+  - type: dropdown
+    id: willing
+    attributes:
+      label: 是否愿意自己实现
+      options:
+        - 愿意提 PR
+        - 希望作者实现
+        - 都可以
+    validations:
+      required: false

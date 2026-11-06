@@ -1,0 +1,81 @@
+name: Bug 报告
+description: 使用 Bismuth 时遇到的错误或异常
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先搜索是否已有同类 issue，避免重复提交。
+        > 安全漏洞请勿在此公开报告。
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: 版本
+      description: 在「设置 → 关于」中可查看当前版本
+      options:
+        - 9.8.0
+        - 9.7.x
+        - 9.6.x 或更早
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 平台
+      options:
+        - Android APK（CORS 版）
+        - Android APK（普通版）
+        - Web 浏览器
+        - Windows 桌面壳（Bismuth Desktop）
+    validations:
+      required: true
+
+  - type: input
+    id: source_url
+    attributes:
+      label: 使用的播放源（可选）
+      description: 如果问题与特定源有关，请填写源 API 地址
+      placeholder: https://example.com/api.php/provide/vod
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 发生了什么？请把现象描述清楚
+      placeholder: 例如：进入详情页后点击播放没有反应……
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 一步步写出如何触发这个问题
+      placeholder: |
+        1. 打开……
+        2. 点击……
+        3. 出现……
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么？
+    validations:
+      required: false
+
+  - type: input
+    id: screenshot
+    attributes:
+      label: 截图 / 录屏（可选）
+      description: 可直接把图片拖进 issue 编辑框，或粘贴图片链接
+    validations:
+      required: false

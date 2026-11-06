@@ -6,8 +6,10 @@ dist/
 Demo/
 assets/
 
+# Distribution packages (release builds, distributed via Releases, never committed)
+*.zip
+
 # Root-level build artifacts (legacy)
-/index.html
 /icon-*.png
 /icon-*.svg
 

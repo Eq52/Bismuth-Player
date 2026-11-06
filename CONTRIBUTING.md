@@ -1,5 +1,13 @@
 # 贡献指南
 
+> **English summary** — Bismuth Player is maintained by a single author.
+> For larger changes (new features, refactors, behavior changes), please open an issue first to register what you plan to do; small fixes (docs, typos, obvious bugs) can go straight to a pull request.
+> Requirements: Node.js >= 20.19.0, with `npm install` / `npm run dev` / `npm run build` / `npm run lint` (`bun` works too).
+> Do not commit `dist/` or `*.zip`, and do not bump the version — the author handles versions and CHANGELOG at release time.
+> `src/components/SimPlayer.tsx` comes from [Eq52/Sim-Player](https://github.com/Eq52/Sim-Player) — explain any change to it in an issue first.
+> Licensed under Apache-2.0; submitting a PR means you agree to license your contribution under it.
+> Issues and PR descriptions may be written in English.
+
 感谢你愿意为 Bismuth Player 做出贡献。
 
 ## 先开 issue，再提交 PR

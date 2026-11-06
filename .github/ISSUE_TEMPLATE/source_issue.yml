@@ -18,6 +18,19 @@ body:
       required: true
 
   - type: dropdown
+    id: import_method
+    attributes:
+      label: 源的导入方式
+      description: 这个源是通过哪种方式添加的？
+      options:
+        - 手动填写
+        - 导入文件（JSON / 文本列表）
+        - 粘贴远程 https 链接
+        - 不确定
+    validations:
+      required: false
+
+  - type: dropdown
     id: issue_type
     attributes:
       label: 问题类型
@@ -68,6 +81,6 @@ body:
     attributes:
       label: 截图（可选）
       description: 直接把图片拖进这个编辑框即可上传，或粘贴图片链接
-      placeholder: 把截图拖到这里
+      placeholder: 把截图拖到这里，或直接粘贴、附上链接
     validations:
       required: false

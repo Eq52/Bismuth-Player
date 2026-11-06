@@ -3,3 +3,6 @@ contact_links:
   - name: 使用说明 / README
     url: https://github.com/Eq52/Bismuth-Player#readme
     about: 安装、源配置与常见问题请先阅读 README
+  - name: 下载最新版本（Releases）
+    url: https://github.com/Eq52/Bismuth-Player/releases/latest
+    about: 最新 Web 部署包、APK 与 Windows 版下载入口

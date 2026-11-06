@@ -105,14 +105,15 @@ Material Design version created by `Minimax Agent` : [View Here](https://agent.m
 - **External Player Support** - Fallback iframe-based player for custom player URLs
 - **Two-level Category Navigation** — Dynamic categories loaded from API with top-level tabs and sub-category chips (leveraging Apple CMS `type_pid` hierarchy)
 - **Favorites System** — ❤️ button on detail page to save favorites; dedicated Favorites tab with full management (view, play, remove, clear all)
-- **🔞 Ethics Content Filter** — Optional toggle in Video Source Settings to hide ethics categories and filter ethics videos from all lists
+- **Multi-Line Playback** — Automatically parses every `$$$` play source; detail and player pages let you switch lines, and the selected line carries through to playback
+- **Customizable Blocking Keywords** — Manage a keyword list in Video Source Settings; each keyword is fuzzy (name contains it) or exact (regex match), applied to both category and list filtering
 - **Search Function** - Quickly find the content you want
 - **Playback History** - Automatically tracks viewing progress with one-click continue (accessible via homepage top-right button)
 - **Episode Selection** - Clear episode selection interface with scrollable episode grid and current episode pulse highlight
 - **Auto-Play Next Episode** — Optional toggle in Player Settings; when an episode ends it counts down 3 seconds and switches to the next one (last episode never auto-plays), with an episode-switch toast that stays visible even in fullscreen
 
 ### 🚀 Performance Optimization
-- **API Caching** - Intelligent caching of API responses to reduce network requests
+- **API Caching (LRU)** - Intelligent caching with an LRU eviction policy (150 items / ~3 MB cap evicts least-recently-used entries), reducing network requests
 - **Lazy Image Loading** - Load images on demand to save bandwidth
 - **Skeleton Screen Loading** - Elegant loading state display
 - **Page Transition Animations** - Smooth transition effects

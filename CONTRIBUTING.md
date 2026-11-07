@@ -2,7 +2,7 @@
 
 > **English summary** — Bismuth Player is maintained by a single author.
 > For larger changes (new features, refactors, behavior changes), please open an issue first to register what you plan to do; small fixes (docs, typos, obvious bugs) can go straight to a pull request.
-> Requirements: Node.js >= 20.19.0, with `npm install` / `npm run dev` / `npm run build` / `npm run lint` (`bun` works too).
+> Requirements: Node.js >= 20.19.0, with `npm install` / `npm run dev` / `npm run build` / `npm run lint` / `npm test` (`bun` works too).
 > Do not commit `dist/` or `*.zip`, and do not bump the version — the author handles versions and CHANGELOG at release time.
 > `src/components/SimPlayer.tsx` comes from [Eq52/Sim-Player](https://github.com/Eq52/Sim-Player) — explain any change to it in an issue first.
 > Licensed under Apache-2.0; submitting a PR means you agree to license your contribution under it.
@@ -30,6 +30,7 @@ npm install      # 也可使用 bun install
 npm run dev      # 本地开发
 npm run build    # 生产构建（含 tsc 类型检查）
 npm run lint     # ESLint
+npm test         # 单元测试（Vitest）
 ```
 
 `npm run dev` 由浏览器直连影视源，容易被 CORS 拦截。请求失败时可尝试：
@@ -40,6 +41,7 @@ npm run lint     # ESLint
 ## 代码约定
 
 - TypeScript；不要新增类型错误或 ESLint 问题
+- 修改纯函数（解析、URL/代理规则等）时请同步补或改单元测试，`npm test` 会在 CI 中自动运行
 - 提交信息使用 `feat:` / `fix:` / `docs:` / `chore:` 前缀（可参考现有提交记录）
 - 一个 PR 只做一件事
 - 新增依赖或修改 `vite.config` 等构建配置前，请先在 issue 中说明理由

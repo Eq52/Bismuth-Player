@@ -56,6 +56,18 @@ body:
     validations:
       required: false
 
+  - type: dropdown
+    id: local_source
+    attributes:
+      label: 源地址是否本地或内网
+      description: 9.8.1 起，localhost / 127.x / 192.168.x 等本地或内网地址不走 CORS 代理
+      options:
+        - 是，本地或内网地址（如 127.0.0.1、192.168.x.x）
+        - 否，公网地址
+        - 不确定
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:

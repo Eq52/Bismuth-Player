@@ -11,6 +11,7 @@ import { VideoSourcePage } from '@/pages/settings/VideoSourcePage';
 import { PlayerSettingsPage } from '@/pages/settings/PlayerSettingsPage';
 import { CorsProxyPage } from '@/pages/settings/CorsProxyPage';
 import { CacheSettingsPage } from '@/pages/settings/CacheSettingsPage';
+import { StatsPage } from '@/pages/settings/StatsPage';
 import { AboutPage } from '@/pages/settings/AboutPage';
 import { DetailPage } from '@/pages/DetailPage';
 import { PlayerPage } from '@/pages/PlayerPage';
@@ -358,6 +359,8 @@ function App() {
                     return <VideoSourcePage onBack={handleBackToSettings} />;
                   case 'player':
                     return <PlayerSettingsPage onBack={handleBackToSettings} />;
+                  case 'stats':
+                    return <StatsPage onBack={handleBackToSettings} />;
                   case 'cors':
                     return <CorsProxyPage onBack={handleBackToSettings} />;
                   case 'cache':

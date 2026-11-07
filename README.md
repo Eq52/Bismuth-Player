@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -264,6 +264,12 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.2
+- ✨ On phones, swipe the video surface to adjust brightness (left) or volume (right), and drag horizontally to seek
+- ✨ The next episode is preloaded ahead of time, so switching episodes starts playback faster
+- ✨ Watch time is now tracked locally — total and per-video viewing time is available from a new stats page in settings
+- 🐛 Titles with no rating no longer show a star row with a score of zero
 
 ### V9.8.1
 - ✨ Settings changes take effect immediately, no restart needed

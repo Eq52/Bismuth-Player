@@ -173,7 +173,7 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
                   <div>
                     <h2 className="text-white text-lg font-bold mb-2 leading-tight">{displayData.vod_name}</h2>
                     
-                    {displayData.vod_score && (
+                    {Number(displayData.vod_score) > 0 && (
                       <div className="flex items-center mb-3">
                         <Star size={14} className="text-yellow-500 fill-yellow-500 mr-1" />
                         <span className="text-yellow-500 font-medium">{displayData.vod_score}</span>

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError } from '@/services/api';
-import { usePlayerSettings, addPlayHistory, getPlayHistory, updatePlayHistoryProgress, clearAllPlayProgress } from '@/services/storage';
+import { usePlayerSettings, addPlayHistory, getPlayHistory, updatePlayHistoryProgress, clearAllPlayProgress, addWatchSeconds, recordPlay } from '@/services/storage';
 import { isDesktopMode, desktopMediaUrl } from '@/services/desktop';
 import { usePlaySources } from '@/hooks/usePlaySources';
+import { usePreloadNext } from '@/hooks/usePreloadNext';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
 import type { VideoItem } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
@@ -114,6 +115,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
         if (data) {
           setDetail(data);
           initSources(parsePlaySources(data.vod_play_url, data.vod_play_from), initialSourceIndex);
+          recordPlay(data.vod_id); // 首次进入记录一次播放动作
         }
       } catch (error) {
         if (error instanceof SourceDeletedError) {
@@ -153,8 +155,9 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
       clearAutoNextTimer(); // 手动切换集数时取消连播倒计时
       showEpisodeHint(`正在播放：第${index + 1}集${episodes[index]?.name ? ' · ' + episodes[index].name : ''}`);
       setCurrentEpisode(index);
-      
+
       if (detail) {
+        recordPlay(detail.vod_id); // 记录一次播放动作（统计）
         // 历史标注沿用本次实际使用的源：优先条目标注源，兼容老数据用当前源
         const source = getCurrentSource();
         addPlayHistory({
@@ -208,10 +211,21 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
     updatePlayHistoryProgress(video.vod_id, activeSourceId, currentTime, currentEpisode);
   }, [video.vod_id, activeSourceId, currentEpisode]);
 
+  // 实际观看秒数上报：累计观看统计（每 3 秒，仅播放中）
+  const handleWatchTick = useCallback((seconds: number) => {
+    addWatchSeconds(seconds, video.vod_id, video.vod_name);
+  }, [video.vod_id, video.vod_name]);
+
   // 清除全部播放进度（右键菜单「删除播放缓存」；toast 由 SimPlayer 负责）
   const handleClearProgress = useCallback(() => {
     clearAllPlayProgress();
   }, []);
+
+  // 预加载下一集（开关在播放器设置；最后一集无下一集时为 undefined）
+  const nextEpisodeUrl = playerSettings.preloadNext
+    ? episodes[currentEpisode + 1]?.url
+    : undefined;
+  usePreloadNext(nextEpisodeUrl);
 
   return (
     <div className="h-full flex flex-col bg-base">
@@ -261,6 +275,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
                 initialProgress={initialProgress}
                 onProgress={handleProgress}
                 onClearProgress={handleClearProgress}
+                onWatchTick={handleWatchTick}
               />
             ) : (
               <iframe
@@ -361,7 +376,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
                     onClick={() => changeEpisode(index)}
                     className={`text-xs py-2.5 px-1 rounded-xl transition-all truncate ${
                       index === currentEpisode
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium episode-current'
+                        ? 'bi-accent-gradient text-white font-medium episode-current'
                         : 'bg-elevated text-gray-400 hover:bg-elevated border border-white/5'
                     }`}
                   >

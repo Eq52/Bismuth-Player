@@ -1,4 +1,4 @@
-import type { PlayHistory, PlayerSettings, CacheSettings, FavoriteItem } from '@/types';
+import type { PlayHistory, PlayerSettings, CacheSettings, FavoriteItem, WatchStats } from '@/types';
 import { createStorageStore, notifyStorageChange } from '@/services/store';
 
 const HISTORY_KEY = 'bismuth_history';
@@ -181,6 +181,7 @@ export function getDefaultPlayerSettings(): PlayerSettings {
     playerUrl: 'https://ericq521.web.app/ckplayer/?v=',
     autoResume: true,
     autoNext: false,
+    preloadNext: true,
     blockEthics: false,
     // 默认屏蔽词表（模糊匹配）：覆盖常见的伦理/成人分类标签
     blockKeywords: [
@@ -431,3 +432,73 @@ export const useFavorites = createStorageStore(
   getFavorites,
   () => { throw new Error('收藏写入请使用 addFavorite/removeFavorite/toggleFavorite'); },
 ).useValue;
+
+// ========== 观看统计（本地累计，不上传） ==========
+
+const WATCH_STATS_KEY = 'bismuth_watch_stats';
+
+function getDefaultWatchStats(): WatchStats {
+  return { totalSeconds: 0, videoCount: 0, playCount: 0, daily: {}, perVideo: {}, seenVodIds: [], lastUpdated: 0 };
+}
+
+// 日期键，本地时区 YYYY-MM-DD
+function dayKey(d: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+export function getWatchStats(): WatchStats {
+  const raw = localStorage.getItem(WATCH_STATS_KEY);
+  if (raw) {
+    try {
+      return { ...getDefaultWatchStats(), ...JSON.parse(raw) };
+    } catch {
+      return getDefaultWatchStats();
+    }
+  }
+  return getDefaultWatchStats();
+}
+
+// 统计 store：局部通知用，不打扰其他 store 的订阅者
+const watchStatsStore = createStorageStore(
+  WATCH_STATS_KEY,
+  getWatchStats,
+  () => { throw new Error('统计写入请使用 addWatchSeconds/recordPlay/resetWatchStats'); },
+);
+export const useWatchStats = watchStatsStore.useValue;
+
+// 记录实际播放秒数（SimPlayer 每 3 秒上报，仅在播放中），按当天与视频累计
+export function addWatchSeconds(seconds: number, vodId: number, vodName: string): void {
+  if (seconds <= 0) return;
+  const s = getWatchStats();
+  s.totalSeconds += seconds;
+  const day = dayKey();
+  s.daily[day] = (s.daily[day] || 0) + seconds;
+  const key = String(vodId);
+  const pv = s.perVideo[key] || { name: vodName, seconds: 0 };
+  pv.name = vodName;
+  pv.seconds += seconds;
+  s.perVideo[key] = pv;
+  s.lastUpdated = Date.now();
+  localStorage.setItem(WATCH_STATS_KEY, JSON.stringify(s));
+  watchStatsStore.notify(); // 仅刷新统计 store，统计页挂载时实时更新
+}
+
+// 记录一次播放动作（进入播放器/切集），新视频计入 videoCount
+export function recordPlay(vodId: number): void {
+  const s = getWatchStats();
+  const key = String(vodId);
+  s.playCount += 1;
+  if (!s.seenVodIds.includes(key)) {
+    s.seenVodIds.push(key);
+    s.videoCount += 1;
+  }
+  s.lastUpdated = Date.now();
+  localStorage.setItem(WATCH_STATS_KEY, JSON.stringify(s));
+  watchStatsStore.notify();
+}
+
+export function resetWatchStats(): void {
+  localStorage.removeItem(WATCH_STATS_KEY);
+  watchStatsStore.notify();
+}

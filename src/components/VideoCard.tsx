@@ -140,7 +140,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
       </div>
       <div className="p-2.5">
         <h3 className="text-white text-sm font-medium truncate group-hover:text-purple-400 transition-colors">{video.vod_name}</h3>
-        {video.vod_score && (
+        {Number(video.vod_score) > 0 && (
           <div className="flex items-center mt-1.5">
             <Star size={12} className="text-yellow-500 fill-yellow-500" />
             <span className="text-yellow-500 text-xs ml-1 font-medium">{video.vod_score}</span>

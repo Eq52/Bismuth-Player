@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // 仅作类型使用：运行时改为按需动态加载（见下方 useEffect），首页首包不再包含播放器内核
 import type HlsType from 'hls.js';
 import { toast } from '@/hooks/use-toast';
+import { usePlayerGestures } from '@/hooks/usePlayerGestures';
 import { isDesktopMode } from '@/services/desktop';
 import {
   Play,
@@ -27,6 +28,7 @@ import {
   Camera,
   Keyboard,
   Trash2,
+  Sun,
   X,
 } from 'lucide-react';
 
@@ -46,6 +48,8 @@ interface SimPlayerProps {
   onProgress?: (currentTime: number, duration: number) => void;
   /** 清除全部播放进度（右键菜单「删除播放缓存」），由父级统一处理历史记录 */
   onClearProgress?: () => void;
+  /** 实际播放秒数上报（每 3 秒、仅播放中），用于观看统计 */
+  onWatchTick?: (seconds: number) => void;
   onVideoInfo?: (info: { width: number; height: number; duration: number; format: string }) => void;
   onError?: (error: string) => void;
 }
@@ -94,7 +98,7 @@ interface VideoParams {
   buffered: number;
 }
 
-export default function SimPlayer({ src, title, poster, fillContainer, externalFullscreenRef, autoResume = true, initialProgress = 0, onProgress, onClearProgress, onVideoInfo, onError }: SimPlayerProps) {
+export default function SimPlayer({ src, title, poster, fillContainer, externalFullscreenRef, autoResume = true, initialProgress = 0, onProgress, onClearProgress, onWatchTick, onVideoInfo, onError }: SimPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<HlsType | null>(null);
@@ -135,6 +139,9 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
   const resumePromptShownRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const isDraggingRef = useRef(false);
+
+  // 移动端手势（亮度/音量/进度），反馈浮层见下方 JSX
+  const gesture = usePlayerGestures(videoRef, containerRef);
 
   const format = useMemo(() => detectFormat(src), [src]);
 
@@ -290,7 +297,12 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
     const onPlay = () => { setIsPlaying(true); setIsPaused(false); if (!hasEverPlayed) { setHasEverPlayed(true); setCoverFading(true); setTimeout(() => setCoverFading(false), 500); } };
     const onPause = () => { setIsPlaying(false); setIsPaused(true); };
     const onTimeUpdate = () => { setCurrentTime(video.currentTime); if (video.buffered.length > 0) setBuffered(video.buffered.end(video.buffered.length - 1)); };
-    const saveTimer = setInterval(() => { if (!video.paused && video.currentTime > 0) saveProgress(video.currentTime); }, 3000);
+    const saveTimer = setInterval(() => {
+      if (!video.paused && video.currentTime > 0) {
+        saveProgress(video.currentTime);
+        onWatchTick?.(3); // 实际播放秒数，观看统计用
+      }
+    }, 3000);
     const onDurationChange = () => setDuration(video.duration);
     const onWaiting = () => setIsBuffering(true);
     const onPlaying = () => setIsBuffering(false);
@@ -340,7 +352,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
-  }, [onVideoInfo, format, saveProgress, loadProgress, src, autoResume]);
+  }, [onVideoInfo, format, saveProgress, loadProgress, src, autoResume, onWatchTick]);
 
   useEffect(() => { const v = videoRef.current; if (v) v.playbackRate = playbackRate; }, [playbackRate]);
 
@@ -600,6 +612,34 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
       {isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20 pointer-events-none">
           <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400 animate-spin" />
+        </div>
+      )}
+
+      {/* 手势反馈浮层（亮度/音量/进度） */}
+      {gesture.type && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+          <div className="bi-glass-pop rounded-2xl px-5 py-4 flex flex-col items-center gap-1.5 min-w-[112px]">
+            {gesture.type === 'seek' ? (
+              <>
+                <span className="text-white text-sm font-mono">{formatTime(gesture.targetTime)}</span>
+                <span className="text-[10px] text-gray-400 font-mono">
+                  {formatTime(gesture.baseTime)} → {formatTime(gesture.targetTime)}
+                </span>
+              </>
+            ) : gesture.type === 'volume' ? (
+              <>
+                {gesture.value === 0
+                  ? <VolumeX size={22} className="text-white" />
+                  : <Volume2 size={22} className="text-white" />}
+                <span className="text-white text-sm font-medium">{Math.round(gesture.value * 100)}%</span>
+              </>
+            ) : (
+              <>
+                <Sun size={22} className="text-white" />
+                <span className="text-white text-sm font-medium">{Math.round(gesture.value * 100)}%</span>
+              </>
+            )}
+          </div>
         </div>
       )}
 

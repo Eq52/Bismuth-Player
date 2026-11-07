@@ -154,6 +154,18 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
                 onCheckedChange={(checked) => updatePlayerSettings({ ...playerSettings, autoNext: checked })}
               />
             </div>
+
+            {/* 预加载下一集 */}
+            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+              <div>
+                <p className="text-white text-sm">预加载下一集</p>
+                <p className="text-gray-500 text-xs">提前连接并缓冲下一集开头，切集起播更快（仅取少量数据）</p>
+              </div>
+              <Switch
+                checked={playerSettings.preloadNext === true}
+                onCheckedChange={(checked) => updatePlayerSettings({ ...playerSettings, preloadNext: checked })}
+              />
+            </div>
           </div>
 
           {/* 说明 */}

@@ -70,6 +70,8 @@ export interface PlayerSettings {
   playerUrl: string;
   autoResume: boolean;
   autoNext: boolean;
+  /** 是否预加载下一集（preconnect + metadata 预取，默认开启） */
+  preloadNext: boolean;
   blockEthics: boolean;
   /** 屏蔽关键词表：fuzzy=包含即匹配；exact=正则完全匹配 */
   blockKeywords: BlockKeyword[];
@@ -91,6 +93,23 @@ export interface PlaySource {
 // 缓存设置
 export interface CacheSettings {
   enabled: boolean;
+}
+
+// 观看统计（本地累计，不上传）
+export interface WatchStats {
+  /** 累计观看秒数 */
+  totalSeconds: number;
+  /** 看过的不同视频数 */
+  videoCount: number;
+  /** 播放动作次数（每次进入/切集播放） */
+  playCount: number;
+  /** 按日期（YYYY-MM-DD）的观看秒数 */
+  daily: Record<string, number>;
+  /** 按视频的观看秒数 */
+  perVideo: Record<string, { name: string; seconds: number }>;
+  /** 已计入 videoCount 的视频 ID（去重用） */
+  seenVodIds: string[];
+  lastUpdated: number;
 }
 
 // 应用设置

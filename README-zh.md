@@ -18,7 +18,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.1-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.2-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -267,6 +267,12 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.2
+- ✨ 手机上在画面滑动即可调节亮度（左）、音量（右），横向滑动可拖动进度
+- ✨ 提前缓冲下一集，切换集数时起播更快
+- ✨ 本地记录观看时长，可在设置的统计页查看累计与各影片时长
+- 🐛 没有评分的影片不再显示挂着 0 分的星星行
 
 ### V9.8.1
 - ✨ 设置改完立刻生效，不用重启

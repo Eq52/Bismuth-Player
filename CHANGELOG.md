@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.2] - 2026-11-08
+
+### ✨ New Features
+
+- ✨ Added **mobile player gestures** (`usePlayerGestures.ts`, wired into `SimPlayer`) — a single-finger touch on the video surface is interpreted by region and direction: vertical drag on the **left half** adjusts brightness (the browser cannot touch system brightness, so a CSS `filter: brightness()` is applied, clamped 0.2–1.5), vertical drag on the **right half** adjusts `video.volume` (0–1, also toggles `muted` at zero), and a **horizontal** drag seeks from the playback position at gesture start (full container width maps to the whole duration). Movement past a 10 px threshold is required so a plain tap is not treated as a gesture; `touchmove` is cancelled with `preventDefault` to stop page scrolling, and once a gesture is decided the synthesized `click` is intercepted at the container capture phase so it never toggles play/pause/fullscreen. A centered glass overlay shows the target time (with `base → target`) or the volume/brightness percentage while dragging
+- ✨ Added **next-episode preloading** (`usePreloadNext.ts`) — while an episode plays, a `rel=preconnect` link is injected for the next episode's origin (early DNS/TLS) and a hidden 1px, muted `<video preload="metadata">` is created for its URL so the manifest/headers are fetched without downloading the whole segment or autoplaying. For HLS streams the hidden video only loads the playlist; the actual segments are still pulled by hls.js after the switch. A new `preloadNext` player setting (default `true`) gates it, the last episode passes `undefined` (nothing is preloaded), and every element/link is torn down on cleanup
+- ✨ Added **watch statistics** — a new `WatchStats` model (`totalSeconds`, distinct `videoCount`, `playCount`, per-day and per-video seconds) is persisted under `bismuth_watch_stats`. `SimPlayer` gains an `onWatchTick` prop fired from its existing 3-second save timer only while actually playing (so seeks cannot inflate the count); `PlayerPage` feeds it through `addWatchSeconds` and calls `recordPlay` on entry and episode switch (deduped via a `seenVodIds` set). A new `StatsPage` reachable from the settings home shows total/today duration, video and play counts, a per-video ranking and a reset action, and everything stays on-device
+- ✨ Added a **"watch stats" entry** to the settings home (now seven entries) and a **preload toggle** to the player settings page
+
+### 🔧 Changed
+
+- 🔧 **Zero/empty ratings are now hidden** — `VideoCard` and `DetailPage` gate the rating row on `Number(vod_score) > 0` instead of the truthy `vod_score`, so Apple-CMS sources that return the string `"0"` / `"0.0"` (a non-empty, truthy string) no longer render a star row showing a score of zero
+- 🔧 Refactored the storage subscription layer (`store.ts`) — each `createStorageStore` instance now owns its own listener set and snapshot cache instead of sharing one global map, and exposes a `notify()` that refreshes only that store. High-frequency `addWatchSeconds` writes therefore update just the stats store without re-rendering unrelated subscribers, while `notifyStorageChange` and the cross-tab `storage` event still fan out to every store
+- 🔧 Replaced the remaining hardcoded indigo gradient on the current-episode button in `PlayerPage` with the shared `bi-accent-gradient`
+
 ## [9.8.1] - 2026-11-07
 
 ### ✨ New Features

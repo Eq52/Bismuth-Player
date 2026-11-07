@@ -1,4 +1,4 @@
-import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette } from 'lucide-react';
+import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette, BarChart3 } from 'lucide-react';
 import { useCorsProxyList, useCorsProxyEnabled } from '@/services/storage';
 import { getCacheStats } from '@/services/cache';
 
@@ -6,7 +6,7 @@ import { getCacheStats } from '@/services/cache';
 const APP_VERSION = __APP_VERSION__;
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
-export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'cors' | 'cache' | 'about';
+export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'stats' | 'cors' | 'cache' | 'about';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -97,6 +97,23 @@ export function SettingsPage({ onBack, onSubPageChange }: SettingsPageProps) {
                 <div className="min-w-0">
                   <p className="text-white text-sm">播放器</p>
                   <p className="text-gray-500 text-xs">播放模式与功能设置</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />
+            </button>
+
+            {/* 观看统计 */}
+            <button
+              onClick={() => handleSubPage('stats')}
+              className="w-full flex items-center px-4 py-3.5 hover:bg-white/[0.02] transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 size={16} className="text-sky-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-sm">观看统计</p>
+                  <p className="text-gray-500 text-xs">本地累计的观看时长</p>
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />

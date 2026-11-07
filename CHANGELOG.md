@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.1] - 2026-11-07
+
+### ✨ New Features
+
+- ✨ Added an **update dialog** to the About page — when a newer release is found, a Radix dialog opens showing the new version, publish date, the release body and, for every uploaded asset, a **copy-link** button (with a short "已复制" confirmation). Falls back to copying the release page URL when a release carries no assets. The check itself is still manual, unchanged
+- ✨ Added a **zero-dependency Markdown renderer** (`Markdown.tsx`) for release notes — supports headings, unordered lists, bold, inline code and links, renders straight to React elements (raw HTML is never parsed) and only allows `http(s)` link targets, so it cannot be used for XSS. Chosen over `react-markdown` (34 KB gzip + 11 transitive deps) and `marked` (14.6 KB but HTML-string output) because it runs in a single dialog
+- ✨ Added a **storage subscription layer** (`store.ts`) — `createStorageStore` wraps `useSyncExternalStore` with a listener registry, a snapshot cache (stable references for `getSnapshot`) and a manual `notifyStorageChange` for same-tab `setItem` calls, which never fire a `storage` event; cross-tab sync still comes from the native `storage` listener. `storage.ts` now exposes `usePlayerSettings` / `useCacheSettings` / `useCorsProxyList` / `useCorsProxyEnabled` / `usePlayHistory` / `useFavorites`, and every settings page subscribes instead of reading once on mount
+- ✨ Added `usePlaySources` — a hook owning `sources` / `activeSourceIndex` / `episodes` plus `initSources` (with out-of-range clamping) and `changeSource`; `DetailPage` and `PlayerPage` both use it, and `PlayerPage` wraps `changeSource` to reset the episode, clear auto-next and show a hint
+- ✨ Added **list virtualization** (`VirtualGrid.tsx`, powered by `@tanstack/react-virtual`) — rows are virtualized with `measureElement` for exact row heights and `overscroll` anchoring; column count and gaps follow the same Tailwind breakpoints as the old grid (3→10 columns, 12→20 px gaps), and the scroll container is owned by the caller. `HomePage`'s grid now mounts only the visible rows
+- ✨ Added **proxy bypass for local/intranet URLs** (`net.ts` → `isLocalOrPrivateUrl`) — `localhost`, `127.x`, `[::1]`, `*.local` and the `10.` / `192.168.` / `172.16–31.` / `169.254.` ranges skip the CORS proxy in both `buildUrl` and `fetchWithRetry`. Malformed URLs return `false` (proxy keeps applying) rather than being assumed local
+- ✨ Added a **configurable history limit** — `getHistoryLimit` / `setHistoryLimit` backed by an independent key (default 50); `addPlayHistory` trims to that limit, and the History page gained a gear button with a 20 / 50 / 100 / 200 picker
+- ✨ Added **storage schema versioning** (`migrate.ts`) — `bismuth_schema_version` plus a table of adjacent-version migration functions (currently empty, with a documented example); unversioned legacy data is treated as version 0. `runStorageMigrations` runs in `main.tsx` before React renders, and one failing migration never blocks the version write
+- ✨ Added **Vitest** with `npm test` / `npm run test:watch` — 22 unit tests over pure helpers (source parsing, URL/proxy rules), running in the `node` environment with no extra config
+
+### 🔧 Changed
+
+- 🔧 **`SimPlayer` is now a proper Bismuth citizen** — new optional props `autoResume`, `initialProgress`, `onProgress` and `onClearProgress`; the component no longer imports `getPlayerSettings` and no longer owns the `bismuth_progress_*` keys. Progress is reported upward and seeded back in, so the built-in player and the rest of the app share one history record instead of maintaining a parallel one. Backward compatible: every new prop has a default
+- 🔧 Player settings changed at runtime now apply immediately — the built-in player reads `autoResume` / `initialProgress` through props instead of a one-time module read (P1#9)
+- 🔧 Version metadata in the UI is read from a single `__APP_VERSION__` define instead of three hardcoded fallbacks
+
+### 🧹 Cleanup
+
+- 🧹 User-facing `alert()` calls replaced with the existing toast system (5 call sites)
+- 🧹 Removed ~185 lines of dead CSS and dead code across 18 files; `App.css` went from 535 to 368 lines
+- 🧹 ESLint went from 33 problems (30 errors) to **0** — `SimPlayer` keeps an scoped override for code that was intentionally left untouched, and `VirtualGrid` carries a targeted disable for `react-hooks/incompatible-library` (`useVirtualizer` returns a function that cannot be memoized safely, so React Compiler skips that component)
+- 🧹 Production builds now strip `console.log` / `console.debug` while keeping `console.error` / `console.warn` for on-device diagnostics
+- 🧹 Updated Browserslist targets; raised `chunkSizeWarningLimit` to 600 so the intentional 522 KB on-demand hls chunk no longer warns while oversized chunks still do
+
+### 📦 Maintenance
+
+- 📦 Version metadata bumped to 9.8.1 across `package.json`, `package-lock.json`, the in-app version display and the README version badges
+- 📦 `vite.config.ts` accepts a `BISMUTH_VERSION` environment override for local test builds; it defaults to `package.json`
+
 ## [9.8.0] - 2026-11-01
 
 ### ✨ New Features

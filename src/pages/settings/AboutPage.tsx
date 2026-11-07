@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react';
-import { ArrowLeft, Info, Check, AlertCircle, RefreshCw, ExternalLink, Download, Github } from 'lucide-react';
+import { ArrowLeft, Info, Check, AlertCircle, RefreshCw, ExternalLink, Download, Github, Copy } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Markdown } from '@/components/Markdown';
 
 interface AboutPageProps {
   onBack: () => void;
 }
 
-// 从 Vite define 注入的版本号（类型声明见 env.d.ts）
-const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.8.0';
+// 从 Vite define 注入的版本号（类型声明见 env.d.ts），发版只需更新 package.json
+const APP_VERSION = __APP_VERSION__;
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
 // 比较语义版本号，返回 >0 表示 a 更新
@@ -22,19 +24,62 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+interface GithubAsset {
+  name: string;
+  browser_download_url: string;
+}
+
 interface GithubRelease {
   tag_name: string;
   name: string;
   html_url: string;
   body: string;
   published_at: string;
+  assets: GithubAsset[];
 }
 
 type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'error';
 
+// 复制文本：优先剪贴板 API，失败回退到 execCommand
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* 落入下方兜底 */
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 export function AboutPage({ onBack }: AboutPageProps) {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [latestRelease, setLatestRelease] = useState<GithubRelease | null>(null);
+  // 更新弹窗与“已复制”反馈
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [copiedName, setCopiedName] = useState<string | null>(null);
+
+  // 复制某个下载链接，并短暂显示“已复制”
+  const handleCopy = useCallback(async (name: string, url: string) => {
+    const ok = await copyToClipboard(url);
+    if (ok) {
+      setCopiedName(name);
+      setTimeout(() => setCopiedName(cur => (cur === name ? null : cur)), 1800);
+    }
+  }, []);
 
   // 检测最新版本
   const handleCheckUpdate = useCallback(async () => {
@@ -46,7 +91,9 @@ export function AboutPage({ onBack }: AboutPageProps) {
       const data: GithubRelease = await resp.json();
       setLatestRelease(data);
       const cmp = compareVersions(data.tag_name, APP_VERSION);
-      setUpdateStatus(cmp > 0 ? 'update-available' : 'up-to-date');
+      const hasUpdate = cmp > 0;
+      setUpdateStatus(hasUpdate ? 'update-available' : 'up-to-date');
+      if (hasUpdate) setUpdateDialogOpen(true); // 发现新版本，弹窗展示
     } catch (err) {
       console.error('检查更新失败:', err);
       setUpdateStatus('error');
@@ -108,27 +155,13 @@ export function AboutPage({ onBack }: AboutPageProps) {
             )}
 
             {updateStatus === 'update-available' && latestRelease && (
-              <div className="mt-2.5 p-3 bg-indigo-500/10 border border-indigo-500/15 rounded-xl space-y-2">
-                <div className="flex items-center gap-2">
-                  <Download size={14} className="text-indigo-400 shrink-0" />
-                  <span className="text-indigo-300/90 text-xs font-medium">发现新版本 {latestRelease.tag_name}</span>
-                </div>
-                <p className="text-gray-500 text-[11px] leading-relaxed pl-5.5">
-                  {latestRelease.name || latestRelease.tag_name}
-                  {latestRelease.published_at && (
-                    <> · 发布于 {new Date(latestRelease.published_at).toLocaleDateString('zh-CN')}</>
-                  )}
-                </p>
-                <a
-                  href={latestRelease.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 pl-5.5 text-indigo-400 hover:text-indigo-300 text-xs transition-colors"
-                >
-                  <ExternalLink size={12} />
-                  查看发布详情
-                </a>
-              </div>
+              <button
+                onClick={() => setUpdateDialogOpen(true)}
+                className="w-full mt-2.5 flex items-center justify-center gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-300/90 text-xs font-medium hover:bg-purple-500/15 transition-colors"
+              >
+                <Download size={14} className="shrink-0" />
+                发现新版本 {latestRelease.tag_name}，点击查看
+              </button>
             )}
 
             {updateStatus === 'error' && (
@@ -160,6 +193,64 @@ export function AboutPage({ onBack }: AboutPageProps) {
           </a>
         </div>
       </div>
+
+      {/* 更新详情弹窗：版本号 + 更新内容 + 下载链接复制 */}
+      <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download size={17} className="text-purple-400" />
+              发现新版本 {latestRelease?.tag_name}
+            </DialogTitle>
+            <DialogDescription>
+              {latestRelease?.published_at &&
+                `发布于 ${new Date(latestRelease.published_at).toLocaleDateString('zh-CN')}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* 更新内容（轻量 Markdown 渲染），限高可滚动 */}
+          <div className="max-h-[42vh] overflow-y-auto overscroll-contain pr-1">
+            {latestRelease?.body
+              ? <Markdown content={latestRelease.body} />
+              : <p className="text-[11px] text-gray-500">暂无更新说明</p>}
+          </div>
+
+          {/* 下载链接：Release 资产逐个可复制；无资产时回退发布页链接 */}
+          <div className="space-y-1.5 border-t border-white/5 pt-3">
+            {latestRelease && latestRelease.assets.length > 0 ? (
+              latestRelease.assets.map(asset => (
+                <div key={asset.name} className="flex items-center gap-2">
+                  <span className="flex-1 text-[11px] text-gray-300 truncate">{asset.name}</span>
+                  <button
+                    onClick={() => handleCopy(asset.name, asset.browser_download_url)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 transition-colors shrink-0"
+                  >
+                    {copiedName === asset.name ? (
+                      <><Check size={12} className="text-green-400" />已复制</>
+                    ) : (
+                      <><Copy size={12} />复制链接</>
+                    )}
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="flex-1 text-[11px] text-gray-400">发布页链接</span>
+                <button
+                  onClick={() => handleCopy('release', latestRelease?.html_url ?? '')}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 transition-colors shrink-0"
+                >
+                  {copiedName === 'release' ? (
+                    <><Check size={12} className="text-green-400" />已复制</>
+                  ) : (
+                    <><Copy size={12} />复制链接</>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

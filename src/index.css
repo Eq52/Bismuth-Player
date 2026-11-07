@@ -144,6 +144,16 @@
     );
   }
 
+  /* 通用强调渐变：按钮/进度条/选中态统一，随主题 --bi-logo-* 换色。
+     取 from/via 两色，默认视觉等同历史的 indigo→purple 两色渐变，消除硬编码 indigo */
+  .bi-accent-gradient {
+    background-image: linear-gradient(
+      to right,
+      rgb(var(--bi-logo-from, 99 102 241)),
+      rgb(var(--bi-logo-via, 168 85 247))
+    );
+  }
+
   /* ── 玻璃拟态体系：模态/浮层/通知/导航统一质感 ──
      用法：挂玻璃类的同时必须删掉元素上旧的 bg-*、border、shadow-*、backdrop-blur-* 工具类，
      utilities 层优先级高于 components 层，残留旧类会盖掉玻璃底。 */

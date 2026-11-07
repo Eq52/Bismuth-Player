@@ -147,13 +147,8 @@ function PageTransition({
   viewKey: string;
   type?: ViewType;
 }) {
-  const [animationClass, setAnimationClass] = useState('');
-  
-  useEffect(() => {
-    // 根据类型选择不同的动画
-    const animationType = type === 'list' ? 'page-slide-in' : 'page-slide-up';
-    setAnimationClass(animationType);
-  }, [viewKey, type]);
+  // 动画类完全由 type 派生，渲染期间直接计算，无需 state 与 effect
+  const animationClass = type === 'list' ? 'page-slide-in' : 'page-slide-up';
 
   return (
     <div className={`h-full w-full ${animationClass}`} key={viewKey}>

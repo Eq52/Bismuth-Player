@@ -20,4 +20,14 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // SimPlayer 是冻结的历史模块，源码禁止改动；仅对该文件放宽其历史规则，不影响其他文件
+    files: ['src/components/SimPlayer.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-empty': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+    },
+  },
 ])

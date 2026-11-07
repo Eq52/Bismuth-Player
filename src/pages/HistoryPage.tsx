@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Trash2, Play, Film, ArrowLeft, CloudOff } from 'lucide-react';
-import { getPlayHistory, clearPlayHistory, removePlayHistory } from '@/services/storage';
+import { useState } from 'react';
+import { Trash2, Play, Film, ArrowLeft, CloudOff, Settings2 } from 'lucide-react';
+import { usePlayHistory, clearPlayHistory, removePlayHistory, getHistoryLimit, setHistoryLimit } from '@/services/storage';
 import { getSources } from '@/services/api';
 import type { PlayHistory, VideoItem } from '@/types';
+
+// 历史条数预设（用户可在历史页快速切换）
+const HISTORY_LIMIT_OPTIONS = [20, 50, 100, 200];
 
 interface HistoryPageProps {
   onVideoClick: (video: VideoItem) => void;
@@ -11,17 +14,17 @@ interface HistoryPageProps {
 }
 
 export function HistoryPage({ onVideoClick, onContinuePlay, onBack }: HistoryPageProps) {
-  const [history, setHistory] = useState<PlayHistory[]>([]);
-  const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
-
-  // 加载历史记录
-  useEffect(() => {
-    setHistory(getPlayHistory());
-    // 源名反查表（老数据无 sourceName 时 fallback 显示）
+  // 订阅历史：变更实时反映（P1#9 统一方向）
+  const history = usePlayHistory();
+  // 历史条数设置面板
+  const [showLimitPanel, setLimitPanel] = useState(false);
+  const historyLimit = getHistoryLimit();
+  // 源名反查表（老数据无 sourceName 时 fallback 显示）
+  const [sourceNames] = useState<Map<string, string>>(() => {
     const map = new Map<string, string>();
     getSources().forEach(s => map.set(s.id, s.name));
-    setSourceNames(map);
-  }, []);
+    return map;
+  });
 
   // 条目的来源源名称：优先条目自带的 sourceName，老数据反查源列表
   const resolveSourceName = (item: PlayHistory) =>
@@ -31,14 +34,12 @@ export function HistoryPage({ onVideoClick, onContinuePlay, onBack }: HistoryPag
   const handleClearAll = () => {
     if (confirm('确定要清空所有播放历史吗？')) {
       clearPlayHistory();
-      setHistory([]);
     }
   };
 
   // 删除单条历史（按 vod_id + sourceId，避免误删其他源的同 ID 条目）
   const handleRemove = (vodId: number, sourceId: string) => {
     removePlayHistory(vodId, sourceId);
-    setHistory(getPlayHistory());
   };
 
   // 格式化时间
@@ -85,6 +86,40 @@ export function HistoryPage({ onVideoClick, onContinuePlay, onBack }: HistoryPag
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-white text-lg md:text-xl font-bold flex-1">播放历史</h1>
+        {/* 历史记录保留条数设置 */}
+        <div className="relative">
+          <button
+            onClick={() => setLimitPanel(v => !v)}
+            className="flex items-center text-gray-400 hover:text-white transition-colors px-2"
+            title="历史记录保留条数"
+          >
+            <Settings2 size={18} />
+          </button>
+          {showLimitPanel && (
+            <>
+              {/* 点击外部关闭 */}
+              <div className="fixed inset-0 z-30" onClick={() => setLimitPanel(false)} />
+              <div className="absolute right-0 top-full mt-2 z-40 bi-glass-pop rounded-xl p-2 min-w-[140px]">
+                <p className="text-gray-500 text-[10px] px-1 pb-1.5">保留条数</p>
+                <div className="grid grid-cols-2 gap-1">
+                  {HISTORY_LIMIT_OPTIONS.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => { setHistoryLimit(opt); setLimitPanel(false); }}
+                      className={`text-xs py-1.5 rounded-lg transition-colors ${
+                        opt === historyLimit
+                          ? 'bi-accent-gradient text-white'
+                          : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
         {history.length > 0 && (
           <button
             onClick={handleClearAll}

@@ -1,7 +1,8 @@
-import type { VideoItem, ApiResponse, VideoSource, PlayerSettings, PlaySource } from '@/types';
+import type { VideoItem, ApiResponse, VideoSource, PlayerSettings, PlaySource, Category } from '@/types';
 import { getCache, setCache } from './cache';
 import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettings } from './storage';
 import { isDesktopMode, desktopApiUrl } from './desktop';
+import { isLocalOrPrivateUrl } from './net';
 import { stripManagedParams } from './sourceParse';
 
 // 判断内容是否被屏蔽关键词命中（用于内容过滤）：
@@ -64,6 +65,10 @@ function buildUrl(apiUrl: string, proxy?: string): string {
   if (isDesktopMode()) {
     return desktopApiUrl(apiUrl);
   }
+  // 本机/内网地址公网代理无法访问，直接连接绕过代理
+  if (isLocalOrPrivateUrl(apiUrl)) {
+    return apiUrl;
+  }
   if (!isCorsProxyEnabled()) {
     return apiUrl;
   }
@@ -101,29 +106,34 @@ function rotateProxy(): string {
 }
 
 // 验证 API 响应格式，防止 malformed JSON 导致消费端崩溃
-function safeApiResponse(data: any): ApiResponse {
-  if (data && typeof data === 'object' && Array.isArray(data.list)) {
-    // 类型归一化：苹果CMS分页字段可能是字符串也可能是数字，统一转 number
-    return {
-      code: Number(data.code) || 0,
-      msg: String(data.msg || ''),
-      page: data.page !== undefined ? Number(data.page) : undefined,
-      pagecount: data.pagecount !== undefined ? Number(data.pagecount) : undefined,
-      limit: data.limit !== undefined ? Number(data.limit) : undefined,
-      total: data.total !== undefined ? Number(data.total) : undefined,
-      list: data.list,
-      // 透传 class 字段（分类数据，getCategories 需要）
-      ...(data.class !== undefined ? { class: data.class } : {}),
-    } as ApiResponse;
+function safeApiResponse(data: unknown): ApiResponse {
+  if (data && typeof data === 'object') {
+    const raw = data as Record<string, unknown>;
+    if (Array.isArray(raw.list)) {
+      // 类型归一化：苹果CMS分页字段可能是字符串也可能是数字，统一转 number
+      return {
+        code: Number(raw.code) || 0,
+        msg: String(raw.msg || ''),
+        page: raw.page !== undefined ? Number(raw.page) : undefined,
+        pagecount: raw.pagecount !== undefined ? Number(raw.pagecount) : undefined,
+        limit: raw.limit !== undefined ? Number(raw.limit) : undefined,
+        total: raw.total !== undefined ? Number(raw.total) : undefined,
+        list: raw.list as VideoItem[],
+        // 透传 class 字段（分类数据，getCategories 需要）
+        ...(raw.class !== undefined ? { class: raw.class as Category[] } : {}),
+      };
+    }
+    return { code: Number(raw.code) || 0, msg: String(raw.msg || 'Invalid API response'), list: [] };
   }
-  return { code: Number(data?.code) || 0, msg: String(data?.msg || 'Invalid API response'), list: [] };
+  return { code: 0, msg: 'Invalid API response', list: [] };
 }
 
 // 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
 async function fetchWithRetry(originalUrl: string, retries = 2): Promise<Response> {
   let lastError: Error | null = null;
-  // 桌面版内置代理唯一且常驻，无需轮换（也避免误改用户配置的外部代理列表）
-  const useProxy = !isDesktopMode() && isCorsProxyEnabled();
+  // 桌面版内置代理唯一且常驻，无需轮换（也避免误改用户配置的外部代理列表）；
+  // 本机/内网地址绕过代理，失败时也不轮换
+  const useProxy = !isDesktopMode() && isCorsProxyEnabled() && !isLocalOrPrivateUrl(originalUrl);
   let proxyUrl = buildUrl(originalUrl);
 
   for (let i = 0; i <= retries; i++) {
@@ -219,7 +229,7 @@ function generateCacheKey(type: string, params: Record<string, unknown>): string
   const sourceId = source?.id || 'none';
   // 确保所有值都是字符串，避免 undefined 导致的问题
   const paramStr = Object.entries(params)
-    .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}=${String(v)}`)
     .join('&');
@@ -395,9 +405,9 @@ export async function getCategories(): Promise<CategoryItem[]> {
     if (data.class && Array.isArray(data.class)) {
       categories = [
         { id: 'all', name: '全部', type_id: 0, type_pid: -1 },
-        ...data.class.map((c: any) => ({
+        ...data.class.map((c: Record<string, unknown>) => ({
           id: String(c.type_id),
-          name: c.type_name,
+          name: String(c.type_name),
           type_id: Number(c.type_id),
           type_pid: Number(c.type_pid)
         }))

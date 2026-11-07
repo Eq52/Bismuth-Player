@@ -101,7 +101,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
   // 添加影视源
   const handleAddSource = () => {
     if (!newSource.id || !newSource.name || !newSource.url) {
-      alert('请填写完整信息');
+      toast({ title: '请填写完整信息' });
       return;
     }
     try {
@@ -111,7 +111,7 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
       setTestResult(null);
       setIsAddDialogOpen(false);
     } catch (error) {
-      alert(error instanceof Error ? error.message : '添加失败');
+      toast({ title: error instanceof Error ? error.message : '添加失败' });
     }
   };
 

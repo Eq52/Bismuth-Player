@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
 import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette } from 'lucide-react';
-import { getCorsProxyList, isCorsProxyEnabled } from '@/services/storage';
+import { useCorsProxyList, useCorsProxyEnabled } from '@/services/storage';
 import { getCacheStats } from '@/services/cache';
 
-// 从 Vite define 注入的版本号（类型声明见 env.d.ts）
-const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '9.8.0';
+// 从 Vite define 注入的版本号（类型声明见 env.d.ts），发版只需更新 package.json
+const APP_VERSION = __APP_VERSION__;
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
 export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'cors' | 'cache' | 'about';
@@ -15,25 +14,19 @@ interface SettingsPageProps {
   onSubPageChange?: (page: SettingsSubPage) => void;
 }
 
-export function SettingsPage({ onBack, subPage = 'none', onSubPageChange }: SettingsPageProps) {
-  const [proxyCount, setProxyCount] = useState(0);
-  const [proxyEnabled, setProxyEnabled] = useState(true);
-  const [cacheCount, setCacheCount] = useState(0);
-
-  useEffect(() => {
-    if (subPage === 'none') {
-      setProxyCount(getCorsProxyList().length);
-      setProxyEnabled(isCorsProxyEnabled());
-      setCacheCount(getCacheStats().count);
-    }
-  }, [subPage]);
-
+export function SettingsPage({ onBack, onSubPageChange }: SettingsPageProps) {
   const handleSubPage = (page: SettingsSubPage) => {
     onSubPageChange?.(page);
   };
 
-  // 设置首页
-  const renderSettingsHome = () => (
+  // 订阅代理状态：设置首页统计实时反映（P1#9）
+  const corsProxies = useCorsProxyList();
+  const proxyEnabled = useCorsProxyEnabled();
+  const proxyCount = corsProxies.length;
+  const cacheCount = getCacheStats().count;
+
+  const renderSettingsHome = () => {
+    return (
     <div className="h-full flex flex-col bg-base">
       {/* 头部 */}
       <header className="px-5 py-4 md:px-8 md:py-5 flex items-center bg-base border-b border-white/5">
@@ -167,7 +160,8 @@ export function SettingsPage({ onBack, subPage = 'none', onSubPageChange }: Sett
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return renderSettingsHome();
 }

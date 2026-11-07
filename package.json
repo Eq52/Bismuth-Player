@@ -1,7 +1,7 @@
 {
   "name": "bismuth-player",
   "private": true,
-  "version": "9.8.0",
+  "version": "9.8.1",
   "description": "Bismuth — 基于苹果CMS的纯前端影视播放器（React + Vite + hls.js），配套桌面壳 Bismuth Desktop 免配置 CORS",
   "author": "Eq52",
   "license": "Apache-2.0",
@@ -25,12 +25,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.2.6",
+    "@tanstack/react-virtual": "^3.14.26",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "hls.js": "^1.6.15",
@@ -55,6 +58,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^5.1.0"
   }
 }

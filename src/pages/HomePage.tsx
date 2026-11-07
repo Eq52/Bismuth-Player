@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Film, Search, History, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { VideoCard } from '@/components/VideoCard';
+import { VirtualGrid } from '@/components/VirtualGrid';
 import { getVideoList, getCurrentSource, getSources } from '@/services/api';
 import { useTheme, BrandLogo } from '@/services/ThemeContext';
 import type { VideoItem, VideoSource } from '@/types';
@@ -282,15 +283,17 @@ export function HomePage({ onVideoClick, onHistoryClick, onAddSourceClick, onSea
             <p className="text-sm mt-1">请检查影视源设置</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 md:gap-4 lg:gap-5">
-            {videos.map((video) => (
-              <VideoCard 
-                key={video.vod_id} 
-                video={video} 
+          <VirtualGrid
+            items={videos}
+            scrollRef={listRef}
+            renderItem={(video) => (
+              <VideoCard
+                key={video.vod_id}
+                video={video}
                 onClick={() => onVideoClick(video)}
               />
-            ))}
-          </div>
+            )}
+          />
         )}
 
         {/* 加载更多：底部骨架卡片流 */}

@@ -9,7 +9,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // 仅作类型使用：运行时改为按需动态加载（见下方 useEffect），首页首包不再包含播放器内核
 import type HlsType from 'hls.js';
 import { toast } from '@/hooks/use-toast';
-import { getPlayerSettings } from '@/services/storage';
 import { isDesktopMode } from '@/services/desktop';
 import {
   Play,
@@ -39,6 +38,14 @@ interface SimPlayerProps {
   fillContainer?: boolean;
   /** 外部容器 ref：提供时全屏作用于该容器（父级接管全屏，气泡可见、切集不退出）；缺省用内部容器，行为不变 */
   externalFullscreenRef?: React.RefObject<HTMLDivElement | null>;
+  /** 自动续播开关（由播放器设置注入，组件不再自行读取 localStorage） */
+  autoResume?: boolean;
+  /** 起始播放位置（秒）：来自统一历史记录，>0 且 autoResume 时弹出续播提示 */
+  initialProgress?: number;
+  /** 播放进度上报（约每 3 秒及暂停/卸载时），由父级写入统一历史记录 */
+  onProgress?: (currentTime: number, duration: number) => void;
+  /** 清除全部播放进度（右键菜单「删除播放缓存」），由父级统一处理历史记录 */
+  onClearProgress?: () => void;
   onVideoInfo?: (info: { width: number; height: number; duration: number; format: string }) => void;
   onError?: (error: string) => void;
 }
@@ -87,7 +94,7 @@ interface VideoParams {
   buffered: number;
 }
 
-export default function SimPlayer({ src, title, poster, fillContainer, externalFullscreenRef, onVideoInfo, onError }: SimPlayerProps) {
+export default function SimPlayer({ src, title, poster, fillContainer, externalFullscreenRef, autoResume = true, initialProgress = 0, onProgress, onClearProgress, onVideoInfo, onError }: SimPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<HlsType | null>(null);
@@ -131,38 +138,19 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
 
   const format = useMemo(() => detectFormat(src), [src]);
 
-  // Progress management
+  // Progress management — 进度统一走 Bismuth 历史记录（onProgress 回调），不再自存 localStorage
   const saveProgress = useCallback((time: number) => {
     if (!src || !duration) return;
-    try {
-      localStorage.setItem(`bismuth_progress_${src}`, JSON.stringify({ time, duration }));
-    } catch {}
-  }, [src, duration]);
+    onProgress?.(time, duration);
+  }, [src, duration, onProgress]);
 
-  const loadProgress = useCallback((): number => {
-    if (!src) return 0;
-    try {
-      const raw = localStorage.getItem(`bismuth_progress_${src}`);
-      if (!raw) return 0;
-      return JSON.parse(raw).time || 0;
-    } catch { return 0; }
-  }, [src]);
+  // 起始位置来自统一历史记录（props），不再读取独立的 bismuth_progress_* 键
+  const loadProgress = useCallback((): number => initialProgress, [initialProgress]);
 
+  // 清除全部播放进度：交由父级统一处理历史记录
   const clearAllProgress = useCallback(() => {
-    try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('bismuth_progress_')) keysToRemove.push(key);
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-    } catch {}
-  }, []);
-
-  const clearProgressForUrl = useCallback(() => {
-    if (!src) return;
-    try { localStorage.removeItem(`bismuth_progress_${src}`); } catch {}
-  }, [src]);
+    onClearProgress?.();
+  }, [onClearProgress]);
 
   const handleResumeYes = useCallback(() => {
     setShowResumePrompt(false);
@@ -177,8 +165,8 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
   const handleResumeNo = useCallback(() => {
     setShowResumePrompt(false);
     if (resumePromptTimerRef.current) clearTimeout(resumePromptTimerRef.current);
-    clearProgressForUrl();
-  }, [clearProgressForUrl]);
+    // 本次续播已忽略：resumePromptShownRef 保证同一源只提示一次，无需再清除本地键
+  }, []);
 
   const corsRetryRef = useRef(false);
   const [isIOS] = useState(detectIOS);
@@ -310,14 +298,14 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
       setIsBuffering(false);
       if (!resumePromptShownRef.current && src) {
         resumePromptShownRef.current = true;
-        const settings = getPlayerSettings();
-        if (!settings.autoResume) return;
+        // 自动续播开关由 props 注入（播放器设置），不再自行读取
+        if (!autoResume) return;
         const saved = loadProgress();
         if (saved > 3 && video.duration > 0 && saved < video.duration - 2) {
           setSavedProgressTime(saved);
           setShowResumePrompt(true);
           if (resumePromptTimerRef.current) clearTimeout(resumePromptTimerRef.current);
-          resumePromptTimerRef.current = setTimeout(() => { setShowResumePrompt(false); clearProgressForUrl(); }, 5000);
+          resumePromptTimerRef.current = setTimeout(() => setShowResumePrompt(false), 5000);
         }
       }
     };
@@ -352,7 +340,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
-  }, [onVideoInfo, format, saveProgress, loadProgress, src, clearProgressForUrl]);
+  }, [onVideoInfo, format, saveProgress, loadProgress, src, autoResume]);
 
   useEffect(() => { const v = videoRef.current; if (v) v.playbackRate = playbackRate; }, [playbackRate]);
 
@@ -646,7 +634,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
         <div ref={progressRef} className={`relative h-1 group/progress cursor-pointer ${isDragging ? 'h-2 progress-bar-dragging' : 'hover:h-2'} transition-all`} style={{ touchAction: 'none' }} onClick={handleProgressClick} onMouseDown={handleProgressMouseDown} onMouseMove={handleProgressHover} onMouseLeave={() => { if (!isDraggingRef.current) setHoverTime(null); }} onTouchStart={(e) => { const t = e.touches[0]; if (t) { e.preventDefault(); isDraggingRef.current = true; setIsDragging(true); seekToPosition(t.clientX); if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); } }}>
           <div className="absolute inset-0 bg-white/15 rounded-full" />
           <div className="absolute inset-y-0 left-0 bg-white/25 rounded-full" style={{ width: `${bufferedProgress}%` }} />
-          <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style={{ width: `${progress}%` }} />
+          <div className="absolute inset-y-0 left-0 bi-accent-gradient rounded-full" style={{ width: `${progress}%` }} />
           <div className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg border-2 border-purple-400 transition-opacity ${isDragging || hoverTime !== null ? 'opacity-100' : 'opacity-0 group-hover/progress:opacity-100'}`} style={{ left: `${progress}%`, marginLeft: '-6px' }} />
           {hoverTime !== null && (
             <div className="absolute -top-8 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded pointer-events-none" style={{ left: `${hoverPosition}px` }}>
@@ -662,7 +650,7 @@ export default function SimPlayer({ src, title, poster, fillContainer, externalF
           <div className="bi-glass-pop rounded-xl px-3 py-2.5">
             <p className="text-white/80 text-[11px] mb-2 whitespace-nowrap">跳转至上次播放位置 {formatTime(savedProgressTime)}？</p>
             <div className="flex gap-2">
-              <button onClick={handleResumeYes} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[11px] px-3 py-1 rounded-lg hover:opacity-90 transition-opacity">是</button>
+              <button onClick={handleResumeYes} className="bi-accent-gradient text-white text-[11px] px-3 py-1 rounded-lg hover:opacity-90 transition-opacity">是</button>
               <button onClick={handleResumeNo} className="bg-white/15 hover:bg-white/25 text-white text-[11px] px-3 py-1 rounded-lg transition-colors">否</button>
             </div>
           </div>

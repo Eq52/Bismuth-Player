@@ -7,7 +7,7 @@ English｜[简体中文](README-zh.md)
 ---
 
 > NOTE: 
-> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.0/Bismuth_9.8.0_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
+> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.1/Bismuth_9.8.1_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
 
 ---
 
@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.1-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -264,6 +264,15 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.1
+- ✨ Settings changes take effect immediately, no restart needed
+- ✨ Smoother long lists — the home grid only renders what's on screen
+- ✨ Checking for updates now opens a dialog showing the new version, release notes and copyable download links
+- ✨ History limit is adjustable (20 / 50 / 100 / 200)
+- ⚡ Local and intranet addresses skip the CORS proxy
+- 🐛 Playback progress from the built-in player is now stored together with app history
+- 🧹 Cleared warnings and dead code, added unit tests
 
 ### V9.8.0
 - ✨ Multi-line playback — `parsePlaySources` parses every `$$$` play source (previously only the first one was used); detail & player pages show a "线路" switcher and carry the selected line through to playback

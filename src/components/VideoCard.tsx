@@ -52,7 +52,8 @@ interface VideoCardProps {
 }
 
 export function VideoCard({ video, onClick }: VideoCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  // 无图片时初始即为加载完成（惰性初始化，避免在 effect 内 setState）
+  const [imageLoaded, setImageLoaded] = useState(() => !video.vod_pic);
   const imgRef = useRef<HTMLImageElement>(null);
   const aliveRef = useRef(true);
 
@@ -60,14 +61,9 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
   // 组件卸载时断开观察器并移除事件回调，阻止后台继续加载图片
   useEffect(() => {
     const img = imgRef.current;
-    if (!img) return;
+    // 无图片时不绑定观察与事件（imageLoaded 初始已为 true）
+    if (!img || !video.vod_pic) return;
     aliveRef.current = true;
-
-    // 无图片时直接标记加载完成（img src 保持占位图）
-    if (!video.vod_pic) {
-      setImageLoaded(true);
-      return;
-    }
 
     const handleLoad = () => { if (aliveRef.current) setImageLoaded(true); };
     const handleError = (e: Event) => {

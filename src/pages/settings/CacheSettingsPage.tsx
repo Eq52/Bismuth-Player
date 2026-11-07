@@ -1,29 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Database, Trash2, HardDrive } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { getCacheSettings, saveCacheSettings } from '@/services/storage';
+import { useCacheSettings, saveCacheSettings } from '@/services/storage';
 import { getCacheStats, clearApiCache } from '@/services/cache';
-import type { CacheSettings } from '@/types';
+import { toast } from '@/hooks/use-toast';
 
 interface CacheSettingsPageProps {
   onBack: () => void;
 }
 
 export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
-  const [cacheSettings, setCacheSettings] = useState<CacheSettings>({ enabled: true });
-  const [apiCacheStats, setApiCacheStats] = useState({ count: 0, size: '0 B' });
-
-  useEffect(() => {
-    setCacheSettings(getCacheSettings());
-    setApiCacheStats(getCacheStats());
-  }, []);
+  // 订阅缓存设置：变更实时反映（P1#9）
+  const cacheSettings = useCacheSettings();
+  const [apiCacheStats, setApiCacheStats] = useState(() => getCacheStats());
 
   // 切换缓存
   const handleToggleCache = (enabled: boolean) => {
-    const newSettings = { enabled };
-    setCacheSettings(newSettings);
-    saveCacheSettings(newSettings);
+    saveCacheSettings({ enabled });
   };
 
   // 清除缓存
@@ -31,7 +25,7 @@ export function CacheSettingsPage({ onBack }: CacheSettingsPageProps) {
     if (confirm('确定要清除所有缓存吗？')) {
       clearApiCache();
       setApiCacheStats(getCacheStats());
-      alert('缓存已清除');
+      toast({ title: '缓存已清除' });
     }
   };
 

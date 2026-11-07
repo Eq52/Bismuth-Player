@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Trash2, Play, Heart, Film, CloudOff, ArrowLeft } from 'lucide-react';
 import { getFavorites, getPlayHistory, clearFavorites, removeFavorite } from '@/services/storage';
 import { getSources } from '@/services/api';
@@ -11,23 +11,20 @@ interface FavoritesPageProps {
 }
 
 export function FavoritesPage({ onVideoClick, onContinuePlay, onBack }: FavoritesPageProps) {
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-  const [sourceNames, setSourceNames] = useState<Map<string, string>>(new Map());
-  // 播放进度映射（身份键 vod_id + sourceId → 历史记录），收藏续播用
-  const [historyMap, setHistoryMap] = useState<Map<string, PlayHistory>>(new Map());
-
-  // 加载收藏列表
-  useEffect(() => {
-    setFavorites(getFavorites());
-    // 收藏续播：从播放历史中取同源同 ID 的进度
-    const histMap = new Map<string, PlayHistory>();
-    getPlayHistory().forEach(h => histMap.set(`${h.sourceId || 'legacy'}::${h.vod_id}`, h));
-    setHistoryMap(histMap);
-    // 源名反查表（老数据无 sourceName 时 fallback 显示）
+  // 挂载时惰性初始化（直接从本地存储读取，避免 effect 内同步 setState）
+  const [favorites, setFavorites] = useState<FavoriteItem[]>(() => getFavorites());
+  // 源名反查表（老数据无 sourceName 时 fallback 显示）
+  const [sourceNames] = useState<Map<string, string>>(() => {
     const map = new Map<string, string>();
     getSources().forEach(s => map.set(s.id, s.name));
-    setSourceNames(map);
-  }, []);
+    return map;
+  });
+  // 播放进度映射（身份键 vod_id + sourceId → 历史记录），收藏续播用
+  const [historyMap] = useState<Map<string, PlayHistory>>(() => {
+    const map = new Map<string, PlayHistory>();
+    getPlayHistory().forEach(h => map.set(`${h.sourceId || 'legacy'}::${h.vod_id}`, h));
+    return map;
+  });
 
   // 条目的来源源名称：优先条目自带的 sourceName，老数据反查源列表
   const resolveSourceName = (item: FavoriteItem) =>

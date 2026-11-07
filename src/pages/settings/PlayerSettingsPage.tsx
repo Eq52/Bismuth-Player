@@ -1,38 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getPlayerSettings, savePlayerSettings } from '@/services/storage';
-import type { PlayerSettings } from '@/types';
+import { usePlayerSettings, savePlayerSettings } from '@/services/storage';
+import { toast } from '@/hooks/use-toast';
 
 interface PlayerSettingsPageProps {
   onBack: () => void;
 }
 
 export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
-  const [playerSettings, setPlayerSettings] = useState<PlayerSettings>({
-    playerMode: 'builtin',
-    playerUrl: '',
-    autoResume: true,
-    autoNext: false,
-    blockEthics: false,
-    blockKeywords: [],
-  });
+  // 订阅播放器设置：模式/开关变更即时生效（P1#9）
+  const playerSettings = usePlayerSettings();
+  // 外部播放器地址保留本地草稿，避免输入过程中频繁写入
+  const [urlDraft, setUrlDraft] = useState(playerSettings.playerUrl);
 
-  useEffect(() => {
-    setPlayerSettings(getPlayerSettings());
-  }, []);
-
-  // 保存播放器设置
+  // 保存外部播放器地址
   const handleSavePlayerSettings = () => {
-    savePlayerSettings(playerSettings);
-    alert('播放器设置已保存');
+    savePlayerSettings({ ...playerSettings, playerUrl: urlDraft.trim() });
+    toast({ title: '播放器设置已保存' });
   };
 
-  // 自动保存播放器设置（模式切换时）
-  const updatePlayerSettings = (newSettings: PlayerSettings) => {
-    setPlayerSettings(newSettings);
+  // 即时保存（模式切换、开关等）
+  const updatePlayerSettings = (newSettings: typeof playerSettings) => {
     savePlayerSettings(newSettings);
   };
 
@@ -107,8 +98,8 @@ export function PlayerSettingsPage({ onBack }: PlayerSettingsPageProps) {
                 <label className="text-xs text-gray-500 block mb-2">播放器地址</label>
                 <div className="flex gap-2">
                   <Input
-                    value={playerSettings.playerUrl}
-                    onChange={(e) => setPlayerSettings({ ...playerSettings, playerUrl: e.target.value })}
+                    value={urlDraft}
+                    onChange={(e) => setUrlDraft(e.target.value)}
                     placeholder="https://..."
                     className="flex-1 bg-elevated border-white/10 text-white text-sm focus:border-purple-500"
                   />

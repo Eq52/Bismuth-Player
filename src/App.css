@@ -99,14 +99,6 @@ button, a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 禁用文本选择 */
-.no-select {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
 /* ========== 页面切换动画 ========== */
 
 /* 页面进入动画 - 从右滑入 */
@@ -118,18 +110,6 @@ button, a {
   to {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-/* 页面退出动画 - 向左滑出 */
-@keyframes pageSlideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-20px);
   }
 }
 
@@ -145,34 +125,13 @@ button, a {
   }
 }
 
-/* 详情页/播放器退出 - 向下滑出 */
-@keyframes pageSlideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-}
-
-/* 淡入淡出动画 */
+/* 淡入动画 */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
   }
 }
 
@@ -232,55 +191,6 @@ button, a {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* 弹跳加载 */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(-25%);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-  }
-  50% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-  }
-}
-
-.animate-bounce {
-  animation: bounce 1s infinite;
-}
-
-/* 波浪加载 */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* 骨架屏样式 */
-.skeleton {
-  background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,
-    #252547 50%,
-    #1a1a2e 100%
-  );
-  background-size: 200% 200%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
 /* ========== 启动加载屏幕 ========== */
 @keyframes startupPulse {
   0%, 100% {
@@ -298,14 +208,6 @@ button, a {
 }
 
 /* ========== 特效 ========== */
-
-/* 渐变文字 */
-.gradient-text {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
 /* 玻璃态效果 */
 .glass {
@@ -393,25 +295,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* 滚动条美化（可选显示） */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 /* ========== SimPlayer 播放器样式 ========== */
 
 /* 隐藏原生视频控件 */
@@ -482,54 +365,4 @@ button:disabled {
 }
 .sim-player-container .progress-bar-dragging * {
   pointer-events: none !important;
-}
-
-/* 音量/进度滑块样式 */
-input[type="range"].sim-range {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-input[type="range"].sim-range::-webkit-slider-runnable-track {
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-input[type="range"].sim-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  margin-top: -5px;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-input[type="range"].sim-range:hover::-webkit-slider-thumb {
-  opacity: 1;
-}
-
-input[type="range"].sim-range::-moz-range-track {
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-input[type="range"].sim-range::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  border: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-input[type="range"].sim-range:hover::-moz-range-thumb {
-  opacity: 1;
 }

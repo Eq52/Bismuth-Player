@@ -1,42 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Database, RefreshCw, Shield, GripVertical } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getCorsProxyList, setCorsProxyList, addCorsProxy, removeCorsProxy, isCorsProxyEnabled, setCorsProxyEnabled } from '@/services/storage';
+import { useCorsProxyList, useCorsProxyEnabled, setCorsProxyList, addCorsProxy, removeCorsProxy, setCorsProxyEnabled } from '@/services/storage';
 import { isDesktopMode } from '@/services/desktop';
+import { toast } from '@/hooks/use-toast';
 
 interface CorsProxyPageProps {
   onBack: () => void;
 }
 
 export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
-  const [corsProxies, setCorsProxies] = useState<string[]>([]);
-  const [corsProxyEnabled, setCorsProxyEnabledState] = useState(true);
+  // 订阅代理列表与开关：变更实时反映（P1#9）
+  const corsProxies = useCorsProxyList();
+  const corsProxyEnabled = useCorsProxyEnabled();
   const [newProxyInput, setNewProxyInput] = useState('');
-
-  useEffect(() => {
-    setCorsProxies(getCorsProxyList());
-    setCorsProxyEnabledState(isCorsProxyEnabled());
-  }, []);
 
   // 添加代理
   const handleAddProxy = () => {
     const trimmed = newProxyInput.trim();
     if (!trimmed) return;
     if (corsProxies.includes(trimmed)) {
-      alert('该代理已存在');
+      toast({ title: '该代理已存在' });
       return;
     }
     addCorsProxy(trimmed);
-    setCorsProxies(getCorsProxyList());
     setNewProxyInput('');
   };
 
   // 删除代理
   const handleRemoveProxy = (index: number) => {
     removeCorsProxy(index);
-    setCorsProxies(getCorsProxyList());
   };
 
   // 恢复默认代理
@@ -45,7 +40,6 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
       'https://api.codetabs.com/v1/proxy?quest=',
       'https://api.cors.lol/?url=',
     ]);
-    setCorsProxies(getCorsProxyList());
   };
 
   // 上移代理（优先级调整）
@@ -54,7 +48,6 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
     const list = [...corsProxies];
     [list[index - 1], list[index]] = [list[index], list[index - 1]];
     setCorsProxyList(list);
-    setCorsProxies(list);
   };
 
   // 下移代理（优先级调整）
@@ -63,7 +56,6 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
     const list = [...corsProxies];
     [list[index], list[index + 1]] = [list[index + 1], list[index]];
     setCorsProxyList(list);
-    setCorsProxies(list);
   };
 
   return (
@@ -102,10 +94,7 @@ export function CorsProxyPage({ onBack }: CorsProxyPageProps) {
               </div>
               <Switch
                 checked={corsProxyEnabled}
-                onCheckedChange={(checked) => {
-                  setCorsProxyEnabledState(checked);
-                  setCorsProxyEnabled(checked);
-                }}
+                onCheckedChange={(checked) => setCorsProxyEnabled(checked)}
               />
             </div>
 

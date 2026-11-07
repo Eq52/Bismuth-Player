@@ -5,6 +5,8 @@
  * WallpaperLayer 负责壁纸渲染；BrandLogo 统一处理 Logo 替换。
  */
 
+/* eslint-disable react-refresh/only-export-components -- Context 模块需同时导出 Provider、hook 与配套组件，属标准 React 模式；该规则仅影响开发热更新，不影响生产 */
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BUILT_IN_THEMES, applyThemePack, applyWallpaperStyle, clearThemeStyles, getActiveThemeId,

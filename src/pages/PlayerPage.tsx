@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError } from '@/services/api';
-import { getPlayerSettings, addPlayHistory } from '@/services/storage';
+import { usePlayerSettings, addPlayHistory, getPlayHistory, updatePlayHistoryProgress, clearAllPlayProgress } from '@/services/storage';
 import { isDesktopMode, desktopMediaUrl } from '@/services/desktop';
+import { usePlaySources } from '@/hooks/usePlaySources';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
-import type { VideoItem, PlayerSettings, PlaySource } from '@/types';
+import type { VideoItem } from '@/types';
 import SimPlayer from '@/components/SimPlayer';
 
 interface PlayerPageProps {
@@ -16,16 +17,17 @@ interface PlayerPageProps {
 
 export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, onBack }: PlayerPageProps) {
   const [detail, setDetail] = useState<VideoItem | null>(null);
-  const [sources, setSources] = useState<PlaySource[]>([]);
-  const [activeSourceIndex, setActiveSourceIndex] = useState(0);
-  const [episodes, setEpisodes] = useState<{ name: string; url: string }[]>([]);
+  // 线路/剧集状态统一由 usePlaySources 管理（初始线路来自入参）
+  const { sources, activeSourceIndex, episodes, initSources, changeSource: changeSourceBase } =
+    usePlaySources(initialSourceIndex);
   const [currentEpisode, setCurrentEpisode] = useState(initialEpisode);
   const [loading, setLoading] = useState(true);
   // 来源源被删除时的错误态（历史/收藏「继续播放」直接进播放器的兜底）
   const [deletedSource, setDeletedSource] = useState<{ id: string; name: string } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const [playerSettings] = useState<PlayerSettings>(getPlayerSettings);
+  // 订阅播放器设置：运行时改设置即时生效（P1#9），并作为 props 注入 SimPlayer
+  const playerSettings = usePlayerSettings();
 
   // 自动连播：一集播放完毕（内置 SimPlayer 的 video ended 冒泡捕获）后 3 秒自动切下一集。
   // 不改动 SimPlayer；外部 iframe 播放器无法跨域检测 ended，自动连播仅内置模式生效。
@@ -111,11 +113,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
         const data = await getVideoDetail(video.vod_id, video.sourceId, video.sourceName);
         if (data) {
           setDetail(data);
-          const srcs = parsePlaySources(data.vod_play_url, data.vod_play_from);
-          setSources(srcs);
-          const startSource = Math.min(Math.max(initialSourceIndex, 0), Math.max(srcs.length - 1, 0));
-          setActiveSourceIndex(startSource);
-          setEpisodes(srcs[startSource]?.episodes ?? []);
+          initSources(parsePlaySources(data.vod_play_url, data.vod_play_from), initialSourceIndex);
         }
       } catch (error) {
         if (error instanceof SourceDeletedError) {
@@ -129,7 +127,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
     };
 
     loadDetail();
-  }, [video.vod_id, video.sourceId, video.sourceName, initialEpisode]);
+  }, [video.vod_id, video.sourceId, video.sourceName, initialEpisode, initialSourceIndex, initSources]);
 
   // 获取当前播放地址（原始视频 URL）
   const getCurrentPlayUrl = () => {
@@ -139,14 +137,13 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
 
   // 获取外部播放器的 iframe URL
   const getExternalPlayerUrl = () => {
-    const playerSettings = getPlayerSettings();
     const ep = episodes[currentEpisode];
     if (!ep) return '';
-    
+
     if (playerSettings.playerUrl) {
       return `${playerSettings.playerUrl}${encodeURIComponent(ep.url)}`;
     }
-    
+
     return ep.url;
   };
 
@@ -176,11 +173,10 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
   };
   changeEpisodeRef.current = changeEpisode;
 
-  // 切换播放线路（多线路源）：切到该线路的初始集并刷新播放地址
+  // 切换播放线路（多线路源）：复用 usePlaySources 的状态切换，再处理集数重置/连播/提示
   const changeSource = (index: number) => {
     if (index < 0 || index >= sources.length || index === activeSourceIndex) return;
-    setActiveSourceIndex(index);
-    setEpisodes(sources[index]?.episodes ?? []);
+    changeSourceBase(index);
     setCurrentEpisode(initialEpisode);
     clearAutoNextTimer();
     showEpisodeHint(`已切换线路：${sources[index]?.name || ''}`);
@@ -195,6 +191,27 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
   const currentPlayUrl = getCurrentPlayUrl();
   // 桌面版：内置代理以路径式包装媒体地址（m3u8 相对分片自动跟随代理；mp4 Range 透传）
   const currentMediaUrl = isDesktopMode() ? desktopMediaUrl(currentPlayUrl) : currentPlayUrl;
+
+  // 当前历史条目身份（沿用 changeEpisode 的口径：条目标注源优先，兼容当前源）
+  const activeSourceId = video.sourceId || getCurrentSource()?.id || '';
+
+  // 从统一历史记录读取当前集的起始位置（SimPlayer 续播用；非当前集则从头播）
+  const initialProgress = (() => {
+    const entry = getPlayHistory().find(
+      h => h.vod_id === video.vod_id && (h.sourceId || '') === activeSourceId && h.episode === currentEpisode,
+    );
+    return entry?.progress || 0;
+  })();
+
+  // 播放进度上报：写入统一历史记录（高频，storage 内部不触发 React 通知）
+  const handleProgress = useCallback((currentTime: number) => {
+    updatePlayHistoryProgress(video.vod_id, activeSourceId, currentTime, currentEpisode);
+  }, [video.vod_id, activeSourceId, currentEpisode]);
+
+  // 清除全部播放进度（右键菜单「删除播放缓存」；toast 由 SimPlayer 负责）
+  const handleClearProgress = useCallback(() => {
+    clearAllPlayProgress();
+  }, []);
 
   return (
     <div className="h-full flex flex-col bg-base">
@@ -240,6 +257,10 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
                 poster={displayData.vod_pic}
                 fillContainer
                 externalFullscreenRef={playerContainerRef}
+                autoResume={playerSettings.autoResume}
+                initialProgress={initialProgress}
+                onProgress={handleProgress}
+                onClearProgress={handleClearProgress}
               />
             ) : (
               <iframe

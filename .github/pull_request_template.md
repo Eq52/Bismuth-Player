@@ -21,7 +21,7 @@
 - [ ] 缓存 / LRU（`services/cache.ts`）
 - [ ] CORS 代理
 - [ ] SimPlayer（上游 fork，本地仅做适配）
-- [ ] 本地存储与迁移（localStorage / IndexedDB）
+- [ ] 本地存储与迁移（`services/storage.ts` / `services/migrate.ts`）
 - [ ] 仅界面或文案
 
 ## 自查清单

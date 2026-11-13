@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.3] - 2026-11-13
+
+### 🐛 Fixed
+
+- 🐛 Fixed the gesture click blocker leaking a listener (`usePlayerGestures.ts`) — `blockNextClick` used to remove itself only when the synthesized `click` actually arrived, and the effect cleanup never detached it. A gesture whose click never fires (or a container unmounted mid-gesture) could leave a capture-phase listener behind that swallowed the user's next real tap, i.e. play/pause stopped responding. The helper now extracts as `blockNextClick`, which is removed three ways: after the first click, by a 400 ms TTL timer, and by callers — `touchstart` clears any previous one before starting a new gesture and the effect cleanup detaches the last
+- 🐛 Fixed watch statistics merging different sources into one row — `addWatchSeconds` and `recordPlay` keyed only on `vodId`, but Apple-CMS ids are per-source, so two sources exposing the same `vod_id` shared a single stat entry. The key is now `sourceId:vodId` (falling back to the bare `vodId` when the source is unknown), and `PlayerPage` passes the same `activeSourceId` it already uses for history to both calls (entry, episode switch, and the 3-second tick)
+- 🐛 Watch stats recorded before this version keep working — legacy bare-`vodId` entries are adopted into the new key on first touch (seconds and `seenVodIds` are carried over, the bare key is dropped) instead of being duplicated or discarded. If both a legacy and a new-key entry already exist, both are preserved rather than silently merged
+
+### 🧪 Tests
+
+- 🧪 Added 12 unit tests — `usePlayerGestures.test.ts` covers the click blocker (single-fire removal, TTL removal, idempotent manual removal, independent concurrent blockers) and `watchStats.test.ts` covers source-scoped keys, cross-source isolation, legacy adoption and `videoCount` de-duplication. Suite is now 34 tests
+
 ## [9.8.2] - 2026-11-08
 
 ### ✨ New Features

@@ -12,6 +12,11 @@ updates:
     open-pull-requests-limit: 3
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # eslint 10 与 typescript-eslint 8 的 peer 范围（^8.57 || ^9）冲突，装上就报错；
+      # 等 typescript-eslint 发布支持 eslint 10 的版本后，删掉这条即可
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
     groups:
       # 开发依赖的补丁/小版本合并成一个 PR，避免每周刷出一堆单包 PR
       dev-minor-patch:

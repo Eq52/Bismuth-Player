@@ -1,0 +1,31 @@
+# 依赖更新由 Dependabot 提 PR，CI（.github/workflows/ci.yml）会跑 lint / test / build 把关
+# 合并前请本地再跑一遍三件套，确认构建产物正常
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # 开发依赖的补丁/小版本合并成一个 PR，避免每周刷出一堆单包 PR
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      # 运行时依赖单独一组：体积只有 3 个直接依赖，出问题影响面更大，值得单独看
+      prod-minor-patch:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Shanghai"
+    commit-message:
+      prefix: "ci(deps)"

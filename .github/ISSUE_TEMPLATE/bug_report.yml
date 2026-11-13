@@ -9,6 +9,7 @@ body:
         感谢反馈。请先搜索是否已有同类 issue，避免重复提交。
         - Web 端问题请附浏览器控制台（F12 → Console）的报错信息。
         - 若问题只出现在某个影视源上，请改用「播放源问题」模板。
+        - 9.8.3 起精简版（`Bismuth_x.y.z.apk`）换了签名，只能卸载重装。若你刚卸载重装、发现历史和收藏没了，这属于卸载清数据的正常结果，不是 bug；影视源列表可以用更新前「导出」的 json 通过「导入」找回来。
 
         > 安全漏洞请勿在此公开报告。
 
@@ -17,7 +18,7 @@ body:
     attributes:
       label: 版本
       description: 在「设置 → 关于」中可查看当前版本
-      placeholder: 例如 9.8.0
+      placeholder: 例如 9.8.3
     validations:
       required: true
 
@@ -25,11 +26,25 @@ body:
     id: platform
     attributes:
       label: 平台
+      description: 安卓版两个包的区别：精简版文件名不带后缀，CORS 版文件名带 `_CORS`
       options:
+        - Android APK（精简版）
         - Android APK（CORS 版）
-        - Android APK（普通版）
         - Web 浏览器
         - Windows 桌面壳（Bismuth Desktop）
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: update_method
+    attributes:
+      label: 这次是怎么装上的
+      description: 覆盖升级与卸载重装的数据状态不同，排查时差别很大
+      options:
+        - 全新安装（之前没装过）
+        - 从旧版本直接覆盖升级
+        - 卸载旧版后重装（数据已清空）
         - 不确定
     validations:
       required: true
@@ -67,6 +82,15 @@ body:
         - 不确定
     validations:
       required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: 设备与系统版本（可选）
+      description: 安卓版建议填写，播放器相关的问题常和机型、系统有关
+      placeholder: 例如 小米 14 / Android 15
+    validations:
+      required: false
 
   - type: textarea
     id: description

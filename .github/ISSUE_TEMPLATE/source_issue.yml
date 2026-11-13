@@ -9,6 +9,18 @@ body:
         提交前建议先在浏览器直接打开该源 API（可在地址后加 `?ac=list`），确认源本身是否可用——
         部分源会关停、限制访问或临时故障，这类问题不是客户端能修复的。
 
+        > 已知限制：部分源会忽略客户端传来的 `limit`，强制只返回固定条数（常见是 20 条），
+        > 表现为任何分类都只有 20 部。这类问题由源决定，不是筛选或分页写错了。
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      description: 在「设置 → 关于」中可查看当前版本
+      placeholder: 例如 9.8.3
+    validations:
+      required: true
+
   - type: input
     id: source_url
     attributes:
@@ -47,9 +59,10 @@ body:
     id: platform
     attributes:
       label: 客户端
+      description: 安卓版两个包的区别：精简版文件名不带后缀，CORS 版文件名带 `_CORS`
       options:
+        - Android APK（精简版）
         - Android APK（CORS 版）
-        - Android APK（普通版）
         - Web 浏览器
         - Windows 桌面壳（Bismuth Desktop）
         - 不确定

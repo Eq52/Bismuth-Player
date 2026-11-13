@@ -467,14 +467,30 @@ const watchStatsStore = createStorageStore(
 );
 export const useWatchStats = watchStatsStore.useValue;
 
+// 统计条目键：带上源，避免两个源里 vod_id 相同的片子互相串数据。
+// 没有 sourceId（老数据/未知源）时退回裸 vodId，与 9.8.2 之前的数据保持一致。
+export function watchStatsKey(sourceId: string | undefined, vodId: number): string {
+  return sourceId ? `${sourceId}:${vodId}` : String(vodId);
+}
+
+// 读取前把旧的裸 vodId 条目认领到新键：既保留历史秒数，又不产生重复行。
+// 仅在新键尚未存在、且旧裸键存在时迁移；成功后删除裸键。
+function adoptLegacyKey<T>(map: Record<string, T>, key: string, vodId: number): void {
+  const legacy = String(vodId);
+  if (key === legacy || map[key] !== undefined || map[legacy] === undefined) return;
+  map[key] = map[legacy];
+  delete map[legacy];
+}
+
 // 记录实际播放秒数（SimPlayer 每 3 秒上报，仅在播放中），按当天与视频累计
-export function addWatchSeconds(seconds: number, vodId: number, vodName: string): void {
+export function addWatchSeconds(seconds: number, vodId: number, vodName: string, sourceId = ''): void {
   if (seconds <= 0) return;
   const s = getWatchStats();
   s.totalSeconds += seconds;
   const day = dayKey();
   s.daily[day] = (s.daily[day] || 0) + seconds;
-  const key = String(vodId);
+  const key = watchStatsKey(sourceId, vodId);
+  adoptLegacyKey(s.perVideo, key, vodId);
   const pv = s.perVideo[key] || { name: vodName, seconds: 0 };
   pv.name = vodName;
   pv.seconds += seconds;
@@ -485,9 +501,14 @@ export function addWatchSeconds(seconds: number, vodId: number, vodName: string)
 }
 
 // 记录一次播放动作（进入播放器/切集），新视频计入 videoCount
-export function recordPlay(vodId: number): void {
+export function recordPlay(vodId: number, sourceId = ''): void {
   const s = getWatchStats();
-  const key = String(vodId);
+  const key = watchStatsKey(sourceId, vodId);
+  const legacy = String(vodId);
+  // 旧数据里这个视频只有裸 vodId：改名为新键沿用，不再重复计入 videoCount
+  if (key !== legacy && !s.seenVodIds.includes(key) && s.seenVodIds.includes(legacy)) {
+    s.seenVodIds = s.seenVodIds.map((k) => (k === legacy ? key : k));
+  }
   s.playCount += 1;
   if (!s.seenVodIds.includes(key)) {
     s.seenVodIds.push(key);

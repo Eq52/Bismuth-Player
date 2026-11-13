@@ -15,6 +15,7 @@ export interface GestureState {
 
 const IDLE: GestureState = { type: null, baseTime: 0, targetTime: 0, value: 0 };
 const MOVE_THRESHOLD = 10; // 超过该位移才判定为手势，避免轻点误触
+const CLICK_BLOCK_TTL = 400; // 拦截合成 click 的监听器最长存活时间（兜底，防残留）
 
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
@@ -23,6 +24,35 @@ function clamp(n: number, min: number, max: number): number {
 function getBrightness(v: HTMLVideoElement): number {
   const m = v.style.filter.match(/brightness\(([\d.]+)\)/);
   return m ? parseFloat(m[1]) : 1;
+}
+
+// 只需这两个方法即可挂摘监听，便于在无 DOM 环境下测试
+type ClickTarget = Pick<HTMLElement, 'addEventListener' | 'removeEventListener'>;
+
+/**
+ * 手势结束后在容器捕获阶段吞掉一次浏览器合成的 click，避免误触播放/暂停/全屏。
+ * 三重兜底移除，避免监听器残留（残留会导致后续真实点击被吃掉）：
+ *   ① 被触发一次即摘除；② 注册时同时起一个 TTL 定时器兜底摘除；③ 返回函数供调用方（组件卸载）主动摘除。
+ * @returns 主动摘除函数，重复调用安全
+ */
+export function blockNextClick(container: ClickTarget): () => void {
+  const state: { removed: boolean; timer?: ReturnType<typeof setTimeout> } = { removed: false };
+
+  const handler = (ev: Event) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    remove();
+  };
+  const remove = () => {
+    if (state.removed) return;
+    state.removed = true;
+    container.removeEventListener('click', handler, true);
+    if (state.timer !== undefined) clearTimeout(state.timer);
+  };
+
+  container.addEventListener('click', handler, true);
+  state.timer = setTimeout(remove, CLICK_BLOCK_TTL);
+  return remove;
 }
 
 export function usePlayerGestures(
@@ -34,12 +64,17 @@ export function usePlayerGestures(
   const decidedRef = useRef<'h' | 'v' | null>(null);
   const baseRef = useRef({ volume: 1, brightness: 1, time: 0 });
   const sideRef = useRef<'left' | 'right'>('left');
+  // 当前挂着的 click 拦截器（用于 touchstart / cleanup 主动摘除）
+  const unblockRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const onTouchStart = (e: TouchEvent) => {
+      // 新一轮触摸开始：先摘掉上一轮可能残留的 click 拦截器，避免吃掉用户真实点击
+      unblockRef.current?.();
+      unblockRef.current = null;
       if (e.touches.length !== 1) return;
       // 只在直接触摸视频画面时启用，让底部按钮/进度条走自己的触摸逻辑
       if (!(e.target instanceof HTMLVideoElement)) return;
@@ -99,14 +134,11 @@ export function usePlayerGestures(
       startRef.current = null;
       decidedRef.current = null;
       setGesture(IDLE);
-      // 手势真正发生过：在捕获阶段拦截浏览器随后合成的 click，避免误触播放/暂停/全屏
+      // 手势真正发生过：在捕获阶段拦截浏览器随后合成的 click，避免误触播放/暂停/全屏。
+      // 拦截器自带 TTL 兜底自动摘除；touchstart / cleanup 也会各主动摘一次。
       if (did) {
-        const blockClick = (ev: Event) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          container.removeEventListener('click', blockClick, true);
-        };
-        container.addEventListener('click', blockClick, true);
+        unblockRef.current?.();
+        unblockRef.current = blockNextClick(container);
       }
     };
 
@@ -119,6 +151,9 @@ export function usePlayerGestures(
       container.removeEventListener('touchmove', onTouchMove);
       container.removeEventListener('touchend', onTouchEnd);
       container.removeEventListener('touchcancel', onTouchEnd);
+      // 卸载时把残留的 click 拦截器也摘掉
+      unblockRef.current?.();
+      unblockRef.current = null;
     };
   }, [videoRef, containerRef]);
 

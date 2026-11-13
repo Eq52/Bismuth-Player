@@ -115,7 +115,8 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
         if (data) {
           setDetail(data);
           initSources(parsePlaySources(data.vod_play_url, data.vod_play_from), initialSourceIndex);
-          recordPlay(data.vod_id); // 首次进入记录一次播放动作
+          // 统计按「源 + vod_id」分键：条目标注源优先，老数据回退到当前源
+          recordPlay(data.vod_id, video.sourceId || getCurrentSource()?.id || ''); // 首次进入记录一次播放动作
         }
       } catch (error) {
         if (error instanceof SourceDeletedError) {
@@ -157,9 +158,10 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
       setCurrentEpisode(index);
 
       if (detail) {
-        recordPlay(detail.vod_id); // 记录一次播放动作（统计）
         // 历史标注沿用本次实际使用的源：优先条目标注源，兼容老数据用当前源
         const source = getCurrentSource();
+        const sourceId = video.sourceId || source?.id || '';
+        recordPlay(detail.vod_id, sourceId); // 记录一次播放动作（统计）
         addPlayHistory({
           vod_id: detail.vod_id,
           vod_name: detail.vod_name,
@@ -168,7 +170,7 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
           episodeName: episodes[index].name,
           progress: 0,
           timestamp: Date.now(),
-          sourceId: video.sourceId || source?.id || '',
+          sourceId,
           sourceName: video.sourceName || source?.name || ''
         });
       }
@@ -213,8 +215,8 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
 
   // 实际观看秒数上报：累计观看统计（每 3 秒，仅播放中）
   const handleWatchTick = useCallback((seconds: number) => {
-    addWatchSeconds(seconds, video.vod_id, video.vod_name);
-  }, [video.vod_id, video.vod_name]);
+    addWatchSeconds(seconds, video.vod_id, video.vod_name, activeSourceId);
+  }, [video.vod_id, video.vod_name, activeSourceId]);
 
   // 清除全部播放进度（右键菜单「删除播放缓存」；toast 由 SimPlayer 负责）
   const handleClearProgress = useCallback(() => {

@@ -89,6 +89,28 @@ export function mixHex(a: string, b: string, t: number): string {
   return `#${to2(c(r1, r2))}${to2(c(g1, g2))}${to2(c(b1, b2))}`;
 }
 
+function srgbChannel(c: number): number {
+  const v = c / 255;
+  return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+}
+
+function luminance(hex: string): number | null {
+  const trip = hexToRgbTriplet(hex);
+  if (!trip) return null;
+  const [r, g, b] = trip.split(' ').map(Number);
+  return 0.2126 * srgbChannel(r) + 0.7152 * srgbChannel(g) + 0.0722 * srgbChannel(b);
+}
+
+/** WCAG 对比度比值（1–21）；任一颜色非法时返回 1 */
+export function contrastRatio(a: string, b: string): number {
+  const la = luminance(a);
+  const lb = luminance(b);
+  if (la === null || lb === null) return 1;
+  const hi = Math.max(la, lb);
+  const lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 /** 补全未显式给定的色阶：purple 从 accent 派生，gray 从 gray500/底色派生 */
 export function deriveVars(v: ThemeVars): Required<Pick<ThemeVars, 'bgBase' | 'bgSurface' | 'bgElevated' | 'white' | 'black'>> & ThemeVars {
   const out: ThemeVars = { ...v };
@@ -169,14 +191,17 @@ const HEX_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 export interface ValidationResult {
   pack?: ThemePack;
   error?: string;
+  warning?: string; // 不阻断导入：对比度不足等提醒
   hasRemote?: boolean; // CSS 含外链（@import / url()），导入时需询问信任
 }
 
 export function validateThemePack(raw: unknown): ValidationResult {
   if (!raw || typeof raw !== 'object') return { error: '不是有效的主题对象' };
   const o = raw as Record<string, unknown>;
-  if (o['bismuth-theme'] !== THEME_FORMAT) {
-    return { error: `不支持的主题格式（需要 bismuth-theme: ${THEME_FORMAT}）` };
+  // 兼容两种写法：规范的 bismuth-theme 键，以及本应用导出/主题码里使用的 format 键
+  const fmt = o['bismuth-theme'] ?? o['format'];
+  if (fmt !== THEME_FORMAT) {
+    return { error: `不支持的主题格式（需要 ${THEME_FORMAT}，当前 ${fmt === undefined ? '缺失' : String(fmt)}）` };
   }
   if (typeof o['id'] !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(o['id'])) {
     return { error: 'id 缺失或含非法字符' };
@@ -240,12 +265,50 @@ export function validateThemePack(raw: unknown): ValidationResult {
   const hasRemote = /@import|url\s*\(/i.test(cssText) || !!pack.cssUrl ||
     (pack.brand?.logo ? /^(https?:)?\/\//i.test(pack.brand.logo) : false);
 
-  return { pack, hasRemote };
+  // 对比度预警（不阻断）：主文字 / 次要文字分别对页面底色算 WCAG 比值，低于 4.5:1 提示
+  const v = pack.vars || {};
+  const bg = v.bgBase || '#0a0a0a';
+  const mainRatio = contrastRatio(v.white || '#ffffff', bg);
+  const subRatio = contrastRatio(v.gray500 || '#6b7280', bg);
+  const warnings: string[] = [];
+  if (mainRatio < 4.5) warnings.push(`主文字对比度 ${mainRatio.toFixed(2)}:1，低于 4.5:1`);
+  if (subRatio < 4.5) warnings.push(`次要文字对比度 ${subRatio.toFixed(2)}:1，低于 4.5:1`);
+
+  return { pack, hasRemote, warning: warnings.length > 0 ? warnings.join('；') : undefined };
+}
+
+/**
+ * 序列化为可移植主题包：写入规范的 bismuth-theme 版本键（老版本应用也认这个键），
+ * 并剥掉内置标记与内部 format 字段。
+ */
+function toPortablePack(pack: ThemePack): Record<string, unknown> {
+  const rest: Record<string, unknown> = { ...pack };
+  delete rest['builtin'];
+  delete rest['format'];
+  return { 'bismuth-theme': THEME_FORMAT, ...rest };
 }
 
 /** 主题码：BI2.<base64(json)> */
 export function encodeThemeCode(pack: ThemePack): string {
-  return 'BI2.' + btoa(unescape(encodeURIComponent(JSON.stringify(pack))));
+  return 'BI2.' + btoa(unescape(encodeURIComponent(JSON.stringify(toPortablePack(pack)))));
+}
+
+/**
+ * 将主题包写入 JSON 文件并触发浏览器下载（与影视源导出同一套锚点下载方式）。
+ * @returns 生成的文件名
+ */
+export function exportThemeToFile(pack: ThemePack): string {
+  const filename = `bismuth-theme-${pack.id}.json`;
+  const blob = new Blob([JSON.stringify(toPortablePack(pack), null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return filename;
 }
 
 export function decodeThemeCode(code: string): ValidationResult {
@@ -344,9 +407,31 @@ function setVars(vars: ThemeVars): void {
     root.setProperty('--bi-glass-line-a', light ? '0.12' : '0.10');
     root.setProperty('--bi-glass-glow', '255 255 255');
     root.setProperty('--bi-glass-glow-a', light ? '0.55' : '0.08');
+
+    // shadcn 焦点环 / 描边令牌跟随主题：描边按底色明暗派生，焦点环用强调色
+    const borderHex = light
+      ? mixHex(full.bgBase || '#0a0a0a', '#000000', 0.14)
+      : mixHex(full.bgBase || '#0a0a0a', '#ffffff', 0.10);
+    const borderTriplet = hexToRgbTriplet(borderHex);
+    if (borderTriplet) root.setProperty('--border', borderTriplet);
+    else root.removeProperty('--border');
   } else {
     ['--bi-glass-line', '--bi-glass-line-a', '--bi-glass-glow', '--bi-glass-glow-a'].forEach((k) => root.removeProperty(k));
+    root.removeProperty('--border');
   }
+  const ringTriplet = full.purple500 ? hexToRgbTriplet(full.purple500) : null;
+  if (ringTriplet) root.setProperty('--ring', ringTriplet);
+  else root.removeProperty('--ring');
+
+  // 浏览器 UI 主题色（地址栏/状态栏）跟随页面底色
+  setThemeColorMeta(full.bgBase || null);
+}
+
+/** 同步 <meta name="theme-color">；null 恢复默认暗夜底色 */
+function setThemeColorMeta(hex: string | null): void {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) return;
+  meta.setAttribute('content', hex || '#0a0a0a');
 }
 
 /** 清除全部主题变量（恢复默认暗夜外观） */
@@ -357,13 +442,14 @@ export function clearThemeStyles(): void {
     '--bi-purple-200', '--bi-purple-300', '--bi-purple-400', '--bi-purple-500',
     '--bi-logo-from', '--bi-logo-via', '--bi-logo-to', '--bi-logo-icon',
     '--bi-glass-line', '--bi-glass-line-a', '--bi-glass-glow', '--bi-glass-glow-a',
-    '--bi-font', '--bi-page-alpha',
+    '--bi-font', '--bi-page-alpha', '--border', '--ring',
   ].forEach((k) => root.removeProperty(k));
   removeStyle(STYLE_INLINE_ID);
   removeStyle(STYLE_URL_ID);
   removeStyle(WALLPAPER_STYLE_ID);
   setBuiltCssDisabled(false);
   document.title = 'Bismuth';
+  setThemeColorMeta(null);
 }
 
 function applyWallpaperStyle(wp: Wallpaper): void {

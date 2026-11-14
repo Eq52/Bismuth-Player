@@ -9,7 +9,7 @@
 > Note:
 > 
 > 我已经有了新的更新计划，学业之余会尽量抽空继续更新。  
-> 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.3/Bismuth_9.8.3_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。该 Windows 版本当前停留在 V9.5.0，功能落后于 Web / Android 版。  
+> 如果你需要一个稳定的跨域解决方案，可以试试内置了本地 CORS 服务的 [安卓版](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.4/Bismuth_9.8.4_CORS.apk)；另外，从**V9.5.0** 开始，我们也首次推出了内置 [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy) 的 [Windows 版本](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe)，有需要的话也可以直接用。该 Windows 版本当前停留在 V9.5.0，功能落后于 Web / Android 版。  
 
 ---
 
@@ -18,7 +18,7 @@
 <div align="center"> <p>一款精心设计的Web端影视播放应用，支持自定义影视源、优雅的动画效果和完善的缓存机制</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.3-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.4-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -267,6 +267,13 @@ Bismuth-Player/
 ## 🎯 版本更新
 
 > 完整更新日志: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.4
+- ✨ 可导出影视源、历史、收藏、统计与各项设置的完整 JSON 备份，恢复时校验校验和并自动留一份本地快照
+- ✨ 描边与焦点环颜色跟随主题，浏览器标题栏配色也随主题更新
+- 🐛 导出的主题文件、复制的主题码现在可以再次导入
+- 🔧 数据迁移失败不再推进版本号，下次启动会自动重试
+- 🧪 备份、迁移、主题相关逻辑都补了单测
 
 ### V9.8.3
 - 🐛 修掉滑动操作后点画面偶尔无法暂停/播放的问题

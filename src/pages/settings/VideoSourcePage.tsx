@@ -161,7 +161,13 @@ export function VideoSourcePage({ onBack }: VideoSourcePageProps) {
 
   // 解析文本并进入预览（文件 / 远程链接共用）
   const handleParseText = (text: string, label: string) => {
-    const result = parseSourceFileText(text);
+    let result;
+    try {
+      result = parseSourceFileText(text);
+    } catch (error) {
+      toast({ title: '导入失败', description: error instanceof Error ? error.message : '配置无法解析' });
+      return;
+    }
     if (result.sources.length === 0) {
       toast({
         title: '导入失败',

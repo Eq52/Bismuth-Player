@@ -214,6 +214,16 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
   if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
     try {
       const data = JSON.parse(cleaned);
+      // Bismuth 自有导出包：版本高于当前应用时直接拒绝，避免按通用 JSON 误拆
+      if (!Array.isArray(data) && typeof data === 'object' && data !== null) {
+        const obj = data as Record<string, unknown>;
+        if (typeof obj['app'] === 'string' && obj['app'].toLowerCase().includes('bismuth')) {
+          const fv = Number(obj['formatVersion']);
+          if (Number.isInteger(fv) && fv > 1) {
+            throw new Error('影视源备份来自更新版本，请升级应用后再导入');
+          }
+        }
+      }
       const { items, format: fmt } = collectCandidateObjects(data);
       format = fmt;
       jsonCandidateCount = items.length;
@@ -226,7 +236,9 @@ export function parseSourceConfigText(text: string, existingIds: Set<string> = n
           if (r.incompatible) incompatibleCount++;
         }
       }
-    } catch {
+    } catch (e) {
+      // 版本不兼容属于明确拒绝，不回退逐行文本解析
+      if (e instanceof Error && e.message.includes('更新版本')) throw e;
       // JSON 解析失败（如 JSON Lines / 混排文本），落入下方逐行文本解析
     }
   }

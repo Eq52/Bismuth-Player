@@ -1,13 +1,13 @@
 import type { PlayHistory, PlayerSettings, CacheSettings, FavoriteItem, WatchStats } from '@/types';
 import { createStorageStore, notifyStorageChange } from '@/services/store';
 
-const HISTORY_KEY = 'bismuth_history';
-const PLAYER_SETTINGS_KEY = 'bismuth_player';
-const CACHE_SETTINGS_KEY = 'bismuth_cache_settings';
-const CORS_PROXY_LIST_KEY = 'bismuth_cors_proxy_list';
-const CORS_PROXY_ENABLED_KEY = 'bismuth_cors_proxy_enabled';
+export const HISTORY_KEY = 'bismuth_history';
+export const PLAYER_SETTINGS_KEY = 'bismuth_player';
+export const CACHE_SETTINGS_KEY = 'bismuth_cache_settings';
+export const CORS_PROXY_LIST_KEY = 'bismuth_cors_proxy_list';
+export const CORS_PROXY_ENABLED_KEY = 'bismuth_cors_proxy_enabled';
 const DISCLAIMER_AGREED_KEY = 'bismuth_disclaimer_agreed';
-const FAVORITES_KEY = 'bismuth_favorites';
+export const FAVORITES_KEY = 'bismuth_favorites';
 
 // 与 api.ts 中 SOURCES_KEY 保持一致（此处直读 localStorage，避免循环依赖）
 const SOURCES_KEY = 'bismuth_video_sources';
@@ -380,7 +380,7 @@ export function clearFavorites(): void {
 
 // ========== 历史条数上限（可配置，默认 50） ==========
 
-const HISTORY_LIMIT_KEY = 'bismuth_history_limit';
+export const HISTORY_LIMIT_KEY = 'bismuth_history_limit';
 const DEFAULT_HISTORY_LIMIT = 50;
 
 export function getHistoryLimit(): number {
@@ -435,7 +435,7 @@ export const useFavorites = createStorageStore(
 
 // ========== 观看统计（本地累计，不上传） ==========
 
-const WATCH_STATS_KEY = 'bismuth_watch_stats';
+export const WATCH_STATS_KEY = 'bismuth_watch_stats';
 
 function getDefaultWatchStats(): WatchStats {
   return { totalSeconds: 0, videoCount: 0, playCount: 0, daily: {}, perVideo: {}, seenVodIds: [], lastUpdated: 0 };

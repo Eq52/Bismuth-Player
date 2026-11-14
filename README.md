@@ -7,7 +7,7 @@ English｜[简体中文](README-zh.md)
 ---
 
 > NOTE: 
-> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.3/Bismuth_9.8.3_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
+> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.4/Bismuth_9.8.4_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
 
 ---
 
@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.3-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.4-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -264,6 +264,13 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.4
+- ✨ Export a full JSON backup of sources, history, favorites, stats and settings; restore with checksum verification and an automatic pre-restore snapshot
+- ✨ Border and focus-ring colors follow your theme, and the browser status tint updates with it
+- 🐛 Exported theme files and copied theme codes can be imported again
+- 🔧 A failed data migration no longer advances the version; it retries on next launch
+- 🧪 Backup, migration and theme checks covered by unit tests
 
 ### V9.8.3
 - 🐛 Fixed taps on the video sometimes not toggling play/pause after a gesture

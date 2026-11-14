@@ -1,12 +1,13 @@
-import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Monitor, Database, Info, ChevronRight, Settings, HardDrive, Palette, BarChart3, DatabaseBackup, ShieldAlert } from 'lucide-react';
 import { useCorsProxyList, useCorsProxyEnabled } from '@/services/storage';
 import { getCacheStats } from '@/services/cache';
+import { getMigrationError } from '@/services/migrate';
 
 // 从 Vite define 注入的版本号（类型声明见 env.d.ts），发版只需更新 package.json
 const APP_VERSION = __APP_VERSION__;
 const APP_DISPLAY_VERSION = 'V' + APP_VERSION.split('.')[0];
 
-export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'stats' | 'cors' | 'cache' | 'about';
+export type SettingsSubPage = 'none' | 'appearance' | 'source' | 'player' | 'stats' | 'cors' | 'cache' | 'backup' | 'about';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -24,6 +25,7 @@ export function SettingsPage({ onBack, onSubPageChange }: SettingsPageProps) {
   const proxyEnabled = useCorsProxyEnabled();
   const proxyCount = corsProxies.length;
   const cacheCount = getCacheStats().count;
+  const migrationError = getMigrationError();
 
   const renderSettingsHome = () => {
     return (
@@ -47,6 +49,15 @@ export function SettingsPage({ onBack, onSubPageChange }: SettingsPageProps) {
       {/* 菜单列表 */}
       <div className="flex-1 overflow-y-auto px-5 py-4 md:px-8 pb-24">
         <div className="max-w-3xl mx-auto">
+          {migrationError && (
+            <div className="mb-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-xs leading-relaxed">
+              <ShieldAlert size={15} className="flex-shrink-0 mt-0.5" />
+              <span>
+                数据迁移失败（v{migrationError.version}）：{migrationError.message}。
+                版本号已暂停推进，可在「备份与恢复」中恢复最近快照。
+              </span>
+            </div>
+          )}
           <div className="bg-surface border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5">
             {/* 影视源 */}
             <button
@@ -152,6 +163,23 @@ export function SettingsPage({ onBack, onSubPageChange }: SettingsPageProps) {
                 <div className="min-w-0">
                   <p className="text-white text-sm">缓存</p>
                   <p className="text-gray-500 text-xs">{cacheCount} 项缓存数据</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />
+            </button>
+
+            {/* 备份与恢复 */}
+            <button
+              onClick={() => handleSubPage('backup')}
+              className="w-full flex items-center px-4 py-3.5 hover:bg-white/[0.02] transition-colors text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+                  <DatabaseBackup size={16} className="text-sky-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-sm">备份与恢复</p>
+                  <p className="text-gray-500 text-xs">导出 / 还原影视源、历史与设置</p>
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />

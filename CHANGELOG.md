@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.4] - 2026-11-14
+
+### ✨ New Features
+
+- ✨ Added **full app backup & restore** (`backup.ts`, `BackupPage.tsx`, a new "Backup & Restore" entry on the settings home) — exports ten on-device domains: video sources, active source id, player settings, cache settings, CORS proxy list and toggle, history limit, history, favorites, and watch stats. The file carries the app identifier, `backupVersion`, `schemaVersion`, export timestamp and a checksum (SHA-256 via `crypto.subtle`, falling back to FNV-1a when subtle crypto is unavailable, with the algorithm recorded in the file). Restore refuses non-Bismuth packages and backups whose schema version is newer than the running app, and re-verifies the checksum before any write. A pre-restore snapshot of the ten domains is kept (latest only); domains are written separately and a failed domain rolls back to its snapshot. Large files are capped at 10 MB
+- ✨ Added a **theme draft preview banner** — while an unsaved draft exists, a purple bar at the top of the appearance page shows the draft name and a one-tap "restore to current theme" action
+- ✨ **Reset appearance now asks for confirmation** — a dialog lists exactly what will be cleared (unsaved draft, user wallpaper, activated custom theme) before anything is erased
+
+### 🔧 Changed
+
+- 🔧 **Migration failures no longer advance the schema version** (`migrate.ts`) — a failing migration writes a `bismuth_migration_error` record (version / message / timestamp), leaves `bismuth_schema_version` untouched so startup retries the same version on the next launch, and only clears the error record once the migration succeeds. The settings home shows a red banner for the pending migration error
+- 🔧 Video-source import now guards `formatVersion` — a Bismuth source backup coming from a newer app version is rejected with an "upgrade the app" message instead of silently falling back to plain-text parsing; replace mode keeps a source snapshot (`bismuth_sources_rollback`) before overwriting
+- 🔧 Dangling theme references are cleaned up — on startup, an active theme whose pack no longer exists (IDB cleared or lost) clears the residual `bismuth_active_theme` key instead of hanging; clearing theme assets also removes the active-theme and draft local keys
+- 🔧 Focus-ring and border tokens now follow the active theme (`--border` derived from background lightness, `--ring` from the accent color), and the `<meta name="theme-color">` updates with the page background, restoring the default dark value on reset
+- 🔧 Theme import reports a **readability warning instead of blocking** — main and secondary text contrast against the background are checked against the 4.5:1 WCAG ratio; failing pairs are listed in a toast but the theme still imports
+- 🔧 Theme file export now uses the same anchor-download flow as source export — body-attached anchor, delayed ObjectURL cleanup, and the generated filename returned for the toast
+
+### 🐛 Fixed
+
+- 🐛 Exported theme files and copied theme codes could never be re-imported — validation only accepted a `bismuth-theme` version key, while export and code generation wrote `format`. Validation now accepts either key; exported files and codes write the canonical `bismuth-theme: 2.1` key and strip the internal `format` / `builtin` fields
+
+### 🧪 Tests
+
+- 🧪 Added backup round-trip / truncation / tamper / newer-schema tests, migration retry and advance tests, and theme validation, code round-trip and contrast tests. Suite is now **49 tests**
+
 ## [9.8.3] - 2026-11-13
 
 ### 🐛 Fixed

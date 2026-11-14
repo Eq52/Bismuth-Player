@@ -86,6 +86,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           if (pack) {
             setActiveIdState(id);
             await apply(pack, uw);
+          } else {
+            // 主题包已被清掉（IDB 丢失 / 缓存清除）：清掉残留激活键，避免悬空引用一直回落默认
+            setActiveThemeId(null);
           }
         }
       }

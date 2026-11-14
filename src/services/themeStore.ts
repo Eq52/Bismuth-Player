@@ -13,6 +13,11 @@ const DB_VERSION = 1;
 const THEMES_STORE = 'themes';
 const ASSETS_STORE = 'assets';
 
+// 与 theme.ts 的 LS_ACTIVE / LS_DRAFT 保持一致：IDB 清空后一并摘除本地悬空引用，
+// 否则残留激活键会在启动时指向一个已不存在的主题包。
+const LS_ACTIVE = 'bismuth_active_theme';
+const LS_DRAFT = 'bismuth_theme_draft';
+
 let dbPromise: Promise<IDBDatabase | null> | null = null;
 // IDB 不可用时的内存降级
 const memThemes = new Map<string, unknown>();
@@ -114,10 +119,16 @@ export async function deleteAsset(key: string): Promise<void> {
   memAssets.delete(key);
 }
 
-/** 清空全部主题资产（清缓存页「主题资源」入口用） */
+/** 清空全部主题资产（清缓存页「主题资源」入口用），同时摘除激活主题 / 草稿的本地引用 */
 export async function clearThemeData(): Promise<void> {
   await tx(THEMES_STORE, 'readwrite', (s) => s.clear());
   await tx(ASSETS_STORE, 'readwrite', (s) => s.clear());
   memThemes.clear();
   memAssets.clear();
+  try {
+    localStorage.removeItem(LS_ACTIVE);
+    localStorage.removeItem(LS_DRAFT);
+  } catch {
+    // localStorage 不可用时仅清 IDB，不阻断主流程
+  }
 }

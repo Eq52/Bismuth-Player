@@ -69,6 +69,9 @@ export function exportSourcesToFile(sources: VideoSource[]): string {
 
 export type ImportMode = 'merge' | 'replace';
 
+/** 替换模式覆盖前的源快照键（保留最近一份，便于误覆盖后回滚） */
+const SOURCES_ROLLBACK_KEY = 'bismuth_sources_rollback';
+
 export interface ImportSummary {
   mode: ImportMode;
   /** 解析到的总条数 */
@@ -119,6 +122,12 @@ export function applyImportedSources(parsed: ParsedSource[], mode: ImportMode): 
   const takenIds = new Set(existing.map((s) => s.id));
 
   if (mode === 'replace') {
+    // 覆盖前留存当前源快照（最近一份），避免误替换后无法找回
+    try {
+      localStorage.setItem(SOURCES_ROLLBACK_KEY, JSON.stringify(existing));
+    } catch {
+      // 配额异常不阻断导入
+    }
     const replaced: VideoSource[] = parsed.map((p) => {
       // 替换模式下 ID 仍需批内唯一
       const id = takenIds.has(p.id) ? generateSourceId(p.url, takenIds) : p.id;

@@ -23,9 +23,9 @@ module.exports = {
           400: "rgb(var(--bi-purple-400) / <alpha-value>)",
           500: "rgb(var(--bi-purple-500) / <alpha-value>)",
         },
-        border: "hsl(var(--border))",
+        border: "rgb(var(--border) / <alpha-value>)",
         input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
+        ring: "rgb(var(--ring) / <alpha-value>)",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {

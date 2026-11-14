@@ -130,6 +130,26 @@ describe('parseSourceConfigText', () => {
   });
 });
 
+describe('Bismuth 导出包版本校验', () => {
+  it('formatVersion 高于当前应用时拒绝解析', () => {
+    const future = JSON.stringify({
+      app: 'bismuth-player', type: 'video-sources', formatVersion: 99,
+      exportedAt: new Date().toISOString(),
+      sources: [{ id: 'x', name: 'x', url: 'https://a.com' }],
+    });
+    expect(() => parseSourceConfigText(future)).toThrow(/更新版本/);
+  });
+
+  it('当前版本的导出包正常解析', () => {
+    const current = JSON.stringify({
+      app: 'bismuth-player', type: 'video-sources', formatVersion: 1,
+      exportedAt: new Date().toISOString(),
+      sources: [{ id: 'x', name: 'x', url: 'https://a.com/api.php' }],
+    });
+    expect(parseSourceConfigText(current).sources).toHaveLength(1);
+  });
+});
+
 describe('annotateDuplicates', () => {
   it('按 ID 或 URL 标注重复', () => {
     const parsed = [

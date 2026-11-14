@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  BUILT_IN_THEMES, THEME_FORMAT, validateThemePack, decodeThemeCode, encodeThemeCode,
+  BUILT_IN_THEMES, THEME_FORMAT, validateThemePack, decodeThemeCode, encodeThemeCode, exportThemeToFile,
   deriveVars, getActiveThemeId, loadTheme, type ThemePack, type ThemeVars, type DraftTheme,
 } from '@/services/theme';
 import {
@@ -70,6 +70,7 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
   const [pasteCode, setPasteCode] = useState('');
   const [importUrl, setImportUrl] = useState('');
   const [pendingPack, setPendingPack] = useState<ThemePack | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const wallRef = useRef<HTMLInputElement>(null);
@@ -113,6 +114,12 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
     toast({ title: '已还原为当前主题' });
   };
 
+  const doReset = async () => {
+    setConfirmReset(false);
+    await resetAppearance();
+    toast({ title: '外观已重置为默认暗夜' });
+  };
+
   /* ── 另存为主题 ── */
   const saveAsTheme = async () => {
     if (!draft) return;
@@ -128,6 +135,9 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
     if (r.error || !r.pack) {
       toast({ title: '导入失败', description: r.error });
       return;
+    }
+    if (r.warning) {
+      toast({ title: '可读性提醒', description: r.warning });
     }
     if (r.hasRemote && !r.pack.trustRemote) {
       setPendingPack(r.pack); // 弹信任确认
@@ -173,21 +183,19 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
     }
   };
 
-  /* ── 导出当前主题 ── */
+  /* ── 导出当前主题（与影视源导出同一套文件下载方式） ── */
   const exportActive = async () => {
     const pack = activeId ? BUILT_IN_THEMES.find((t) => t.id === activeId) || userThemes.find((t) => t.id === activeId) : null;
     if (!pack) {
       toast({ title: '当前使用默认主题，先选择或制作一个主题再导出' });
       return;
     }
-    const json = JSON.stringify({ ...pack, builtin: undefined }, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `bismuth-theme-${pack.id}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast({ title: '已导出主题文件' });
+    try {
+      const filename = exportThemeToFile(pack);
+      toast({ title: '导出成功', description: `主题已保存至 ${filename}` });
+    } catch (e) {
+      toast({ title: '导出失败', description: (e as Error).message });
+    }
   };
 
   const copyActiveCode = async () => {
@@ -279,6 +287,14 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
         </div>
       )}
 
+      {draft && (
+        <div className="mx-5 md:mx-8 mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs">
+          <Wand2 size={14} className="flex-shrink-0" />
+          <span className="flex-1">正在预览未保存的草稿主题「{draft.name || '我的主题'}」；另存后固化，或还原回到当前主题</span>
+          <button onClick={stopPreview} className="underline underline-offset-2 flex-shrink-0">还原</button>
+        </div>
+      )}
+
       {/* Tab */}
       <div className="flex gap-2 px-5 pt-4 md:px-8">
         <button
@@ -322,7 +338,7 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
                 <button onClick={copyActiveCode} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-surface border border-white/5 text-gray-300 text-xs hover:bg-elevated transition-all">
                   <ClipboardPaste size={14} /> 复制主题码
                 </button>
-                <button onClick={resetAppearance} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-surface border border-white/5 text-red-400/90 text-xs hover:bg-elevated transition-all">
+                <button onClick={() => setConfirmReset(true)} className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-surface border border-white/5 text-red-400/90 text-xs hover:bg-elevated transition-all">
                   <RotateCcw size={14} /> 重置外观
                 </button>
               </div>
@@ -526,6 +542,34 @@ export function AppearancePage({ onBack }: AppearancePageProps) {
           )}
         </div>
       </div>
+
+      {/* 重置外观二次确认 */}
+      {confirmReset && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bi-glass-overlay p-4" onClick={() => setConfirmReset(false)}>
+          <div className="bi-glass-panel rounded-2xl max-w-sm w-full p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <RotateCcw className="w-6 h-6 text-red-400" />
+              <h3 className="text-white font-bold">重置外观？</h3>
+            </div>
+            <p className="text-gray-400 text-sm leading-relaxed mb-2">此操作会清除以下内容，并恢复默认暗夜主题：</p>
+            <ul className="text-gray-500 text-xs leading-relaxed mb-4 space-y-1 list-disc list-inside">
+              <li>主题工坊里未另存的草稿</li>
+              <li>当前设置的用户壁纸</li>
+              <li>已激活的自定义主题</li>
+            </ul>
+            <div className="flex gap-2.5">
+              <button onClick={() => setConfirmReset(false)}
+                className="flex-1 py-2.5 rounded-xl bg-elevated text-gray-300 text-sm hover:bg-white/10 transition-all">
+                取消
+              </button>
+              <button onClick={doReset}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/90 text-white text-sm hover:bg-red-500 transition-all">
+                确认重置
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 信任确认弹窗 */}
       {pendingPack && (

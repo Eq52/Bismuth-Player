@@ -4,6 +4,7 @@ import { isCorsProxyEnabled, getCorsProxyList, setCorsProxyList, getPlayerSettin
 import { isDesktopMode, desktopApiUrl } from './desktop';
 import { isLocalOrPrivateUrl } from './net';
 import { stripManagedParams } from './sourceParse';
+import { isXmlFeed, parseXmlApiResponse } from './xmlFeed';
 
 // 判断内容是否被屏蔽关键词命中（用于内容过滤）：
 // fuzzy = 名称包含关键词即匹配；exact = 关键词按正则完全匹配。
@@ -126,6 +127,16 @@ function safeApiResponse(data: unknown): ApiResponse {
     return { code: Number(raw.code) || 0, msg: String(raw.msg || 'Invalid API response'), list: [] };
   }
   return { code: 0, msg: 'Invalid API response', list: [] };
+}
+
+// 统一解析源响应：自动识别 JSON 与 RSS XML 两种输出，归一化为 ApiResponse
+function parseApiResponse(text: string): ApiResponse {
+  if (isXmlFeed(text)) return parseXmlApiResponse(text);
+  try {
+    return safeApiResponse(JSON.parse(text));
+  } catch {
+    return { code: 0, msg: 'Invalid API response', list: [] };
+  }
 }
 
 // 带重试的请求（保留原始 URL 变量，不依赖字符串反解）
@@ -258,7 +269,7 @@ export async function getVideoList(
       ...(page > 1 ? { pg: page } : {}),
     });
     const response = await fetchWithRetry(url);
-    return safeApiResponse(await response.json());
+    return parseApiResponse(await response.text());
   }
   
   // 普通列表请求使用缓存
@@ -281,7 +292,7 @@ export async function getVideoList(
   });
 
   const response = await fetchWithRetry(url);
-  const data = safeApiResponse(await response.json());
+  const data = parseApiResponse(await response.text());
   
   // 关键词屏蔽：如果开启了屏蔽设置，过滤掉命中的视频
   const settings = getPlayerSettings();
@@ -346,7 +357,7 @@ export async function getVideoDetail(
   const url = buildSourceUrl(source.url, { ac: 'detail', ids: id });
   
   const response = await fetchWithRetry(url);
-  const data = safeApiResponse(await response.json());
+  const data = parseApiResponse(await response.text());
   
   if (data.list && data.list.length > 0) {
     const video = data.list[0];
@@ -394,8 +405,8 @@ export async function getCategories(): Promise<CategoryItem[]> {
   
   try {
     const response = await fetchWithRetry(url);
-    const data = await response.json();
-    
+    const data = parseApiResponse(await response.text());
+
     if (!data || typeof data !== 'object') {
       throw new Error('Invalid API response');
     }
@@ -405,7 +416,7 @@ export async function getCategories(): Promise<CategoryItem[]> {
     if (data.class && Array.isArray(data.class)) {
       categories = [
         { id: 'all', name: '全部', type_id: 0, type_pid: -1 },
-        ...data.class.map((c: Record<string, unknown>) => ({
+        ...data.class.map((c) => ({
           id: String(c.type_id),
           name: String(c.type_name),
           type_id: Number(c.type_id),
@@ -490,7 +501,7 @@ export async function testSource(url: string): Promise<boolean> {
   try {
     const testUrl = buildSourceUrl(url, { ac: 'videolist', limit: 1 });
     const response = await fetchWithRetry(testUrl);
-    const data = await response.json();
+    const data = parseApiResponse(await response.text());
     return data && (data.code === 1 || data.code === 200);
   } catch {
     return false;

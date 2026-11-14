@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.8.5] - 2026-11-14
+
+### ✨ New Features
+
+- ✨ **RSS XML source support** (`xmlFeed.ts`) — list, detail and category responses in Apple-CMS XML (`/at/xml/`) are now recognized and mapped into the same `VideoItem` / `Category` shape as JSON. Multi-line `<dd flag="...">` episode lists are encoded to the existing `$$$` play-source format, so the multi-line switcher works unchanged
+- ✨ **Per-episode player detection** — a URL pointing to a direct media file (`.m3u8`, `.mp4`, `.webm`, `.ts`, `.flv`, `.mov`, `.ogv`, `.ogg`, `.m4v`) plays in SimPlayer according to the global player setting; web player / share pages (no media extension) automatically fall back to an embedded iframe, even when builtin mode is selected
+
+### 🔧 Changed
+
+- 🔧 External iframe no longer wraps web player / share page URLs with the custom `playerUrl` template — the page URL is embedded directly; template wrapping applies to direct media only
+- 🔧 Next-episode preload only prefetches direct media; web player pages are not given a hidden media preload
+
+### 🐛 Fixed
+
+- 🐛 **Synopsis rendered raw HTML entities** (`textClean.ts`) — the detail page only stripped tags from `vod_content`, so sources that use `&nbsp;` runs as paragraph separators and indent showed a literal `&nbsp;` plus an unbroken wall of whitespace that blew out the line width. Synopsis text is now cleaned before rendering: named and numeric HTML entities are decoded, `<br>` / `</p>` become line breaks, remaining tags are stripped, and space runs are turned back into line breaks (ASCII runs need three or more so English double-spacing between sentences is preserved). Decoding happens before tag stripping, so entity-escaped markup is removed rather than rendered
+
+### 🧪 Tests
+
+- 🧪 Added XML feed mapping tests (list/detail fields, multi-line `$$$` encoding, flat categories, empty list and missing-playlist edge cases), direct-media URL detection tests, and synopsis cleaning tests (entity decoding incl. numeric code points, `&nbsp;` paragraph recovery, `<br>` handling, English double-space preservation). Suite is now **68 tests**
+
 ## [9.8.4] - 2026-11-14
 
 ### ✨ New Features

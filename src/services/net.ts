@@ -2,6 +2,24 @@
 // 判断 URL 是否指向本机或内网地址：这类地址经公网 CORS 代理转发会失败
 // （公网代理服务器无法访问用户的本机/内网），应直接连接、绕过代理。
 
+/** 可被内置播放器直接播放的媒体扩展名（其余视为网页播放器页，走 iframe 嵌入） */
+const DIRECT_MEDIA_EXT = ['m3u8', 'mp4', 'webm', 'ogv', 'ogg', 'ts', 'flv', 'mov', 'm4v'];
+
+/**
+ * 判断地址是否为直连媒体流/文件。
+ * 仅按路径扩展名判定（忽略 query/hash）；无法解析的 URL 一律按网页页处理，避免误喂给内置播放器。
+ */
+export function isDirectMediaUrl(rawUrl: string): boolean {
+  let pathname: string;
+  try {
+    pathname = new URL(rawUrl).pathname;
+  } catch {
+    return false;
+  }
+  const ext = pathname.split('.').pop()?.toLowerCase() ?? '';
+  return DIRECT_MEDIA_EXT.includes(ext);
+}
+
 export function isLocalOrPrivateUrl(rawUrl: string): boolean {
   let host: string;
   try {

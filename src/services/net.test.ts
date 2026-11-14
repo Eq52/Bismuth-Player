@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isLocalOrPrivateUrl } from './net';
+import { isLocalOrPrivateUrl, isDirectMediaUrl } from './net';
 
 describe('isLocalOrPrivateUrl', () => {
   it('识别本机回环与本地域名', () => {
@@ -40,5 +40,30 @@ describe('isLocalOrPrivateUrl', () => {
     expect(isLocalOrPrivateUrl('not-a-url')).toBe(false);
     expect(isLocalOrPrivateUrl('')).toBe(false);
     expect(isLocalOrPrivateUrl('//no-protocol')).toBe(false);
+  });
+});
+
+describe('isDirectMediaUrl', () => {
+  it('识别常见直连媒体扩展名', () => {
+    expect(isDirectMediaUrl('https://v.example.com/2026/a/index.m3u8')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.mp4?token=x')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.webm')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.ts')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.flv')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.mov')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.ogv')).toBe(true);
+    expect(isDirectMediaUrl('https://v.example.com/a/b.m4v')).toBe(true);
+  });
+
+  it('网页播放器页 / 分享页判为非直链', () => {
+    expect(isDirectMediaUrl('https://hd.kuktxu.com/play/vbmwpOAe')).toBe(false);
+    expect(isDirectMediaUrl('https://v.lzcdn27.com/share/9087fba46c')).toBe(false);
+    expect(isDirectMediaUrl('https://example.com/play/abc/')).toBe(false);
+  });
+
+  it('忽略 query 与 hash，非法地址按网页页处理', () => {
+    expect(isDirectMediaUrl('https://example.com/a/index.m3u8#fragment')).toBe(true);
+    expect(isDirectMediaUrl('not-a-url')).toBe(false);
+    expect(isDirectMediaUrl('')).toBe(false);
   });
 });

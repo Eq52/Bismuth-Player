@@ -4,6 +4,7 @@ import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError 
 import { addPlayHistory, isFavorite, toggleFavorite } from '@/services/storage';
 import { usePlaySources } from '@/hooks/usePlaySources';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
+import { cleanDescription } from '@/services/textClean';
 import type { VideoItem } from '@/types';
 
 interface DetailPageProps {
@@ -109,6 +110,8 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
   };
 
   const displayData = detail || video;
+  // 简介清洗：解码 HTML 实体、剥标签、把成串空白还原成换行（源方常拿 &nbsp; 当排版）
+  const descText = cleanDescription(displayData.vod_content);
 
   return (
     <div className="h-full flex flex-col bg-base">
@@ -221,14 +224,14 @@ export function DetailPage({ video, onBack, onPlay }: DetailPageProps) {
               </div>
               
               {/* 简介（超长折叠） */}
-              {displayData.vod_content && (
+              {descText && (
                 <div className="mt-5">
                   <h3 className="text-white font-medium mb-2 text-sm">简介</h3>
                   <p
                     ref={descRef}
-                    className={`text-gray-400 text-sm leading-relaxed ${descExpanded ? '' : 'line-clamp-3'}`}
+                    className={`text-gray-400 text-sm leading-relaxed whitespace-pre-line ${descExpanded ? '' : 'line-clamp-3'}`}
                   >
-                    {displayData.vod_content.replace(/<[^>]+>/g, '')}
+                    {descText}
                   </p>
                   {descOverflow && (
                     <button

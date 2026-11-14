@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getVideoDetail, parsePlaySources, getCurrentSource, SourceDeletedError } from '@/services/api';
 import { usePlayerSettings, addPlayHistory, getPlayHistory, updatePlayHistoryProgress, clearAllPlayProgress, addWatchSeconds, recordPlay } from '@/services/storage';
 import { isDesktopMode, desktopMediaUrl } from '@/services/desktop';
+import { isDirectMediaUrl } from '@/services/net';
 import { usePlaySources } from '@/hooks/usePlaySources';
 import { usePreloadNext } from '@/hooks/usePreloadNext';
 import { SourceDeletedNotice } from '@/components/SourceDeletedNotice';
@@ -143,7 +144,9 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
     const ep = episodes[currentEpisode];
     if (!ep) return '';
 
-    if (playerSettings.playerUrl) {
+    // 网页播放器页本身已是播放器，不再套用自定义 playerUrl 模板；
+    // 直链媒体才允许按模板拼到外部播放器。
+    if (isDirectMediaUrl(ep.url) && playerSettings.playerUrl) {
       return `${playerSettings.playerUrl}${encodeURIComponent(ep.url)}`;
     }
 
@@ -192,8 +195,11 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
 
   const displayData = detail || video;
   const currentEp = episodes[currentEpisode];
-  const useBuiltinPlayer = playerSettings.playerMode === 'builtin';
   const currentPlayUrl = getCurrentPlayUrl();
+  // 按单条地址判定：直链媒体才进内置播放器；网页播放器页一律回退 iframe 嵌入，
+  // 即使用户全局选了内置模式（内置播放器无法播放 HTML 页面）。
+  const directMedia = isDirectMediaUrl(currentPlayUrl);
+  const useBuiltinPlayer = playerSettings.playerMode === 'builtin' && directMedia;
   // 桌面版：内置代理以路径式包装媒体地址（m3u8 相对分片自动跟随代理；mp4 Range 透传）
   const currentMediaUrl = isDesktopMode() ? desktopMediaUrl(currentPlayUrl) : currentPlayUrl;
 
@@ -223,10 +229,13 @@ export function PlayerPage({ video, initialEpisode = 0, initialSourceIndex = 0, 
     clearAllPlayProgress();
   }, []);
 
-  // 预加载下一集（开关在播放器设置；最后一集无下一集时为 undefined）
-  const nextEpisodeUrl = playerSettings.preloadNext
-    ? episodes[currentEpisode + 1]?.url
-    : undefined;
+  // 预加载下一集（开关在播放器设置；最后一集无下一集时为 undefined）。
+  // 网页播放器页不做媒体预取（隐藏 video 加载 HTML 无意义）。
+  const nextRawUrl = episodes[currentEpisode + 1]?.url;
+  const nextEpisodeUrl =
+    playerSettings.preloadNext && nextRawUrl && isDirectMediaUrl(nextRawUrl)
+      ? nextRawUrl
+      : undefined;
   usePreloadNext(nextEpisodeUrl);
 
   return (

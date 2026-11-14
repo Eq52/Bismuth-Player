@@ -7,7 +7,7 @@ English｜[简体中文](README-zh.md)
 ---
 
 > NOTE: 
-> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.4/Bismuth_9.8.4_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
+> We have set new update goals and will continue releasing updates in my spare time outside of study. Starting with **V9.5.0**, we have for the first time introduced a Windows version that includes built‑in [PyCorsLocalProxy](https://github.com/Eq52/PyCorsLocalProxy). If you need a reliable cross‑origin solution, you can use either the [Android version with built‑in local CORS service](https://github.com/Eq52/Bismuth-Player/releases/download/v9.8.5/Bismuth_9.8.5_CORS.apk) or the new [Windows version](https://github.com/Eq52/Bismuth-Player/releases/download/v9.5.0/Bismuth-V9.5.0.exe). The Windows build currently stays at V9.5.0 and lags behind the Web / Android builds. 
 
 ---
 
@@ -16,7 +16,7 @@ English｜[简体中文](README-zh.md)
 <div align="center"> <p>A meticulously designed web-based video streaming application featuring customizable video sources, elegant animations, and a robust caching mechanism</p> </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-V9.8.4-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-V9.8.5-purple?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vite-7-blue?style=for-the-badge&logo=vite" alt="Vite">
@@ -264,6 +264,13 @@ Bismuth-Player/
 ## 🎯 Version Updates
 
 > Full changelog: [CHANGELOG.md](CHANGELOG.md)
+
+### V9.8.5
+- ✨ Supports Apple-CMS RSS XML sources (`/at/xml/`): lists, details and categories parse the same as JSON
+- ✨ Web player / share page links now embed in an iframe automatically; only direct m3u8/mp4/webm/... links use the built-in player
+- 🐛 Synopses no longer show a literal `&nbsp;` and huge blank runs; paragraphs display properly again
+- 🔧 Next-episode preload skips web player pages
+- 🧪 Added XML mapping, media-link detection and synopsis-cleaning tests
 
 ### V9.8.4
 - ✨ Export a full JSON backup of sources, history, favorites, stats and settings; restore with checksum verification and an automatic pre-restore snapshot

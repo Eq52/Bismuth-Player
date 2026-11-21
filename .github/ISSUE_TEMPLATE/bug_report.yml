@@ -8,6 +8,7 @@ body:
       value: |
         感谢反馈。请先搜索是否已有同类 issue，避免重复提交。
         - Web 端问题请附浏览器控制台（F12 → Console）里的报错。注意正式构建会剥掉 `console.log` / `console.debug`，只保留 error 与 warn，所以别盯着日志找不到就以为没报错——红色报错才是我们要的。
+        - Android 版没有浏览器控制台可用（调试通道是关掉的），报错请用截图 + 复现步骤代替，必要时补上机型和系统版本。
         - 若问题只出现在某个影视源上，请改用「播放源问题」模板。
         - 9.8.3 起精简版（`Bismuth_x.y.z.apk`）换了签名，只能卸载重装。若你刚卸载重装、发现历史和收藏没了，这属于卸载清数据的正常结果，不是 bug；影视源列表可以用更新前「导出」的 json 通过「导入」找回来。
 
@@ -18,7 +19,7 @@ body:
     attributes:
       label: 版本
       description: 在「设置 → 关于」中可查看当前版本
-      placeholder: 例如 9.8.3
+      placeholder: 例如 9.8.5.1
     validations:
       required: true
 
@@ -30,6 +31,7 @@ body:
       options:
         - Android APK（精简版）
         - Android APK（CORS 版）
+        - Android 离线单文件版（HTML，用浏览器打开）
         - Web 浏览器
         - Windows 桌面壳（Bismuth Desktop）
         - 不确定
@@ -53,7 +55,7 @@ body:
     id: cors
     attributes:
       label: CORS 代理状态
-      description: 当前如何解决跨域？
+      description: CORS 版内置本地代理，默认就是开着的；网页版用的是内置公共代理或你自填的地址
       options:
         - 使用内置 CORS 代理
         - 填了自定义代理地址
